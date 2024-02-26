@@ -165,7 +165,7 @@ plot_combined <- plot_grid(
 print(plot_combined)
 
 
-# ---------------- Infimum's --------------------------------
+# ---------------- Infima --------------------------------
 
 # For topology
 # Sino-tibetain 

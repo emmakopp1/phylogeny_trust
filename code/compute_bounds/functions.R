@@ -75,7 +75,7 @@ path_to_trees = function(path,n_tree){
     return(phy[n])
   }}
 
-# This function compute the bounds
+# This function computes the bounds
 compute_bounds = function(path,pi0,pi1){
   
   # Import tree 
@@ -88,7 +88,7 @@ compute_bounds = function(path,pi0,pi1){
     ))
 }
 
-# This function compute the substitution model transition matrix
+# This function computes the substitution model transition matrix
 compute_chain = function(pi0,pi1){
   return(
     1/(pi0^2 + pi1^2) * as.matrix(rbind(c(-pi0,pi0),c(pi1,-pi1)))
@@ -109,14 +109,14 @@ compute_q = function(Q){
   return(sum(apply(Q+100*diag(d),2,min)))
 }
 
-# This function compute the upper bound of the probability of the exact root 
+# This function computes the upper bound of the probability of the exact root 
 # reconstruction
 compute_upper_bound_root = function(t,Q,n){
   q = compute_q(Q)
   return(0.5 + n*exp(-q*t))
 }
 
-# This function compute the upper bound of the probability of the exact topology 
+# This function computes the upper bound of the probability of the exact topology 
 # reconstruction
 compute_upper_bound_topology = function(t,k,Q,n){
   d = as.numeric(dim(Q)[1])
@@ -139,7 +139,7 @@ vectorize_function = function(f,param,type){
   }
 
 
-# -------------- Infimum of both bounds -----------------
+# -------------- Infima of both bounds -----------------
 
 
 find_t_value = function(k, Q, n, tolerance = 1e-6, max_iter = 1000) {
