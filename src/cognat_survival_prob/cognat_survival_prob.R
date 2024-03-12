@@ -1,23 +1,15 @@
-rm(list=ls())
-library(ape,castor)
-library(phytools)
-library(phangorn,stringr)
-library(tidyr)
-library(TreeDist)
-library(adephylo)
-library(ggplot2)
-library(stringr)
-library(cowplot)
-library(patchwork)
+library(here)
 
-##### Import file
-path_survival_functions = "/Users/kopp/Documents/chr_paper/code/cognat_survival_prob/function.R"
-path_compute_bounds_function = "/Users/kopp/Documents/chr_paper/code/compute_bounds/functions.R"
-path_to_config = "/Users/kopp/Documents/chr_paper/code/compute_bounds/config.json"
+# Import files
+path_survival_functions = here('src/cognat_survival_prob/functions.R')
+path_compute_bounds_function = here("src/compute_bounds/functions.R")
+path_to_config = here("src/compute_bounds/config.json")
 
 # Import functions
-suppressWarnings({source(path_survival_functions)})
-suppressWarnings({source(path_compute_bounds_function)})
+source(here("src/utils.R"))
+source(here("src/init.R"))
+source(path_survival_functions)
+source(path_compute_bounds_function)
 
 # Data 
 data_st = get_tree_par_fun(path_to_config,'sino-tibetan',1)

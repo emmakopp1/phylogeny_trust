@@ -1,24 +1,30 @@
-# rm(list=ls())
-library(jsonlite)
-library(ggplot2)
-library(gridExtra)
-library(cowplot)
-library(patchwork)
-library(here)
+# Load packages
+library("conflicted")
+library("dplyr")
+library("jsonlite")
+library("ggplot2")
+library("gridExtra")
+library("cowplot")
+library("patchwork")
+library("here")
+library("tidyverse")
+library("kableExtra")
+library("ggthemes")
+library("extrafont")
+library("knitr")
+library("readr")
+library("kableExtra")
 
-here("compute_bounds/functions.R")
 
 # Config
-path_compute_bounds_function <- here("code/compute_bounds/functions.R")
-path_to_config <- here("code/compute_bounds/config.json")
-suppressWarnings({
-  source(path_compute_bounds_function)
-})
+path_compute_bounds_function = here("src/compute_bounds/functions.R")
+path_to_config = here("src/compute_bounds/config.json")
+source(path_compute_bounds_function)
 
 # Data
-data_st <- get_tree_par_fun(path_to_config, "sino-tibetan", n_tree = 1)
-data_iecor <- get_tree_par_fun(path_to_config, "iecor", n_tree = 1)
-data_bantu <- get_tree_par_fun(path_to_config, "bantu", n_tree = 1)
+data_st = get_tree_par_fun(path_to_config, "sino-tibetan", n_tree = 1)
+data_iecor = get_tree_par_fun(path_to_config, "iecor", n_tree = 1)
+data_bantu = get_tree_par_fun(path_to_config, "bantu", n_tree = 1)
 
 # Topology function
 f_topology_st <- data_st$f_topology
@@ -45,8 +51,7 @@ data_st$param$t
 data_iecor$param$t
 data_bantu$param$t
 
-library(tidyverse)
-library(kableExtra)
+
 dt_params <- list("Sino-Tibetan" = data_st$param, "Bantu" = data_bantu$param, "Indo-European" = data_iecor$param)
 bounds_tb <- dt_params |>
   map_df(
@@ -78,7 +83,7 @@ bounds_tb |>
   mutate(` ` = str_replace(` `, "root", "R(x) = 1\\\\}")) |>
   pivot_wider(names_from = family) |>
   kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "S", "S", "S")) |>
-  write_lines("tab_upperbound.tex")
+  write_lines("src/tab_upperbound.tex")
 
 # Bounds values
 # Sino tibetan
@@ -123,10 +128,6 @@ data <- tibble(
 
 
 # Plotting
-
-library(ggthemes)
-library(extrafont)
-library(knitr)
 theme_set(theme_minimal(base_family = "Noto Sans"))
 wdt <- 18
 hgt <- wdt * .6
@@ -145,8 +146,10 @@ fig_bounds <- data |>
   theme(legend.position = "bottom")
 
 # fig_bounds <- (fig_topo_bounds + fig_root_bounds) & plot_layout(guides = "collect") & theme(legend.position = "bottom")
-ggsave(here("figs/fig_bounds.pdf"), fig_bounds, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
-plot_crop(here("figs/fig_bounds.pdf"))
+pdf(here("src/figs/fig_bounds.pdf"))
+ggsave(here("src/figs/fig_bounds.pdf"), fig_bounds, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
+plot_crop(here("src/figs/fig_bounds.pdf")) # ne marche pas
+dev.off()
 
 # ----------------- Graph : Bantu datasets comparison ---------------------
 # Data generation
@@ -195,8 +198,8 @@ p_root <- ggplot(data_root, aes(x = t)) +
 
 par(mfrow = c(1, 2))
 plot_combined <- plot_grid(
-  # p1+theme(legend.position = "none"),
-  # p2+theme(legend.position = "none"),
+  #p1+theme(legend.position = "none"),
+  #p2+theme(legend.position = "none"),
   p_root + theme(legend.position = "none"),
   p_topology + theme(legend.position = "none"),
   rel_heights = c(1, 1),

@@ -1,0 +1,42 @@
+{
+    "sino-tibetan": [
+      "/Users/kopp/Documents/phylogeny_trust_local/beast/sino-tibet-ctmc-strict-bd-fossilsRemoved/sino-tibetan-ctmc-strict-bd.trees",
+      "0.942",
+      "5.84e-2",
+      "3785",
+	"src/cognat_survival_prob/cognates_data/cognates_st.txt",
+	"8.867"
+    ],
+    "bantu":[
+        "/Users/kopp/Documents/phylogeny_trust_local/beast/bantu-ctmc-strict-bd/ctmc-strict-bd.trees",
+        "0.985",
+        "1.476e-2",
+        "3859",
+	"src/cognat_survival_prob/cognates_data/cognates_bantu.txt",
+	"6.965"
+    ],
+    "iecor" : [
+        "/Users/kopp/Documents/phylogeny_trust_local/beast/IECoR-ctmc-strict-fbd/IECoR2-chr_1695819208636.trees",
+        "0.996",
+        "4.297E-3",
+        "4990",
+	"src/cognat_survival_prob/cognates_data/cognates_iecor.txt",
+	"8.589"
+    ],
+    "bantu_subsample" : [
+        "/Users/kopp/Documents/phylogeny_trust_local/beast/bantu-ctmc-strict-bd-subsample/subsample.trees",
+        "0.98",
+        "0.196",
+        "3859",
+	"",
+	"5.239"
+    ],
+    "bantu_subsample_2":[
+       "/Users/kopp/Documents/phylogeny_trust_local/beast/bantu-ctmc-strict-bd-subsample/subsample.trees",
+        "0.978",
+        "2.227e-2",
+        "3859",
+	"",
+	"6.165"
+    ]
+}

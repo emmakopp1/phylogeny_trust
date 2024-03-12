@@ -1,16 +1,12 @@
-rm(list=ls())
-
-library(maps)
-library(ape)
-library(phytools)
-library(treemap)
-library(viridisLite)
-library(viridis)
-library(TreeTools)
-library(rwty)
-
+library(here)
+source(here("src/init.R"))
 
 remove_burnin = function(trees,burnin_rate){
+  #'remove_burnin
+  #'
+  #'Remove the burn-in of a sample of trees
+  #'@param trees
+  #'@param burnin_rate the rate of burn-in we apply
   n = as.numeric(length(trees))
   return(trees[as.integer(n*burnin_rate):n])
 }
@@ -19,16 +15,13 @@ myconsensus = function(trees){
   #' 
   #' Compute the consensus tree of multiples trees
   #' @param trees The trees.
+  #' @example 
+  #' path = "/Users/kopp/Documents/chr_paper/beast/bantu-ctmc-strict-bd/ctmc-strict-bd.trees"
+  #' tree = read.nexus(path)
+  #' tree = remove_burnin(tree,0.9)
+  #' consensus_tree = myconsensus(tree)
   consensus.edges(trees, consensus.tree = consensus(trees, p=.5), rooted=T)    
 }
-
-path = "/Users/kopp/Documents/chr_paper/beast/bantu-ctmc-strict-bd/ctmc-strict-bd.trees"
-tree = read.nexus(path)
-tree = remove_burnin(tree,0.9)
-consensus_tree = myconsensus(tree)
-write.tree(consensus_tree, 
-           file = "/Users/kopp/Documents/chr_paper/beast/bantu-ctmc-strict-bd/ctmc-strict-bd-consensus.tree"
-             )
 
 
 # For each trees
@@ -44,4 +37,4 @@ write.tree(consensus_tree,
 
 
 tree = read.nexus()
-'''
+'

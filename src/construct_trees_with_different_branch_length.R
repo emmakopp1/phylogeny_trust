@@ -1,5 +1,5 @@
-rm(list=ls())
 library(ape)
+
 path_tree_5k  = "/Users/kopp/Documents/chr_paper/reconstruction/simulated_bd_trees/beast-data-sim-5/tree-sim-5.tree"
 tree = read.tree(path_tree_5k)
 
