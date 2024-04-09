@@ -1,5 +1,5 @@
 library(here)
-source(here("src/init.R"))
+source(here("/Users/kopp/Documents/phylogeny_trust/src/init.R"))
 
 remove_burnin = function(trees,burnin_rate){
   #'remove_burnin
@@ -38,3 +38,17 @@ myconsensus = function(trees){
 
 tree = read.nexus()
 '
+
+
+
+
+path = "/Users/kopp/Library/CloudStorage/OneDrive-UniversitéParis-Dauphine/these/kd_loom/weight311/kd_looms_311.trees"
+tree = read.nexus(path)
+tree = remove_burnin(tree,0.9)
+consensus_tree = myconsensus(tree)
+plot(consensus_tree)
+
+
+
+
+
