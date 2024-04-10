@@ -17,14 +17,14 @@ library("kableExtra")
 
 
 # Config
-path_compute_bounds_function = here("src/compute_bounds/functions.R")
-path_to_config = here("src/compute_bounds/config.json")
+path_compute_bounds_function <- here("src/compute_bounds/functions.R")
+path_to_config <- here("src/compute_bounds/config.json")
 source(path_compute_bounds_function)
 
 # Data
-data_st = get_tree_par_fun(path_to_config, "sino-tibetan", n_tree = 1)
-data_iecor = get_tree_par_fun(path_to_config, "iecor", n_tree = 1)
-data_bantu = get_tree_par_fun(path_to_config, "bantu", n_tree = 1)
+data_st <- get_tree_par_fun(path_to_config, "sino-tibetan", n_tree = 1)
+data_iecor <- get_tree_par_fun(path_to_config, "iecor", n_tree = 1)
+data_bantu <- get_tree_par_fun(path_to_config, "bantu", n_tree = 1)
 
 # Topology function
 f_topology_st <- data_st$f_topology
@@ -135,21 +135,17 @@ hgt <- wdt * .6
 fig_bounds <- data |>
   pivot_longer(-c(t, family)) |>
   mutate(name = str_remove(name, "Delta_")) |>
-  mutate(name = factor(name, levels = c("T", "R"))) |> 
+  mutate(name = factor(name, levels = c("T", "R"))) |>
   ggplot(aes(x = t, y = value, linetype = family, color = family)) +
   geom_line() +
   xlab(expression(italic(t))) +
   ylab(expression(Delta)) +
   scale_color_few("Dark") +
-  # scale_color_ptol("Vibrant") +
   facet_wrap(~name, scales = "free", labeller = label_bquote(Delta^.(as.character(name)))) +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom", aspect.ratio = .618)
 
-# fig_bounds <- (fig_topo_bounds + fig_root_bounds) & plot_layout(guides = "collect") & theme(legend.position = "bottom")
-pdf(here("src/figs/fig_bounds.pdf"))
-ggsave(here("src/figs/fig_bounds.pdf"), fig_bounds, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
-plot_crop(here("src/figs/fig_bounds.pdf")) # ne marche pas
-dev.off()
+ggsave(here("output/figs/fig_bounds.pdf"), fig_bounds, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
+plot_crop(here("output/figs/fig_bounds.pdf")) # ne marche pas
 
 # ----------------- Graph : Bantu datasets comparison ---------------------
 # Data generation
@@ -166,7 +162,6 @@ data_root <- data.frame(
   delta_R_bantu_sub = f_root_bantu_sub(t_values),
   delta_R_bantu_sub2 = f_root_bantu_sub2(t_values)
 )
-
 
 # Topology Plot
 p_topology <- ggplot(data_topology, aes(x = t)) +
@@ -198,8 +193,8 @@ p_root <- ggplot(data_root, aes(x = t)) +
 
 par(mfrow = c(1, 2))
 plot_combined <- plot_grid(
-  #p1+theme(legend.position = "none"),
-  #p2+theme(legend.position = "none"),
+  # p1+theme(legend.position = "none"),
+  # p2+theme(legend.position = "none"),
   p_root + theme(legend.position = "none"),
   p_topology + theme(legend.position = "none"),
   rel_heights = c(1, 1),
