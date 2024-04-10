@@ -1,5 +1,5 @@
 library(here)
-source(here("/Users/kopp/Documents/phylogeny_trust/src/init.R"))
+source(here("src/init.R"))
 
 remove_burnin = function(trees,burnin_rate){
   #'remove_burnin
