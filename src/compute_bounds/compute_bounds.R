@@ -83,7 +83,7 @@ bounds_tb |>
   mutate(` ` = str_replace(` `, "root", "R(x) = 1\\\\}")) |>
   pivot_wider(names_from = family) |>
   kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "S", "S", "S")) |>
-  write_lines("src/tab_upperbound.tex")
+  write_lines(here("output/tabs/tab_upperbound.tex"))
 
 # Bounds values
 # Sino tibetan
