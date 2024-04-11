@@ -28,17 +28,9 @@ df = cbind(res_st$data,res_bantu$data,res_iecor$data)
 df = df[, c(1,2,4,6)]
 colnames(df) = c("age","q_st","q_bantu","q_iecor")
 
-# Plots for each datasets
-ggplot(df, aes(x = age)) +
-  geom_line(aes(y = q_st,  linetype = "q_st"), linewidth = 0.5) +
-  geom_line(aes(y = q_bantu, linetype = "q_bantu"), linewidth = 0.5) +
-  geom_line(aes(y = q_iecor, linetype = "q_iecor"), linewidth = 0.5) +
-  scale_color_manual(values = c("q_st" = "black", "q_bantu" = "black", "q_iecor" = "black")) +
-  scale_linetype_manual(values = c("q_st" = "solid", "q_bantu" = "dashed", "q_iecor" = "dotted")) +
-  labs(title = "", x = "Age", y = "Values") +
-  theme_minimal()
-
-
+qs_tb <- mutate(res_st$data, language = "Sino-Tibetan") |> 
+  bind_rows(mutate(res_bantu$data, language = "Bantu")) |> 
+  bind_rows(mutate(res_iecor$data, language = "Indo-European"))
 
 #---------------- 2. Empirical value vs theoretical value ----------------
 # Here I compute the expected number of meaning surviving from the root two subgroups of the root
