@@ -60,7 +60,7 @@ bounds_tb <- dt_params |>
     .before = t
   )
 
-write_csv2(bounds_tb, here("output/results/bounds_tb.csv"))
+write_csv(bounds_tb, here("output/results/bounds_tb.csv"))
 
 bounds_tb |>
   mutate(across(where(is.numeric), ~ as.character(round(.x, 2)))) |>
