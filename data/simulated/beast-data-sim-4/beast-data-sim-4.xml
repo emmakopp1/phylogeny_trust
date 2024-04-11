@@ -1,0 +1,82 @@
+<beast version="2.0"
+       namespace="beast.evolution.alignment:beast.core:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood">
+
+    <!-- specify the taxa -->
+    <data id="alignment" dataType="binary">
+        <sequence taxon="t1">?</sequence>
+        <sequence taxon="t2">?</sequence>
+        <sequence taxon="t3">?</sequence>
+        <sequence taxon="t4">?</sequence>
+        <sequence taxon="t5">?</sequence>
+        <sequence taxon="t6">?</sequence>
+        <sequence taxon="t7">?</sequence>
+        <sequence taxon="t8">?</sequence>
+        <sequence taxon="t9">?</sequence>
+        <sequence taxon="t10">?</sequence>
+        <sequence taxon="t11">?</sequence>
+        <sequence taxon="t12">?</sequence>
+        <sequence taxon="t13">?</sequence>
+        <sequence taxon="t14">?</sequence>
+        <sequence taxon="t15">?</sequence>
+        <sequence taxon="t16">?</sequence>
+        <sequence taxon="t17">?</sequence>
+        <sequence taxon="t18">?</sequence>
+        <sequence taxon="t19">?</sequence>
+        <sequence taxon="t20">?</sequence>
+        <sequence taxon="t21">?</sequence>
+        <sequence taxon="t22">?</sequence>
+        <sequence taxon="t23">?</sequence>
+        <sequence taxon="t24">?</sequence>
+        <sequence taxon="t25">?</sequence>
+        <sequence taxon="t26">?</sequence>
+        <sequence taxon="t27">?</sequence>
+        <sequence taxon="t28">?</sequence>
+        <sequence taxon="t29">?</sequence>
+        <sequence taxon="t30">?</sequence>
+        <sequence taxon="t31">?</sequence>
+        <sequence taxon="t32">?</sequence>
+        <sequence taxon="t33">?</sequence>
+        <sequence taxon="t34">?</sequence>
+        <sequence taxon="t35">?</sequence>
+        <sequence taxon="t36">?</sequence>
+        <sequence taxon="t37">?</sequence>
+        <sequence taxon="t38">?</sequence>
+        <sequence taxon="t39">?</sequence>
+        <sequence taxon="t40">?</sequence>
+        <sequence taxon="t41">?</sequence>
+        <sequence taxon="t42">?</sequence>
+        <sequence taxon="t43">?</sequence>
+        <sequence taxon="t44">?</sequence>
+        <sequence taxon="t45">?</sequence>
+        <sequence taxon="t46">?</sequence>
+        <sequence taxon="t47">?</sequence>
+        <sequence taxon="t48">?</sequence>
+        <sequence taxon="t49">?</sequence>
+        <sequence taxon="t50">?</sequence>
+    </data>
+
+    <!-- specify the tree -->
+    <tree id="tree" spec="beast.util.TreeParser" newick="(((((t3:0.54060192888,(t4:0.1147056080000000102,t46:0.1147056080000000102):0.4258963846):0.39879046499,t27:0.939392472):2.0595546482,((t50:1.03000482400000029,(t41:0.524626368000000198,((t8:0.1393772320000000298,(t14:0.122395928000000018,t36:0.122395928000000018):0.0169813120000000028):0.033869976964,t6:0.17324721694):0.3513791520000000303):0.50537844889):1.71556435200000032,t38:2.74556918400000031):0.253377872):0.70963938474,(t32:3.3865218319999997,((t9:1.33734003200000027,((t37:0.66327129664,t20:0.66327129664):0.0041215689898,t31:0.667392872000000163):0.6699471604):1.7025453043,(t21:0.1847142640000000295,(t5:0.1625161120000000253,t44:0.1625161120000000253):0.022198152422):2.855171072):0.34663641696):0.32206467292):0.29141355218,(((((t10:1.56702198400000016,(t45:0.2324839920000000362,t30:0.2324839920000000362):1.334537992):0.72135097600000016,(t17:0.71458619200000013,(t19:0.22926055264,(t22:0.12652387267,t35:0.12652387267):0.1027366720000000197):0.485326232):1.5737868560000001):0.1414669360000000274,(((t12:0.68526040889,(t18:0.34872781608,t26:0.34872781608):0.3365325928):0.2286175682,t42:0.9138779841):0.5980526875,((t28:0.31253012893,t29:0.31253012893):0.662590760000000143,(t15:0.59567212853,(t23:0.1703964486,t24:0.1703964486):0.4252757287):0.3794487600000000583):0.53680976847):0.91790924000000011):0.832797081,(((t16:1.25141583200000026,(t34:1.10569623200000019,t40:1.10569623200000019):0.14571959268):1.52431048800000027,(t2:2.2087744321,(t25:0.62105820852,t49:0.62105820852):1.5877162166):0.56695189600000012):0.22159635222,((t33:0.227599696000000028,t39:0.227599696000000028):0.432873336000000059,t48:0.660473024000000118):2.3368496563):0.26531430446):0.697608728000000162,((t43:2.6047174646,(t47:0.600144328000000129,t11:0.600144328000000129):2.00457313600000033):0.14792378408,((t13:0.1155166879999999906,t1:0.1155166879999999906):2.41823604800000028,t7:2.53375273600000039):0.2188885040000000483):1.2076044649):0.03975427200000001415):0;" taxa="@alignment"/>
+    
+
+    <!-- configure the Sequence Simulator -->
+    <run spec="beast.app.seqgen.SequenceSimulator" id="seqgen" data="@alignment" tree="@tree" sequencelength="3000" outputFileName="beast-simulated-seq-4.xml">
+    	<!-- set up site model -->     
+	    <siteModel spec="SiteModel" id="siteModel" gammaCategoryCount="4">
+			<!-- specify gamma shape parameter -->
+			<shape spec="parameter.RealParameter">1.0</shape>
+			<!-- use CTMC substitution model -->
+            <substModel id="CTMC" spec="GeneralSubstitutionModel">
+                        <parameter id="rates" spec="parameter.RealParameter" dimension="2" estimate="false" lower="0.0" name="rates">1.0 1.0</parameter>
+                        <frequencies id="freqs" spec="Frequencies">
+                            <data idref="alignment"/> 
+                        </frequencies>
+            </substModel> 
+        </siteModel>
+
+	    <!-- use a strict clock -->
+        <branchRateModel id="StrictClock" spec="beast.evolution.branchratemodel.StrictClockModel">
+            <parameter dimension="1" estimate="false" id="clockRate" minordimension="1" name="clock.rate" value="1.0"/>
+        </branchRateModel>
+	</run>
+</beast>
