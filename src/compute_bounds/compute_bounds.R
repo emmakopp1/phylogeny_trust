@@ -90,10 +90,10 @@ compute_upper_bound_topology(
 
 t_values <- seq(0, 20, length.out = 100)
 bounds_byt_tb <- tibble(
-  t = rep(t_values, 3),
-  "Delta_T" = c(f_topology_st(t_values), f_topology_bantu(t_values), f_topology_iecor(t_values)),
-  "Delta_R" = c(f_root_st(t_values), f_root_bantu(t_values), f_root_iecor(t_values)),
-  family = rep(c("Sino-tibetan", "Bantu", "Indo-European"), each = 100)
+  t = rep(t_values, 5),
+  "Delta_T" = c(f_topology_bantu(t_values), f_topology_bantu_sub(t_values), f_topology_bantu_sub2(t_values), f_topology_iecor(t_values), f_topology_st(t_values)),
+  "Delta_R" = c(f_root_bantu(t_values), f_root_bantu_sub(t_values), f_root_bantu_sub2(t_values), f_root_iecor(t_values), f_root_st(t_values)),
+  family = rep(c("Bantu", "Bantu subset", "Bantu subset 2", "Indo-European", "Sino-tibetan"), each = 100)
 ) |>
   pivot_longer(-c(t, family), names_to = "Delta") |>
   mutate(Delta = str_remove(Delta, "Delta_"))

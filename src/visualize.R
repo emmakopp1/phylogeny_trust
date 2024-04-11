@@ -12,10 +12,10 @@ wdt <- 14
 hgt <- wdt * .7
 
 
-bounds_byt_tb <- read_csv(here("output/results/bounds_byt_tb.csv"))
-
+bounds_tb <- read_csv(here("output/results/bounds_tb.csv"))
 bounds_tb |>
   mutate(across(where(is.numeric), ~ as.character(round(.x, 2)))) |>
+  arrange(family) |> 
   pivot_longer(-family, names_to = " ") |>
   mutate(value = str_replace(value, "(\\D{2,})", "{\\1}")) |>
   mutate(family = paste0("{", family, "}")) |>
@@ -25,10 +25,16 @@ bounds_tb |>
   mutate(` ` = str_replace(` `, "topo", "T(x) = 1\\\\}")) |>
   mutate(` ` = str_replace(` `, "root", "R(x) = 1\\\\}")) |>
   pivot_wider(names_from = family) |>
+  mutate(` ` = str_replace(` `, "t\\$", "t$ (root age, ka BP)")) |> 
+  mutate(` ` = str_replace(` `, "k\\$", "k$ (number of traits)")) |> 
+  mutate(` ` = str_replace(` `, "N\\$", "N$ (number of languages)")) |> 
   kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "S", "S", "S")) |>
   write_lines(here("output/tabs/tab_upperbound.tex"))
 
+bounds_byt_tb <- read_csv(here("output/results/bounds_byt_tb.csv"))
+
 fig_bounds <- bounds_byt_tb |>
+  dplyr::filter(!str_detect(family, "subset")) |> 
   mutate(Delta = factor(Delta, levels = c("T", "R"))) |>
   ggplot(aes(x = t, y = value, linetype = family, color = family)) +
   geom_line() +
@@ -38,6 +44,16 @@ fig_bounds <- bounds_byt_tb |>
   facet_wrap(~Delta, scales = "free", labeller = label_bquote(Delta^.(as.character(Delta))))
 ggsave(here("output/figs/fig_bounds.pdf"), fig_bounds, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
 plot_crop(here("output/figs/fig_bounds.pdf"))
+
+bounds_byt_tb |>
+  dplyr::filter(str_detect(family, "Bantu")) |> 
+  mutate(Delta = factor(Delta, levels = c("T", "R"))) |>
+  ggplot(aes(x = t, y = value, linetype = family, color = family)) +
+  geom_line() +
+  xlab("age (ka BP)") +
+  ylab(expression(Delta)) +
+  scale_color_few("Dark") +
+  facet_wrap(~Delta, scales = "free", labeller = label_bquote(Delta^.(as.character(Delta))))
 
 
 qs_tb <- read_csv(here("output/results/qs_tb.csv"))
