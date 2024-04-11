@@ -1,11 +1,7 @@
-rm(list=ls())
-library(stringr)
-library(ape)
-library(phytools)
-library(rwty)
-library(castor)
-library(TreeSim)
-path = "/Users/kopp/Documents/chr_paper/reconstruction/sim/beast/tree-sim-"
+library(here)
+source(here("src/init.R"))
+
+path = here("data/simulated/beast-data-sim-")
 
 simulate_tree = function(t,N=50,div = 0.245,r = 0.293,s = 0.226){
   # Parameters
@@ -32,4 +28,5 @@ simulate_tree = function(t,N=50,div = 0.245,r = 0.293,s = 0.226){
   write.nexus(tree,file=pathF)
 }
 
+#simulate_tree(1)
 
