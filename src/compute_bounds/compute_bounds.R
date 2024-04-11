@@ -1,20 +1,9 @@
 # Load packages
-library("conflicted")
-library("dplyr")
-library("jsonlite")
-library("ggplot2")
-library("gridExtra")
-library("cowplot")
-library("patchwork")
-library("here")
-library("tidyverse")
-library("kableExtra")
-library("ggthemes")
-library("extrafont")
-library("knitr")
-library("readr")
-library("kableExtra")
-
+library(here)
+library(tidyverse)
+# library(dplyr)
+# library(jsonlite)
+# library("readr")
 
 # Config
 path_compute_bounds_function <- here("src/compute_bounds/functions.R")
@@ -71,6 +60,8 @@ bounds_tb <- dt_params |>
     .before = t
   )
 
+write_csv2(bounds_tb, here("output/results/bounds_tb.csv"))
+
 bounds_tb |>
   mutate(across(where(is.numeric), ~ as.character(round(.x, 2)))) |>
   pivot_longer(-family, names_to = " ") |>
@@ -111,99 +102,16 @@ compute_upper_bound_topology(
 
 # You can do the same by using the function compute_upper_bound_root
 
-
-# ----------------- Graph : dataset comparison ---------------------
-# Grayscale color palette
-gray_palette <- c("#000000", "#000000", "#000000")
-
-# Data generation
 t_values <- seq(0, 20, length.out = 100)
-
-data <- tibble(
+bounds_byt_tb <- tibble(
   t = rep(t_values, 3),
   "Delta_T" = c(f_topology_st(t_values), f_topology_bantu(t_values), f_topology_iecor(t_values)),
   "Delta_R" = c(f_root_st(t_values), f_root_bantu(t_values), f_root_iecor(t_values)),
-  family = rep(c("Sino-tibetan", "Bantu", "Indo-european"), each = 100)
-)
-
-
-# Plotting
-theme_set(theme_minimal(base_family = "Noto Sans"))
-wdt <- 18
-hgt <- wdt * .6
-
-fig_bounds <- data |>
-  pivot_longer(-c(t, family)) |>
-  mutate(name = str_remove(name, "Delta_")) |>
-  mutate(name = factor(name, levels = c("T", "R"))) |>
-  ggplot(aes(x = t, y = value, linetype = family, color = family)) +
-  geom_line() +
-  xlab(expression(italic(t))) +
-  ylab(expression(Delta)) +
-  scale_color_few("Dark") +
-  facet_wrap(~name, scales = "free", labeller = label_bquote(Delta^.(as.character(name)))) +
-  theme(legend.position = "bottom", aspect.ratio = .618)
-
-ggsave(here("output/figs/fig_bounds.pdf"), fig_bounds, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
-plot_crop(here("output/figs/fig_bounds.pdf")) # ne marche pas
-
-# ----------------- Graph : Bantu datasets comparison ---------------------
-# Data generation
-data_topology <- data.frame(
-  t = t_values,
-  delta_T_bantu = f_topology_bantu(t_values),
-  delta_T_bantu_sub = f_topology_bantu_sub(t_values),
-  delta_T_bantu_sub2 = f_topology_bantu_sub2(t_values)
-)
-
-data_root <- data.frame(
-  t = t_values,
-  delta_R_bantu = f_root_bantu(t_values),
-  delta_R_bantu_sub = f_root_bantu_sub(t_values),
-  delta_R_bantu_sub2 = f_root_bantu_sub2(t_values)
-)
-
-# Topology Plot
-p_topology <- ggplot(data_topology, aes(x = t)) +
-  geom_line(aes(y = delta_T_bantu, linetype = "Bantu N=423"), color = gray_palette[1]) +
-  geom_line(aes(y = delta_T_bantu_sub, linetype = "Bantu N=106"), color = gray_palette[2]) +
-  geom_line(aes(y = delta_T_bantu_sub2, linetype = "Bantu N=51"), color = gray_palette[3]) +
-  ylab(expression(Delta^T)) +
-  xlab("t") +
-  scale_linetype_manual(values = c("Bantu N=423" = 3, "Bantu N=106" = 2, "Bantu N=51" = 1)) +
-  theme_minimal()
-
-
-# Root Plot
-p_root <- ggplot(data_root, aes(x = t)) +
-  geom_line(aes(y = delta_R_bantu, linetype = "Bantu N=423"), color = gray_palette[1]) +
-  geom_line(aes(y = delta_R_bantu_sub, linetype = "Bantu N=106"), color = gray_palette[2]) +
-  geom_line(aes(y = delta_R_bantu_sub2, linetype = "Bantu N=51"), color = gray_palette[3]) +
-  ylab(expression(Delta^R)) +
-  xlab("t") +
-  scale_linetype_manual(values = c("Bantu N=423" = 3, "Bantu N=106" = 2, "Bantu N=51" = 1)) +
-  theme_minimal()
-
-
-
-# ----------------- Graph : Choose your figure  ---------------------
-
-# For upper bounds depending on the dataset : active p1 and p2
-# For upper bounds depending on the size sample of the bantu dataset : active p_root and p_topology
-
-par(mfrow = c(1, 2))
-plot_combined <- plot_grid(
-  # p1+theme(legend.position = "none"),
-  # p2+theme(legend.position = "none"),
-  p_root + theme(legend.position = "none"),
-  p_topology + theme(legend.position = "none"),
-  rel_heights = c(1, 1),
-  align = "v"
-)
-
-# Print the combined plots
-print(plot_combined)
-
+  family = rep(c("Sino-tibetan", "Bantu", "Indo-European"), each = 100)
+) |>
+  pivot_longer(-c(t, family), names_to = "Delta") |>
+  mutate(Delta = str_remove(Delta, "Delta_"))
+write_csv(bounds_byt_tb, here("output/results/bounds_byt_tb.csv"))
 
 # ---------------- Infima --------------------------------
 
