@@ -60,21 +60,7 @@ bounds_tb <- dt_params |>
     .before = t
   )
 
-write_csv2(bounds_tb, here("output/results/bounds_tb.csv"))
-
-bounds_tb |>
-  mutate(across(where(is.numeric), ~ as.character(round(.x, 2)))) |>
-  pivot_longer(-family, names_to = " ") |>
-  mutate(value = str_replace(value, "(\\D{2,})", "{\\1}")) |>
-  mutate(family = paste0("{", family, "}")) |>
-  mutate(` ` = str_replace(` `, "^(\\S+)$", "$\\1$")) |>
-  mutate(` ` = str_replace(` `, "D(?=[TR])", "\\\\Delta^")) |>
-  mutate(` ` = str_replace(` `, "inf_", "\\\\inf_{\\\\text{x}}\\\\{\\\\Delta^")) |>
-  mutate(` ` = str_replace(` `, "topo", "T(x) = 1\\\\}")) |>
-  mutate(` ` = str_replace(` `, "root", "R(x) = 1\\\\}")) |>
-  pivot_wider(names_from = family) |>
-  kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "S", "S", "S")) |>
-  write_lines(here("output/tabs/tab_upperbound.tex"))
+write_csv(bounds_tb, here("output/results/bounds_tb.csv"))
 
 # Bounds values
 # Sino tibetan
@@ -104,10 +90,10 @@ compute_upper_bound_topology(
 
 t_values <- seq(0, 20, length.out = 100)
 bounds_byt_tb <- tibble(
-  t = rep(t_values, 3),
-  "Delta_T" = c(f_topology_st(t_values), f_topology_bantu(t_values), f_topology_iecor(t_values)),
-  "Delta_R" = c(f_root_st(t_values), f_root_bantu(t_values), f_root_iecor(t_values)),
-  family = rep(c("Sino-tibetan", "Bantu", "Indo-European"), each = 100)
+  t = rep(t_values, 5),
+  "Delta_T" = c(f_topology_bantu(t_values), f_topology_bantu_sub(t_values), f_topology_bantu_sub2(t_values), f_topology_iecor(t_values), f_topology_st(t_values)),
+  "Delta_R" = c(f_root_bantu(t_values), f_root_bantu_sub(t_values), f_root_bantu_sub2(t_values), f_root_iecor(t_values), f_root_st(t_values)),
+  family = rep(c("Bantu", "Bantu subset", "Bantu subset 2", "Indo-European", "Sino-tibetan"), each = 100)
 ) |>
   pivot_longer(-c(t, family), names_to = "Delta") |>
   mutate(Delta = str_remove(Delta, "Delta_"))

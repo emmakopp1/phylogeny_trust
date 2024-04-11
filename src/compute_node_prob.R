@@ -12,14 +12,14 @@ get_deepest_node = function(tree,N){
 
 
 # Initialisation of the node and the matrix of results
-path_true = "~/Documents/phylogeny_trust_local/reconstruction/simulated_bd_trees/beast-data-sim-5/tree-sim-5.tree"
+path_true = here("data/simulated/beast-data-sim-5/tree-sim-5.tree/")
 tree_true = read.tree(path_true)
 nodes = get_deepest_node(tree_true,10)
 res = matrix(NA,nrow = 17,ncol=10)
 colnames(res)=as.character(nodes)
 
 # For all age 
-common_path = "/Users/kopp/Documents/phylogeny_trust_local/reconstruction/simulated_bd_trees/"
+common_path = here("data/simulated/")
 
 for (i in 1:17){
   # Read path
@@ -41,15 +41,10 @@ for (i in 1:17){
   }
 }
 
-# PLot 
-c.pal = viridis(17) 
-
 res.t = as.data.frame(t(res))
 colnames(res.t) = as.character(seq(1,17,1))
-
-pdf(here("src/figs/boxplot.pdf"))
-boxplot(res.t,col=c.pal[1:17],xlab=c('age of the phylogeny'))
-dev.off()
-
-
-
+node_probs_tb <- as_tibble(res.t) |> 
+  pivot_longer(everything(), names_to = "age", values_to = "p") |> 
+  mutate(age = as.integer(age)) |> 
+  arrange(age, p)
+write_csv(node_probs_tb, here("output/results/node_probs_tb.csv"))
