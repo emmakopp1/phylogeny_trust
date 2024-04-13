@@ -15,13 +15,14 @@ source(path_compute_bounds_function)
 data_st = get_tree_par_fun(path_to_config,'sino-tibetan',1)
 data_iecor = get_tree_par_fun(path_to_config,'iecor',1)
 data_bantu = get_tree_par_fun(path_to_config,'bantu',1)
-
+data_trans = get_tree_par_fun(path_to_config,'transeurasian',1)
 
 #---------------- 1. Survival probabilities -----------
 # n_sens correspond to the number of wornd meaning in each datasets
 res_st = compute_survival_prob_by_ages(data_st$tree[[1]],n_sens=200)
 res_bantu = compute_survival_prob_by_ages(data_bantu$tree[[1]],n_sens=150)
-res_iecor = compute_survival_prob_by_ages( data_iecor$tree[[1]],n_sens=170)
+res_iecor = compute_survival_prob_by_ages(data_iecor$tree[[1]],n_sens=170)
+res_trans = compute_survival_prob_by_ages(data_trans$tree[[1]],n_sens=254)
 
 # Bind all res 
 df = cbind(res_st$data,res_bantu$data,res_iecor$data)

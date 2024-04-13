@@ -42,11 +42,18 @@ tree = read.nexus()
 
 
 
-path = "/Users/kopp/Library/CloudStorage/OneDrive-UniversitéParis-Dauphine/these/kd_loom/weight311/kd_looms_311.trees"
-tree = read.nexus(path)
-tree = remove_burnin(tree,0.9)
-consensus_tree = myconsensus(tree)
-plot(consensus_tree)
+path = "/Users/kopp/Documents/transeurasienne/beast/trans-ctmc-strict-fbd/data2.trees"
+#tree = read.nexus(path)
+#trees = rwty::load.trees(
+#  path,
+#  trim=1000,
+#  log="/Users/kopp/Documents/transeurasienne/beast/trans-ctmc-strict-fbd/data2.log")
+
+
+#consensus_tree = myconsensus(trees$trees)
+#plot(consensus_tree,cex=0.5)
+
+
 
 
 

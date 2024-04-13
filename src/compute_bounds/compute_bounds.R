@@ -14,16 +14,19 @@ source(path_compute_bounds_function)
 data_st <- get_tree_par_fun(path_to_config, "sino-tibetan", n_tree = 1)
 data_iecor <- get_tree_par_fun(path_to_config, "iecor", n_tree = 1)
 data_bantu <- get_tree_par_fun(path_to_config, "bantu", n_tree = 1)
+data_trans <- get_tree_par_fun(path_to_config,'transeurasian',n_tree = 1)
 
 # Topology function
 f_topology_st <- data_st$f_topology
 f_topology_bantu <- data_bantu$f_topology
 f_topology_iecor <- data_iecor$f_topology
+f_topology_trans <- data_trans$f_topology
 
 # Root function
 f_root_st <- data_st$f_root
 f_root_bantu <- data_bantu$f_root
 f_root_iecor <- data_iecor$f_root
+f_root_trans<- data_trans$f_root
 
 # Bantu subset
 data_bantu_sub <- get_tree_par_fun(path_to_config, "bantu_subsample")
@@ -39,9 +42,15 @@ f_root_bantu_sub2 <- data_bantu_sub2$f_root
 data_st$param$t
 data_iecor$param$t
 data_bantu$param$t
+data_trans$param$t
 
 
-dt_params <- list("Sino-Tibetan" = data_st$param, "Bantu" = data_bantu$param, "Indo-European" = data_iecor$param)
+dt_params <- list(
+  "Sino-Tibetan" = data_st$param, 
+  "Bantu" = data_bantu$param, 
+  "Indo-European" = data_iecor$param,
+  "Transeurasian" = data_trans$param)
+
 bounds_tb <- dt_params |>
   map_df(
     ~ tibble(
@@ -84,6 +93,14 @@ compute_upper_bound_topology(
   data_iecor$param$k,
   data_iecor$param$Q,
   data_iecor$param$n
+)
+
+
+compute_upper_bound_topology(
+  data_trans$param$t,
+  data_trans$param$k,
+  data_trans$param$Q,
+  data_trans$param$n
 )
 
 # You can do the same by using the function compute_upper_bound_root
