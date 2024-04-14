@@ -1,9 +1,10 @@
 library(tidyverse)
 library(ggthemes)
 library(knitr)
+library(kableExtra)
 
 theme_set(
-  theme_minimal(base_family = "Noto Sans", base_size = 10) +
+  theme_minimal(base_family = "Noto Sans SemiCondensed", base_size = 10) +
     theme(axis.title.y = element_text(face = "italic"),
           legend.position = "bottom", 
           aspect.ratio = .618)
@@ -41,34 +42,40 @@ fig_bounds <- bounds_byt_tb |>
   xlab("age (ka BP)") +
   ylab(expression(Delta)) +
   scale_color_few("Dark") +
-  facet_wrap(~Delta, scales = "free", labeller = label_bquote(Delta^.(as.character(Delta))))
+  facet_wrap(~Delta, scales = "free", labeller = label_bquote(Delta^italic(.(as.character(Delta)))))
 ggsave(here("output/figs/fig_bounds.pdf"), fig_bounds, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
 plot_crop(here("output/figs/fig_bounds.pdf"))
 
-bounds_byt_tb |>
+fig_bounds_bantu <- bounds_byt_tb |>
   dplyr::filter(str_detect(family, "Bantu")) |> 
+  mutate(`number of languages` = case_when(
+    family == "Bantu" ~ 424,
+    family == "Bantu subset" ~ 107,
+    family == "Bantu subset 2" ~ 52,
+  )) |> 
+  mutate(`number of languages` = fct_rev(factor(`number of languages`))) |> 
   mutate(Delta = factor(Delta, levels = c("T", "R"))) |>
-  ggplot(aes(x = t, y = value, linetype = family, color = family)) +
+  ggplot(aes(x = t, y = value, linetype = `number of languages`, color = `number of languages`)) +
   geom_line() +
   xlab("age (ka BP)") +
   ylab(expression(Delta)) +
   scale_color_few("Dark") +
-  facet_wrap(~Delta, scales = "free", labeller = label_bquote(Delta^.(as.character(Delta))))
-
+  facet_wrap(~Delta, scales = "free", labeller = label_bquote(Delta^italic(.(as.character(Delta)))))
+ggsave(here("output/figs/fig_bounds_bantu.pdf"), fig_bounds_bantu, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
+plot_crop(here("output/figs/fig_bounds_bantu.pdf"))
 
 qs_tb <- read_csv(here("output/results/qs_tb.csv"))
 fig_qs <- qs_tb |> 
-  ggplot(aes(x = age, y = q_theo, group = language, color = language, linetype = language)) +
+  ggplot(aes(x = age, y = q_theo, group = family, color = family, linetype = family)) +
   geom_line() +
   xlab("age (ka BP)") +
-  ylab("Q") +
+  ylab(expression(italic(Q[s]))) +
   scale_y_continuous(n.breaks = 10) +
   scale_color_few("Dark")
 ggsave(here("output/figs/fig_qs.pdf"), fig_qs, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
 plot_crop(here("output/figs/fig_qs.pdf"))
 
 node_probs_tb <- read_csv(here("output/results/node_probs_tb.csv"))
-
 fig_nodeprobs <- node_probs_tb |> 
   ggplot(aes(x = factor(age), y = p, group = factor(age)))+ 
   geom_boxplot(fill = "gray90", outliers = FALSE) +

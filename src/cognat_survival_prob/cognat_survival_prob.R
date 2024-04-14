@@ -29,9 +29,11 @@ df = cbind(res_st$data,res_bantu$data,res_iecor$data)
 df = df[, c(1,2,4,6)]
 colnames(df) = c("age","q_st","q_bantu","q_iecor")
 
-qs_tb <- mutate(res_st$data, language = "Sino-Tibetan") |> 
-  bind_rows(mutate(res_bantu$data, language = "Bantu")) |> 
-  bind_rows(mutate(res_iecor$data, language = "Indo-European"))
+qs_tb <- mutate(res_st$data, family = "Sino-Tibetan") |> 
+  bind_rows(mutate(res_bantu$data, family = "Bantu")) |> 
+  bind_rows(mutate(res_iecor$data, family = "Indo-European"))
+write_csv(qs_tb, here("output/results/qs_tb.csv"))
+
 
 #---------------- 2. Empirical value vs theoretical value ----------------
 # Here I compute the expected number of meaning surviving from the root two subgroups of the root
