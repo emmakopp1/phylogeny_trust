@@ -90,49 +90,75 @@ plot_crop(here("output/figs/fig_nodeprobs.pdf"))
 
 font <- "Noto Sans Condensed"
 
-# library(phangorn)
+library(phangorn)
 library(treeio)
 library(ggtree)
+plt_dark <- few_pal("Dark")(8)
+
 t5_true <- read.newick(here("data/simulated/beast-data-sim-5/tree-sim-5.tree"))
+clds <- c(71, 95, 52)
+clds_color <- tibble(clade = factor(0:2), ca = clds, color = plt_dark[1:3])
+clds_nds <- map_df(clds, ~ tibble(ca = .x, node = unlist(Descendants(t5_true, .x, type = "tips")))) |> 
+  arrange(node) |> 
+  mutate(label = t5_true$tip.label) |> 
+  left_join(clds_color)
+rn <- getRoot(t5_true)
+
 fig_t5true <- t5_true |> 
-  groupClade(.node = c(71, 95, 52)) |> 
-  ggtree(aes(color = group)) +
-  geom_tiplab(family = font, size = 9/.pt) +
+  groupClade(.node = c(95, 52)) |> 
+  full_join(clds_nds) |> 
+  ggtree() +
   geom_rootedge(.25) +
-  # geom_nodelab(aes(label = node)) +
-  scale_color_manual(values = c("black", few_pal("Dark")(8)), na.value="black") +
+  geom_tree(aes(color = group)) +
+  geom_tree(data = ~ filter(.x, group == 0 & x < .5)) +
+  geom_tiplab(aes(color = clade), family = font, size = 9/.pt) +
+  scale_color_few("Dark") +
   coord_cartesian(clip = "off", expand = FALSE) +
   theme(plot.margin = margin(.5, 1, .5 ,0, unit = "line"), legend.position = "none")
 fig_t5true
 
 t5_consensus <- read.newick(here("data/simulated/beast-data-sim-5/consensus-5.tree"))
 t5_consensus$root.edge.length <- 0
+
 fig_t5consensus <- t5_consensus |> 
-  groupClade(.node = c(52, 69, 53), overlap = "original") |> 
-  ggtree(aes(color = group), ladderize = FALSE) +
-  geom_tiplab(family = font, size = 9/.pt) +
+  groupClade(.node = c(69, 53)) |>
+  full_join(select(clds_nds, -node)) |> 
+  ggtree(ladderize = FALSE) +
   geom_rootedge(.25) +
+  geom_tree(aes(color = group)) +
+  geom_tree(data = ~ slice(.x, 1:52)) +
+  geom_tiplab(aes(color = clade), family = font, size = 9/.pt) +
   # geom_nodelab(aes(label = node)) +
-  scale_color_manual(values = c(few_pal("Dark")(8)[1], "black", few_pal("Dark")(8)[2:8]), na.value="black") +
+  scale_color_few("Dark") +
   coord_cartesian(clip = "off", expand = FALSE) +
   theme(plot.margin = margin(.5, 0.5, .5 , 1, unit = "line"), legend.position = "none")
+fig_t5consensus
 
 ggsave(here("output/figs/fig_t5trueconsensus.pdf"), fig_t5true + fig_t5consensus, device = cairo_pdf, width = wdt, height = hgt * 1.7, units = "cm")
 plot_crop(here("output/figs/fig_t5trueconsensus.pdf"))
 
 t9_consensus <- read.newick(here("data/simulated/beast-data-sim-9/consensus-9.tree"))
 t9_consensus$root.edge.length <- 0
+
 fig_t9consensus <- t9_consensus |> 
-  groupClade(.node = c(c(52, 80, 78, 87), c(82, 86), c(67, 72, 75, 84)), overlap = "original") |> 
-  ggtree(aes(color = group), ladderize = FALSE) +
-  geom_tiplab(aes(label=paste(node, label)), family = font, size = 10/.pt) +
+  groupClade(.node = c(c(52, 80, 78, 87), c(82, 86), c(67, 72, 75, 84))) |> 
+  full_join(select(clds_nds, -node)) |> 
+  ggtree(ladderize = FALSE, color = "gray") +
+  geom_tree(data =~ filter(.x, group %in% 5:6 | x < 1), color = plt_dark[2]) +
+  geom_tree(data =~ filter(.x, group %in% 7:10 | x == 0), color = plt_dark[3]) +
+  geom_tree(data =~ filter(.x, group %in% 1:4 | x < 1.9), color = plt_dark[1]) +
+  geom_tree(aes(color = clade)) +
+  geom_tiplab(aes(color = clade), family = font, size = 9/.pt) +
   geom_rootedge(.25) +
-  geom_nodelab(aes(label = node)) +
-  # scale_color_few("Dark") +
-  scale_color_manual(values = c(few_pal("Dark")(8)[3], rep(few_pal("Dark")(8)[1], 4), rep(few_pal("Dark")(8)[2], 2), rep(few_pal("Dark")(8)[3], 4), few_pal("Dark")(8)[4:9]), na.value="black") +
+  # geom_nodelab(aes(label = paste(node, round(x,2)))) +
+  scale_color_few("Dark") +
   coord_cartesian(clip = "off", expand = FALSE) +
+  # theme_minimal() +
   theme(plot.margin = margin(.5, 1.5, .5 , 1, unit = "line"), legend.position = "none")
 fig_t9consensus
+
+ggsave(here("output/figs/fig_t9trueconsensus.pdf"), fig_t5true + fig_t9consensus, device = cairo_pdf, width = wdt, height = hgt * 1.7, units = "cm")
+plot_crop(here("output/figs/fig_t9trueconsensus.pdf"))
 
 st_consensus <- read.newick(here("data/real/sino-tibet-ctmc-strict-bd-fossilsRemoved/sino-tibetan-ctmc-strict-bd-consensus.tree"))
 st_consensus$root.edge.length <- 0
