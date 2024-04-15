@@ -25,13 +25,14 @@ res_iecor = compute_survival_prob_by_ages(data_iecor$tree[[1]],n_sens=170)
 res_trans = compute_survival_prob_by_ages(data_trans$tree[[1]],n_sens=254)
 
 # Bind all res 
-df = cbind(res_st$data,res_bantu$data,res_iecor$data)
-df = df[, c(1,2,4,6)]
-colnames(df) = c("age","q_st","q_bantu","q_iecor")
+df = cbind(res_st$data,res_bantu$data,res_iecor$data, res_trans$data)
+df = df[, c(1,2,4,6,8)]
+colnames(df) = c("age","q_st","q_bantu","q_iecor", "q_tea")
 
 qs_tb <- mutate(res_st$data, family = "Sino-Tibetan") |> 
   bind_rows(mutate(res_bantu$data, family = "Bantu")) |> 
-  bind_rows(mutate(res_iecor$data, family = "Indo-European"))
+  bind_rows(mutate(res_iecor$data, family = "Indo-European")) |> 
+  bind_rows(mutate(res_trans$data, family = "Transeurasian"))
 write_csv(qs_tb, here("output/results/qs_tb.csv"))
 
 
