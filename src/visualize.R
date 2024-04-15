@@ -37,7 +37,6 @@ bounds_tb |>
   write_lines(here("output/tabs/tab_upperbound.tex"))
 
 bounds_byt_tb <- read_csv(here("output/results/bounds_byt_tb.csv"))
-
 fig_bounds <- bounds_byt_tb |>
   dplyr::filter(!str_detect(family, "subset")) |> 
   mutate(Delta = factor(Delta, levels = c("T", "R"))) |>
