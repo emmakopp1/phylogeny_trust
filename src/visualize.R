@@ -1,3 +1,4 @@
+library(here)
 library(tidyverse)
 library(ggthemes)
 library(knitr)
@@ -16,20 +17,23 @@ hgt <- wdt * .7
 bounds_tb <- read_csv(here("output/results/bounds_tb.csv"))
 bounds_tb |>
   mutate(across(where(is.numeric), ~ as.character(round(.x, 2)))) |>
+  mutate(DT = ifelse(DT >= 1, "\\geq 1", DT)) |> 
   arrange(family) |> 
-  pivot_longer(-family, names_to = " ") |>
-  mutate(value = str_replace(value, "(\\D{2,})", "{\\1}")) |>
+  pivot_longer(-family, names_to = "parameter") |>
+  mutate(value = str_replace(value, "^(\\D{2,})$", "{\\1}")) |>
   mutate(family = paste0("{", family, "}")) |>
-  mutate(` ` = str_replace(` `, "^(\\S+)$", "$\\1$")) |>
-  mutate(` ` = str_replace(` `, "D(?=[TR])", "\\\\Delta^")) |>
-  mutate(` ` = str_replace(` `, "inf_", "\\\\inf_{\\\\text{x}}\\\\{\\\\Delta^")) |>
-  mutate(` ` = str_replace(` `, "topo", "T(x) = 1\\\\}")) |>
-  mutate(` ` = str_replace(` `, "root", "R(x) = 1\\\\}")) |>
+  mutate(parameter = str_replace(parameter, "^(\\S+)$", "$\\1$")) |>
+  mutate(parameter = str_replace(parameter, "D(?=[TR])", "\\\\Delta^")) |>
+  mutate(parameter = str_replace(parameter, "inf_", "\\\\inf_{\\\\text{x}}\\\\{\\\\Delta^")) |>
+  mutate(parameter = str_replace(parameter, "topo", "T(x) = 1\\\\}")) |>
+  mutate(parameter = str_replace(parameter, "root", "R(x) = 1\\\\}")) |>
   pivot_wider(names_from = family) |>
-  mutate(` ` = str_replace(` `, "t\\$", "t$ (root age, ka BP)")) |> 
-  mutate(` ` = str_replace(` `, "k\\$", "k$ (number of traits)")) |> 
-  mutate(` ` = str_replace(` `, "N\\$", "N$ (number of languages)")) |> 
-  kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "S", "S", "S")) |>
+  mutate(parameter = str_replace(parameter, "t\\$", "t$ (root age, ka BP)")) |> 
+  mutate(parameter = str_replace(parameter, "k\\$", "k$ (number of traits)")) |> 
+  mutate(parameter = str_replace(parameter, "N\\$", "N$ (number of languages)")) |> 
+  mutate(parameter = ifelse(str_detect(parameter, "inf"), paste0(parameter, " (ka BP)"), parameter)) |>
+  rename(" " = parameter) |> 
+  kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "S", "S", "S", "S")) |>
   write_lines(here("output/tabs/tab_upperbound.tex"))
 
 bounds_byt_tb <- read_csv(here("output/results/bounds_byt_tb.csv"))
