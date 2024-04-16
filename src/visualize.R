@@ -8,7 +8,6 @@ font <- "Noto Sans SemiCondensed"
 theme_set(
   theme_minimal(base_family = font, base_size = 10) +
     theme(
-      axis.title.y = element_text(face = "italic"),
       legend.position = "bottom",
       aspect.ratio = .618
     )
@@ -46,7 +45,7 @@ fig_bounds <- bounds_byt_tb |>
   ggplot(aes(x = t, y = value, linetype = family, color = family)) +
   geom_line() +
   xlab("age (ka BP)") +
-  ylab(expression(Delta)) +
+  ylab("upper bound") +
   scale_color_few("Dark") +
   facet_wrap(~Delta, scales = "free", labeller = label_bquote(Delta^italic(.(as.character(Delta)))))
 ggsave(here("output/figs/fig_bounds.pdf"), fig_bounds, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
@@ -64,7 +63,7 @@ fig_bounds_bantu <- bounds_byt_tb |>
   ggplot(aes(x = t, y = value, linetype = `number of languages`, color = `number of languages`)) +
   geom_line() +
   xlab("age (ka BP)") +
-  ylab(expression(Delta)) +
+  ylab("upper bound") +
   scale_color_few("Dark") +
   facet_wrap(~Delta, scales = "free", labeller = label_bquote(Delta^italic(.(as.character(Delta)))))
 ggsave(here("output/figs/fig_bounds_bantu.pdf"), fig_bounds_bantu, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
@@ -86,7 +85,8 @@ fig_nodeprobs <- node_probs_tb |>
   ggplot(aes(x = factor(age), y = p, group = factor(age))) +
   geom_boxplot(fill = "gray90", outliers = FALSE) +
   geom_point(position = position_jitter(seed = 0, width = .3), size = 1.5, alpha = 1, color = few_pal("Dark")(2)[1], shape = 1) +
-  xlab("age (ka BP)")
+  xlab("age (ka BP)") +
+  ylab("proportion")
 ggsave(here("output/figs/fig_nodeprobs.pdf"), fig_nodeprobs, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
 plot_crop(here("output/figs/fig_nodeprobs.pdf"))
 
