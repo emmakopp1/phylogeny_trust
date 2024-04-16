@@ -107,7 +107,7 @@ compute_upper_bound_topology(
 # You can do the same by using the function compute_upper_bound_root
 
 t_values <- seq(0, 20, length.out = 100)
-fams <- c("Bantu", "Bantu subset", "Bantu subset 2", "Indo-European", "Sino-tibetan", "Transeurasian")
+fams <- c("Bantu", "Bantu subset", "Bantu subset 2", "Indo-European", "Sino-Tibetan", "Transeurasian")
 bounds_byt_tb <- tibble(
   t = rep(t_values, length(fams)),
   "Delta_T" = c(f_topology_bantu(t_values), f_topology_bantu_sub(t_values), f_topology_bantu_sub2(t_values), f_topology_iecor(t_values), f_topology_st(t_values), f_topology_trans(t_values)),
