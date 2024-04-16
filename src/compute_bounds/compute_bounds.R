@@ -96,7 +96,6 @@ compute_upper_bound_topology(
   data_iecor$param$n
 )
 
-
 compute_upper_bound_topology(
   data_trans$param$t,
   data_trans$param$k,
