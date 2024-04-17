@@ -234,7 +234,7 @@ Hachijo=20
         <parameter id="diversificationRateFBD.t:tree" spec="parameter.RealParameter" lower="0.0" name="stateNode">1.0</parameter>
         <parameter id="turnoverFBD.t:tree" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="1.0">0.5</parameter>
         <parameter id="samplingProportionFBD.t:tree" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="1.0">0.5</parameter>
-        <parameter id="originFBD.t:tree" spec="parameter.RealParameter" lower="0.0" name="stateNode">100.0</parameter>
+        <parameter id="originFBD.t:tree" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="100.0">97.0</parameter>
     </state>
     <init id="RandomTree.t:tree" spec="beast.evolution.tree.SimpleRandomTree" estimate="false" initial="@Tree.t:tree" taxa="@data2"/>
     <distribution id="posterior" spec="util.CompoundDistribution">
@@ -404,7 +404,7 @@ filter="::">
     <operator id="LeafToSAFBD.t:tree" spec="LeafToSampledAncestorJump" tree="@Tree.t:tree" weight="10.0"/>
     <operator id="SAWilsonBaldingFBD.t:tree" spec="SAWilsonBalding" tree="@Tree.t:tree" weight="10.0"/>
     <operator id="SAWideFBD.t:tree" spec="SAExchange" isNarrow="false" tree="@Tree.t:tree" weight="10.0"/>
-    <operator id="SANarrowFBD.t:tree" spec="SAExchange" tree="@Tree.t:tree" weight="10.0"/>
+    <operator id="SANarrowFBD.t:tree" spec="SAExchange" tree="@Tree.t:tree" weight="0.0"/>
     <operator id="SAUniformOperatorFBD.t:tree" spec="SAUniform" tree="@Tree.t:tree" weight="20.0"/>
     <operator id="SATreeRootScalerFBD.t:tree" spec="SAScaleOperator" rootOnly="true" scaleFactor="0.95" tree="@Tree.t:tree" weight="1.0"/>
     <operator id="SATreeScalerFBD.t:tree" spec="SAScaleOperator" scaleFactor="0.95" tree="@Tree.t:tree" weight="3.0"/>
