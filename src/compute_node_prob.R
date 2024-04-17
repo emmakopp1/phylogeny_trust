@@ -12,7 +12,7 @@ get_deepest_node = function(tree,N){
 
 
 # Initialisation of the node and the matrix of results
-path_true = here("data/simulated/beast-data-sim-5/tree-sim-5.tree/")
+path_true = here("data/simulated/beast-data-sim-5/tree-sim-5.tree")
 tree_true = read.tree(path_true)
 nodes = get_deepest_node(tree_true,10)
 res = matrix(NA,nrow = 17,ncol=10)
