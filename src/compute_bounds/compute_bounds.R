@@ -1,9 +1,7 @@
 # Load packages
 library(here)
 library(tidyverse)
-# library(dplyr)
-# library(jsonlite)
-# library("readr")
+
 
 # Config
 path_compute_bounds_function <- here("src/compute_bounds/functions.R")
@@ -103,6 +101,15 @@ compute_upper_bound_topology(
   data_trans$param$n
 )
 
+compute_upper_bound_root(
+  t=data_st$param$t, 
+  Q=data_st$param$Q, 
+  n=data_st$param$n, 
+  pi0=data_st$param$pi0, 
+  pi1=data_st$param$pi1
+)
+
+
 # You can do the same by using the function compute_upper_bound_root
 
 t_values <- seq(0, 20, length.out = 100)
@@ -135,13 +142,13 @@ inf_topology_iecor
 
 # For root
 # Sino-tibetain
-inf_root_st <- find_t_value_root(data_st$param$Q, data_st$param$n)
+inf_root_st <- find_t_value_root(data_st$param$Q, data_st$param$n, data_st$param$pi0, data_st$param$pi1)
 inf_root_st
 
 # Bantu
-inf_root_bantu <- find_t_value_root(data_bantu$param$Q, data_bantu$param$n)
+inf_root_bantu <- find_t_value_root(data_bantu$param$Q, data_bantu$param$n, data_bantu$param$pi0, data_bantu$param$pi1)
 inf_root_bantu
 
 # Iecor
-inf_root_iecor <- find_t_value_root(data_iecor$param$Q, data_iecor$param$n)
+inf_root_iecor <- find_t_value_root(data_iecor$param$Q, data_iecor$param$n, data_iecor$param$pi0, data_iecor$param$pi1)
 inf_root_iecor

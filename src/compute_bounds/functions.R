@@ -78,16 +78,16 @@ path_to_trees <- function(path, n_tree) {
 }
 
 # This function computes the bounds
-compute_bounds <- function(path, pi0, pi1) {
+#compute_bounds <- function(path, pi0, pi1) {
   # Import tree
-  tree <- path_to_trees(path)
+  #tree <- path_to_trees(path)
   # Parameters
-  par <- get_tree_param(tree, pi0, pi1)
-  return(c(
-    compute_upper_bound_root(par$t, par$Q, par$n),
-    compute_upper_bound_topology(par$t, par$k, par$Q, par$n)
-  ))
-}
+  #par <- get_tree_param(tree, pi0, pi1)
+  #return(c(
+  #  compute_upper_bound_root(par$t, par$Q, par$n),
+  #  compute_upper_bound_topology(par$t, par$k, par$Q, par$n)
+  #))
+#}
 
 # This function computes the substitution model transition matrix
 compute_chain <- function(pi0, pi1) {
@@ -101,7 +101,7 @@ get_tree_param <- function(tree, pi0, pi1, k, t) {
   Q <- compute_chain(pi0, pi1)
   n <- mean(sapply(tree, function(arbre) length(arbre$tip.label)))
 
-  return(list(n = n, t = t, k = k, Q = Q))
+  return(list(n = n, t = t, k = k, Q = Q, pi0 = pi0, pi1 = pi1))
 }
 
 
@@ -112,9 +112,10 @@ compute_q <- function(Q) {
 
 # This function computes the upper bound of the probability of the exact root
 # reconstruction
-compute_upper_bound_root <- function(t, Q, n) {
+compute_upper_bound_root <- function(t, Q, n, pi0, pi1) {
+  m <- max(pi0,pi1)
   q <- compute_q(Q)
-  return(0.5 + n * exp(-q * t))
+  return(m + n * exp(-q * t))
 }
 
 # This function computes the upper bound of the probability of the exact topology
@@ -130,7 +131,7 @@ compute_upper_bound_topology <- function(t, k, Q, n) {
 vectorize_function <- function(f, param, type) {
   if (type == "root") {
     return(
-      Vectorize(function(t) min(1, f(t, param$Q, param$n)))
+      Vectorize(function(t) min(1, f(t, param$Q, param$n, param$pi0, param$pi1)))
     )
   }
 
@@ -155,9 +156,9 @@ find_t_value <- function(k, Q, n, tolerance = 1e-6, max_iter = 1000) {
   return(result$root)
 }
 
-find_t_value_root <- function(Q, n, tolerance = 1e-6, max_iter = 1000) {
+find_t_value_root <- function(Q, n, pi0, pi1, tolerance = 1e-6, max_iter = 1000) {
   objective_function <- function(t) {
-    return(compute_upper_bound_root(t, Q, n) - 1)
+    return(compute_upper_bound_root(t, Q, n, pi0, pi1) - 1)
   }
 
   result <- uniroot(objective_function, interval = c(0, 20), tol = tolerance, maxiter = max_iter)
