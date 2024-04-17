@@ -16,7 +16,7 @@
 	"6.965"
     ],
     "iecor" : [
-        "data/real/IECoR-cov-strict-bd/IECoR2-chr_1695819208636.trees",
+        "data/real/IECoR-ctmc-strict-fbd/IECoR2-chr_1695819208636.trees",
         "0.996",
         "4.297E-3",
         "4990",
