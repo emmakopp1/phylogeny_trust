@@ -52,11 +52,11 @@ dt_params <- list(
 bounds_tb <- dt_params |>
   map_df(
     ~ tibble(
-      t = .x$t, k = .x$k, N = .x$n,
+      t = .x$t, k = .x$k, N = .x$n, pi0 = .x$pi0, pi1 = .x$pi1,
       DT = compute_upper_bound_topology(t, k, .x$Q, N),
-      DR = compute_upper_bound_root(t, .x$Q, N),
+      DR = compute_upper_bound_root(t, .x$Q, N, pi0, pi1),
       inf_topo = find_t_value(k, .x$Q, N),
-      inf_root = find_t_value_root(.x$Q, N)
+      inf_root = find_t_value_root(.x$Q, N, pi0, pi1)
     )
   ) |>
   mutate(
