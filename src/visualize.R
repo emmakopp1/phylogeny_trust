@@ -24,8 +24,9 @@ bounds_tb |>
   pivot_longer(-family, names_to = "parameter") |>
   mutate(value = str_replace(value, "^(\\D{2,})$", "{\\1}")) |>
   mutate(family = paste0("{", family, "}")) |>
+  mutate(parameter = str_replace(parameter, "pi", "\\\\pi_")) |>
   mutate(parameter = str_replace(parameter, "^(\\S+)$", "$\\1$")) |>
-  mutate(parameter = str_replace(parameter, "\\$D([TR])\\$", "upper bound of $\\\\Delta^\\1(t_R)$")) |>
+  mutate(parameter = str_replace(parameter, "\\$D([TS])\\$", "upper bound of $\\\\Delta^\\1(t_R)$")) |>
   mutate(parameter = str_replace(parameter, "inf_", "\\\\inf_{\\\\text{t}}\\\\{\\\\Delta^")) |>
   mutate(parameter = str_replace(parameter, "topo", "T(t) = 1\\\\}")) |>
   mutate(parameter = str_replace(parameter, "root", "R(t) = 1\\\\}")) |>
