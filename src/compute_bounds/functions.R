@@ -99,11 +99,16 @@ compute_chain <- function(pi0, pi1) {
 
 get_tree_param <- function(tree, pi0, pi1, k, t) {
   Q <- compute_chain(pi0, pi1)
-  n <- mean(sapply(tree, function(arbre) length(arbre$tip.label)))
+  n <- n_extant_languages(path_nex)
 
   return(list(n = n, t = t, k = k, Q = Q, pi0 = pi0, pi1 = pi1))
 }
 
+
+n_extant_languages = function(path_nex){
+  data = read.nexus.data(path_nex)
+  return(length(names(data)))
+}
 
 compute_q <- function(Q) {
   d <- as.numeric(dim(Q)[1])

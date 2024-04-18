@@ -55,7 +55,16 @@ path = "/Users/kopp/Documents/transeurasienne/beast/trans-ctmc-strict-fbd/data2.
 
 
 
+# Liste des langues à supprimer
+path_out = "data/real/trans-ctmc-strict-bd-fossilsRemoved/data.nex"
+path_in = "/Users/kopp/Documents/transeurasienne/data.nex"
 
+df = read.nexus.data(path_in)
+
+ancestors <- c("CodexCumanicus", "Jurchen", "Manchu", "Middle_Mongolian_(Muqaddimat_al-adab)", "Middle_Mongolian_(Secret_History)","OldTurkic")
+
+# Supprimer les langues de la liste tt
+tt <- subset(tt, !names(tt) %in% ancestors)
 
 
 
