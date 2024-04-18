@@ -5,7 +5,15 @@
 .DS_Store
 .Rapp.history
 .Rproj
-ctmc-strict-bd.trees
+bantu_ctmc-strict-bd.trees
+bantu_ctmc-strict-bd-subsample.trees
+bantu_ctmc-strict-bd-subsample2.trees
+iecor_cov-strict-bd.trees
+iecor_ctmc-strict-bd-fossilsRemoved.trees
+st_ctmc-strict-bd-fossilRemoved.trees
+tea_ctmc-strict-bd-fossilsRemoved.trees
+tea_ctmc-strict-fbd.trees
+
 ctmc-strict-bd.trees.zip
 IECoR2-chr_1695819208636.log.permeaning
 IECoR2-chr_1695819208636.trees

@@ -60,14 +60,18 @@ path = "/Users/kopp/Documents/transeurasienne/beast/trans-ctmc-strict-fbd/data2.
 path_out = "/Users/kopp/Documents/phylogeny_trust/data/real/sino-tibet-ctmc-strict-bd-fossilsRemoved/sino-tibetanfossilRemoved.nex"
 path_in = "/Users/kopp/Documents/sino-tibetan/sino-tibetan.nex"
 
-library(ape)
-df = read.nexus.data(
-  "/Users/kopp/Desktop/tea254.nex")
+
+library(TreeTools)
+library(here)
+tt=ReadAsPhyDat(here("data/real/trans-ctmc-strict-fbd/data2.nex"))
+
+
+
+
+
+
 
 ancestors <- c("SiniticOldChinese", "TibetanOldTibetan", "Tangut", "BurmishOldBurmese")
-
-# Supprimer les langues de la liste tt
 df <- subset(df, !names(df) %in% ancestors)
-
 write.nexus.data(df,file= path_out,format='standard',missing='?')
 
