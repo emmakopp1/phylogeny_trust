@@ -1,92 +1,87 @@
 library(here)
 library(tidyverse)
-library(jsonlite)
-
+library(TreeTools)
 library(tracerer)
 
-list.dirs(here("data/real/"), full.names = TRUE, recursive = FALSE) |> 
-  map(~
-      # list.files(.x, "\\.log")
-      list.files(.x, "\\.trees")
-  )
-
-logfile <- here("data/real/sino-tibet-ctmc-strict-bd-fossilsRemoved/sino-tibetan-ctmc-strict-bd.log")
-# logfile <- here("data/real/IECoR-ctmc-strict-fbd/IECoR2-chr_1695819208636.log")
-beast_log_full <- parse_beast_tracelog_file(logfile)
-beast_log <- remove_burn_ins(beast_log_full, burn_in_fraction = 0.2)
-beast_log |> 
-  as_tibble() |> 
-  select(starts_with("freqParameter"), TreeHeight.t.tree) |> 
-  summarise(across(everything(), ~ mean(.x))) |> 
-  rename_all(str_replace, pattern = "freq.+(\\d)", replacement = "pi\\1") |> 
-  rename(pi0 = pi1, pi1 = pi2, t_R = TreeHeight.t.tree) |> 
-  mutate(nTrees = max(beast_log$Sample)) |> 
-  mutate(family = "Sino-Tibetan") |> 
-  relocate(family, .before = pi0)
-
-cfg <- here("src/compute_bounds/config.json")
-dt <- fromJSON(cfg) |> 
-  as_tibble() |> 
-  mutate(parameter = c("path", "pi0", "pi1", "k", "path_cognates", "t_conv")) |> 
-  pivot_longer(-parameter, names_to = "family") |>
-  pivot_wider(names_from = parameter) |> 
-  relocate(path_cognates, .after = path) |> 
-  mutate(across(4:7, as.numeric))
-
-
-# This function computes the substitution model transition matrix
-compute_chain <- function(pi0, pi1) {
-  return(1 / (pi0^2 + pi1^2) * as.matrix(rbind(c(-pi0, pi0), c(pi1, -pi1))))
+# Compute the upper bound of the probability of inferring the true tree topology
+compute_upperbound_DT <- function(k, N, q, t) {
+  k * N * exp(-q * t)
 }
 
-Q <- compute_chain(dt$pi0[1], dt$pi1[1])
-
-get_tree_param <- function(tree, pi0, pi1, k, t) {
-  Q <- compute_chain(pi0, pi1)
-  n <- mean(sapply(tree, function(arbre) length(arbre$tip.label)))
-  return(list(n = n, t = t, k = k, Q = Q, pi0 = pi0, pi1 = pi1))
+# Compute the upper bound of the probability of correctly inferring ancestral states
+compute_upperbound_DS <- function(pi0, pi1, N, q, t) {
+  max(pi0, pi1) + N * exp(-q * t)
 }
 
-
-compute_q <- function(Q) {
-  d <- as.numeric(dim(Q)[1])
-  return(sum(apply(Q + 100 * diag(d), 2, min)))
+# Compute the time threshold beyond which the upper bound of the probability
+# of inferring the true tree topology falls below 1
+compute_inf_t_DT <- function(k, N, q, t, interval = c(0, 20), tol = 1e-6, maxiter = 1000) {
+  uniroot(function(t) {
+    compute_upperbound_DT(k, N, q, t) - 1
+  }, interval = interval, tol = tol, maxiter = maxiter)$root
 }
 
-compute_q(Q)
-# This function computes the upper bound of the probability of the exact topology
-# reconstruction
-compute_upper_bound_topology <- function(t, k, Q, n) {
-  d <- as.numeric(dim(Q)[1])
-  q <- sum(apply(Q + 100 * diag(d), 2, min))
-  return(k * n * exp(-q * t))
+# Compute the time threshold beyond which the upper bound of the probability
+# correctly inferring ancestral states falls below 1
+compute_inf_t_DS <- function(pi0, pi1, N, q, t, interval = c(0, 20), tol = 1e-6, maxiter = 1000) {
+  uniroot(function(t) {
+    compute_upperbound_DS(pi0, pi1, N, q, t) - 1
+  }, interval = interval, tol = tol, maxiter = maxiter)$root
 }
 
-pi0 <- dt$pi0[1]
-pi1 <- dt$pi1[1]
-k <- 3785
-N <- 46
-t <- 8.867
+# Get the number of taxa and traits from a nexus file
+get_nexus_parameters <- function(file) {
+  phydt <- ReadAsPhyDat(file)
+  tibble(N = length(attributes(phydt)$names), k = length(attributes(phydt)$index))
+}
 
-Q <- 1 / (pi0^2 + pi1^2) * as.matrix(rbind(c(-pi0, pi0), c(pi1, -pi1)))
-d <- as.numeric(dim(Q)[1])
-q <- sum(apply(Q + 100 * diag(d), 2, min))
-k * N * exp(-q * t)
+# Get the values of pi0, pi1, the number of generated trees, and compute q
+# from a BEAST .log file
+get_tracerlog_parameters <- function(file, burnin = 0.2) {
+  beast_log_full <- parse_beast_tracelog_file(file)
+  beast_log <- remove_burn_ins(beast_log_full, burn_in_fraction = burnin)
+  beast_log |>
+    select(starts_with("freqParameter"), TreeHeight.t.tree) |>
+    summarise(across(everything(), ~ mean(.x))) |>
+    rename_all(str_replace, pattern = "freq.+(\\d)", replacement = "pi\\1") |>
+    rename(pi0 = pi1, pi1 = pi2, t_R = TreeHeight.t.tree) |>
+    mutate(q = 1 / (pi0^2 + pi1^2)) |>
+    mutate(nTrees = max(beast_log$Sample)) |>
+    relocate(q, .after = pi1)
+}
+
+# Combire all of the above
+get_all_parameters <- function(logfile, nexusfile, burnin = 0.2, interval = c(0, 20), tol = 1e-6, maxiter = 1000) {
+  bind_cols(
+    get_nexus_parameters(nexusfile),
+    get_tracerlog_parameters(logfile)
+  ) |>
+    relocate(nTrees, .before = pi0) |>
+    mutate(ub_DT = compute_upperbound_DT(k, N, q, t_R)) |>
+    mutate(ub_DS = compute_upperbound_DS(pi0, pi1, N, q, t_R)) |>
+    mutate(inf_t_DT = compute_inf_t_DT(k, N, q, t_R)) |>
+    mutate(inf_t_DS = compute_inf_t_DS(pi0, pi1, N, q, t_R))
+}
+
+dt <- list.dirs(here("data/real"), full.names = TRUE, recursive = FALSE) |>
+  # str_subset("sino") |>
+  map_df(function(x) {
+    d <- str_remove_all(x, ".*/")
+    logfile <- list.files(x, "\\.log", full.names = TRUE)
+    nexusfile <- list.files(x, "\\.nex", full.names = TRUE)
+    if (length(logfile) > 0 & length(nexusfile) > 0) {
+      bind_cols(tibble(d), get_all_parameters(logfile, nexusfile))
+    } else {
+      tibble(d)
+    }
+  })
+
 
 t_values <- seq(0, 20, length.out = 101)
 
 (k * N * exp(-q * t_values))
-# This function computes the upper bound of the probability of the exact root
-# reconstruction
-compute_upper_bound_root <- function(t, Q, n, pi0, pi1) {
-  m <- max(pi0,pi1)
-  q <- compute_q(Q)
-  return(m + n * exp(-q * t))
-}
 
-m <- max(pi0,pi1)
-q <- sum(apply(Q + 100 * diag(d), 2, min))
-m + N * exp(-q * t)
+
 
 
 # -------------- Infima of both bounds -----------------
@@ -96,23 +91,19 @@ find_t_value <- function(k, Q, n, tolerance = 1e-6, max_iter = 1000) {
   objective_function <- function(t) {
     return(compute_upper_bound_topology(t, k, Q, n) - 1)
   }
-  
   result <- uniroot(objective_function, interval = c(0, 20), tol = tolerance, maxiter = max_iter)
-  
   return(result$root)
 }
 
-f <- function(x) {(k * N * exp(-q * x)) - 1}
-uniroot(function(x) {(k * N * exp(-q * x)) - 1}, interval = c(0, 20), tol = 1e-6, maxiter = 1000)$root
+
+
 
 
 find_t_value_root <- function(Q, n, pi0, pi1, tolerance = 1e-6, max_iter = 1000) {
   objective_function <- function(t) {
     return(compute_upper_bound_root(t, Q, n, pi0, pi1) - 1)
   }
-  
+
   result <- uniroot(objective_function, interval = c(0, 20), tol = tolerance, maxiter = max_iter)
   return(result$root)
 }
-
-
