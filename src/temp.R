@@ -22,7 +22,7 @@ compute_inf_t_DT <- function(k, N, q, t, interval = c(0, 20), tol = 1e-6, maxite
 }
 
 # Compute the time threshold beyond which the upper bound of the probability
-# correctly inferring ancestral states falls below 1
+# of correctly inferring ancestral states falls below 1
 compute_inf_t_DS <- function(pi0, pi1, N, q, t, interval = c(0, 20), tol = 1e-6, maxiter = 1000) {
   uniroot(function(t) {
     compute_upperbound_DS(pi0, pi1, N, q, t) - 1
@@ -50,7 +50,7 @@ get_tracerlog_parameters <- function(file, burnin = 0.2) {
     relocate(q, .after = pi1)
 }
 
-# Combire all of the above
+# Combine all of the above
 get_all_parameters <- function(logfile, nexusfile, burnin = 0.2, interval = c(0, 20), tol = 1e-6, maxiter = 1000) {
   bind_cols(
     get_nexus_parameters(nexusfile),
@@ -63,8 +63,8 @@ get_all_parameters <- function(logfile, nexusfile, burnin = 0.2, interval = c(0,
     mutate(inf_t_DS = compute_inf_t_DS(pi0, pi1, N, q, t_R))
 }
 
+# Run get_all_parameters on the files within each folder
 dt <- list.dirs(here("data/real"), full.names = TRUE, recursive = FALSE) |>
-  # str_subset("sino") |>
   map_df(function(x) {
     d <- str_remove_all(x, ".*/")
     logfile <- list.files(x, "\\.log", full.names = TRUE)
@@ -83,4 +83,4 @@ dt |>
 t_values <- seq(0, 20, length.out = 101)
 
 
-(k * N * exp(-q * t_values))
+# (k * N * exp(-q * t_values))
