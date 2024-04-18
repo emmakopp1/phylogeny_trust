@@ -65,6 +65,7 @@ get_all_parameters <- function(logfile, nexusfile, burnin = 0.2, interval = c(0,
 
 # Run get_all_parameters on the files within each folder
 dt <- list.dirs(here("data/real"), full.names = TRUE, recursive = FALSE) |>
+  str_subset("/iecor_co", negate = TRUE) |>
   map_df(function(x) {
     d <- str_remove_all(x, ".*/")
     logfile <- list.files(x, "\\.log", full.names = TRUE)
@@ -76,11 +77,16 @@ dt <- list.dirs(here("data/real"), full.names = TRUE, recursive = FALSE) |>
     }
   })
 
-dt |> 
-  filter(!is.na(N))
-
-
 t_values <- seq(0, 20, length.out = 101)
 
+dt |> 
+  filter(!is.na(N)) |> 
+  select(d, N, k, pi0, pi1, q) |> 
+  mutate(count = length(t_values)) |> 
+  uncount(count) |> 
+  group_by(d) |> 
+  mutate(t = t_values) |> 
+  mutate(ub_DT = compute_upperbound_DT(k, N, q, t)) |> 
+  mutate(ub_DS = compute_upperbound_DS(pi0, pi1, N, q, t)) |> 
+  filter(t == max(t))
 
-# (k * N * exp(-q * t_values))
