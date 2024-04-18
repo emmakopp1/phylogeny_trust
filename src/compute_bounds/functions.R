@@ -8,6 +8,7 @@ library(castor)
 library(latex2exp)
 library(dplyr)
 library(jsonlite)
+library(TreeTools)
 
 
 # ----------- To compute bounds  ----------------
