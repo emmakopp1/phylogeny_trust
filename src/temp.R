@@ -75,18 +75,46 @@ dt <- list.dirs(here("data/real"), full.names = TRUE, recursive = FALSE) |>
     } else {
       tibble(d)
     }
-  })
+  }) |> 
+  filter(!is.na(N)) |> 
+  mutate(d = case_when(
+    str_detect(d, "^bantu.+subsample$") ~ "Bantu subset",
+    str_detect(d, "^bantu.+subsample2$") ~ "Bantu subset 2",
+    str_detect(d, "^bantu") ~ "Bantu",
+    str_detect(d, "^ie") ~ "Indo-European",
+    str_detect(d, "^st") ~ "Sino-Tibetan",
+    str_detect(d, "^tea") ~ "Trans-Eurasian",
+  )) |> 
+  rename(family = d)
+
+
+library(kableExtra)
+clnms <- c("family", paste0("{$", c("N", "k", "\\pi_0", "\\pi_1", "q", "t_R", "\\Delta^T", "\\Delta^S", "\\inf_t\\{\\Delta^R(t) = 1\\}", "\\inf_t\\{\\Delta^S(t) = 1\\}"), "$}"))
+dt |> 
+  select(-nTrees) |> 
+  mutate(ub_DT = ifelse(ub_DT >= 1, "\\geq 1", round(ub_DT, 2))) |> 
+  mutate(ub_DS = ifelse(ub_DS >= 1, "\\geq 1", round(ub_DS, 2))) |> 
+  kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "r", "r", rep("S", 8)), digits = 2, col.names = clnms) |> 
+  add_header_above(c(" " = 7, "upper bound" = 2, "threshold age" = 2), line = FALSE)
 
 t_values <- seq(0, 20, length.out = 101)
 
 dt |> 
-  filter(!is.na(N)) |> 
-  select(d, N, k, pi0, pi1, q) |> 
+  group_by(family) |> 
+  slice(1) |> 
   mutate(count = length(t_values)) |> 
   uncount(count) |> 
-  group_by(d) |> 
   mutate(t = t_values) |> 
+  ungroup() |> 
   mutate(ub_DT = compute_upperbound_DT(k, N, q, t)) |> 
   mutate(ub_DS = compute_upperbound_DS(pi0, pi1, N, q, t)) |> 
-  filter(t == max(t))
+  rowwise() |> 
+  mutate(ub_DT = min(1, ub_DT)) |> 
+  mutate(ub_DS = min(1, ub_DS)) |> 
+  ggplot(aes(x = t, y = ub_DS, linetype = family, color = family)) +
+  geom_line() +
+  xlab("age (ka BP)") +
+  ylab("upper bound") +
+  theme_minimal() +
+  ggthemes::scale_color_few("Dark")
 
