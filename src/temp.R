@@ -76,34 +76,11 @@ dt <- list.dirs(here("data/real"), full.names = TRUE, recursive = FALSE) |>
     }
   })
 
+dt |> 
+  filter(!is.na(N))
+
 
 t_values <- seq(0, 20, length.out = 101)
 
+
 (k * N * exp(-q * t_values))
-
-
-
-
-# -------------- Infima of both bounds -----------------
-
-
-find_t_value <- function(k, Q, n, tolerance = 1e-6, max_iter = 1000) {
-  objective_function <- function(t) {
-    return(compute_upper_bound_topology(t, k, Q, n) - 1)
-  }
-  result <- uniroot(objective_function, interval = c(0, 20), tol = tolerance, maxiter = max_iter)
-  return(result$root)
-}
-
-
-
-
-
-find_t_value_root <- function(Q, n, pi0, pi1, tolerance = 1e-6, max_iter = 1000) {
-  objective_function <- function(t) {
-    return(compute_upper_bound_root(t, Q, n, pi0, pi1) - 1)
-  }
-
-  result <- uniroot(objective_function, interval = c(0, 20), tol = tolerance, maxiter = max_iter)
-  return(result$root)
-}
