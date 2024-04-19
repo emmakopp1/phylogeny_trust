@@ -65,14 +65,15 @@ get_all_parameters <- function(logfile, nexusfile, burnin = 0.2, interval = c(0,
 }
 
 # Run get_all_parameters on the files within each folder
-dt <- list.dirs(here("data/real"), full.names = TRUE, recursive = FALSE) |>
+dt_real <- list.dirs(here("data/real"), full.names = TRUE, recursive = FALSE) |>
   str_subset("/iecor_co", negate = TRUE) |>
   map_df(function(x) {
     d <- str_remove_all(x, ".*/")
     logfile <- list.files(x, "\\.log", full.names = TRUE)
     nexusfile <- list.files(x, "\\.nex", full.names = TRUE)
+    burnin <- ifelse(str_detect(x, "^tea"), .8, .2)
     if (length(logfile) > 0 & length(nexusfile) > 0) {
-      bind_cols(tibble(d), get_all_parameters(logfile, nexusfile))
+      bind_cols(tibble(d), get_all_parameters(logfile, nexusfile, burnin = burnin))
     } else {
       tibble(d)
     }
@@ -86,7 +87,14 @@ dt <- list.dirs(here("data/real"), full.names = TRUE, recursive = FALSE) |>
     str_detect(d, "^st") ~ "Sino-Tibetan",
     str_detect(d, "^tea") ~ "Trans-Eurasian",
   )) |>
-  rename(family = d)
+  rename(family = d) |> 
+  group_by(family) |> 
+  slice(1)
+write_csv(dt_real, here("output/results/bounds_real_tb.csv"))
+
+
+
+
 
 dt_sim <- list.dirs(here("data/simulated"), full.names = TRUE, recursive = FALSE) |>
   map_df(function(x) {
@@ -99,10 +107,6 @@ dt_sim <- list.dirs(here("data/simulated"), full.names = TRUE, recursive = FALSE
   rename(family = d) |> 
   arrange(family)
 
-dt_sim |> 
-  select(family, pi0, pi1, t_R) |> 
-  kbl("markdown")
-
 
 simtr <- treeio::read.tree(here("data/simulated/beast-data-sim-10/tree-sim-10.tree"))
 max(castor::get_all_pairwise_distances(simtr)[, Ntip(simtr)+1], na.rm = TRUE)
@@ -110,14 +114,7 @@ max(castor::get_all_pairwise_distances(simtr)[, Ntip(simtr)+1], na.rm = TRUE)
 read.nexus(here("data/simulated/beast-data-sim-1/ctmc-strict-bd-1.trees"))
 
 
-library(kableExtra)
-clnms <- c("family", paste0("{$", c("N", "k", "\\pi_0", "\\pi_1", "q", "t_R", "\\Delta^T(t_R)", "\\Delta^S(t_R)", "\\inf_t\\{\\Delta^R(t) = 1\\}", "\\inf_t\\{\\Delta^S(t) = 1\\}"), "$}"))
-dt |>
-  select(-nTrees) |>
-  mutate(ub_DT = ifelse(ub_DT >= 1, "\\geq 1", round(ub_DT, 2))) |>
-  mutate(ub_DS = ifelse(ub_DS >= 1, "\\geq 1", round(ub_DS, 2))) |>
-  kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "r", "r", rep("S", 8)), digits = 2, col.names = clnms) |>
-  add_header_above(c(" " = 7, "upper bound" = 2, "threshold age" = 2), line = FALSE)
+
 
 t_values <- seq(0, 20, length.out = 101)
 

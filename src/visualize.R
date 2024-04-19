@@ -16,27 +16,36 @@ wdt <- 14
 hgt <- wdt * .7
 
 
-bounds_tb <- read_csv(here("output/results/bounds_tb.csv"),show_col_types = FALSE)
+# bounds_tb <- read_csv(here("output/results/bounds_tb.csv"),show_col_types = FALSE)
+# bounds_tb |>
+#   mutate(across(where(is.numeric), ~ as.character(round(.x, 2)))) |>
+#   mutate(DT = ifelse(DT >= 1, "\\geq 1", DT)) |>
+#   arrange(family) |>
+#   pivot_longer(-family, names_to = "parameter") |>
+#   mutate(value = str_replace(value, "^(\\D{2,})$", "{\\1}")) |>
+#   mutate(family = paste0("{", family, "}")) |>
+#   mutate(parameter = str_replace(parameter, "pi", "\\\\pi_")) |>
+#   mutate(parameter = str_replace(parameter, "^(\\S+)$", "$\\1$")) |>
+#   mutate(parameter = str_replace(parameter, "\\$D([TS])\\$", "upper bound of $\\\\Delta^\\1(t_R)$")) |>
+#   mutate(parameter = str_replace(parameter, "inf_", "\\\\inf_t\\\\{\\\\Delta^")) |>
+#   mutate(parameter = str_replace(parameter, "topo", "T(t) = 1\\\\}")) |>
+#   mutate(parameter = str_replace(parameter, "root", "R(t) = 1\\\\}")) |>
+#   pivot_wider(names_from = family) |>
+#   mutate(parameter = str_replace(parameter, "t\\$", "t_R$ (root age, ka BP)")) |>
+#   mutate(parameter = str_replace(parameter, "k\\$", "k$ (number of traits)")) |>
+#   mutate(parameter = str_replace(parameter, "N\\$", "N$ (number of languages)")) |>
+#   mutate(parameter = ifelse(str_detect(parameter, "inf"), paste0(parameter, " (ka BP)"), parameter)) |>
+#   rename(" " = parameter) |>
+#   kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "S", "S", "S", "S")) |>
+#   write_lines(here("output/tabs/tab_upperbound.tex"))
+bounds_tb <- read_csv(here("output/results/bounds_real_tb.csv"),show_col_types = FALSE)
+clnms <- c("family", paste0("\\multicolumn{1}{c}{$", c("N", "k", "\\pi_0", "\\pi_1", "q", "t_R", "\\Delta^T(t_R)", "\\Delta^S(t_R)", "\\inf_t\\{\\Delta^R(t) = 1\\}", "\\inf_t\\{\\Delta^S(t) = 1\\}"), "$}"))
 bounds_tb |>
-  mutate(across(where(is.numeric), ~ as.character(round(.x, 2)))) |>
-  mutate(DT = ifelse(DT >= 1, "\\geq 1", DT)) |>
-  arrange(family) |>
-  pivot_longer(-family, names_to = "parameter") |>
-  mutate(value = str_replace(value, "^(\\D{2,})$", "{\\1}")) |>
-  mutate(family = paste0("{", family, "}")) |>
-  mutate(parameter = str_replace(parameter, "pi", "\\\\pi_")) |>
-  mutate(parameter = str_replace(parameter, "^(\\S+)$", "$\\1$")) |>
-  mutate(parameter = str_replace(parameter, "\\$D([TS])\\$", "upper bound of $\\\\Delta^\\1(t_R)$")) |>
-  mutate(parameter = str_replace(parameter, "inf_", "\\\\inf_t\\\\{\\\\Delta^")) |>
-  mutate(parameter = str_replace(parameter, "topo", "T(t) = 1\\\\}")) |>
-  mutate(parameter = str_replace(parameter, "root", "R(t) = 1\\\\}")) |>
-  pivot_wider(names_from = family) |>
-  mutate(parameter = str_replace(parameter, "t\\$", "t_R$ (root age, ka BP)")) |>
-  mutate(parameter = str_replace(parameter, "k\\$", "k$ (number of traits)")) |>
-  mutate(parameter = str_replace(parameter, "N\\$", "N$ (number of languages)")) |>
-  mutate(parameter = ifelse(str_detect(parameter, "inf"), paste0(parameter, " (ka BP)"), parameter)) |>
-  rename(" " = parameter) |>
-  kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "S", "S", "S", "S")) |>
+  select(-nTrees) |>
+  mutate(ub_DT = ifelse(ub_DT >= 1, "\\geq 1", round(ub_DT, 2))) |>
+  mutate(ub_DS = ifelse(ub_DS >= 1, "\\geq 1", round(ub_DS, 2))) |>
+  kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "r", "r", rep("S", 8)), digits = 2, col.names = clnms) |>
+  add_header_above(c(" " = 7, "upper bound" = 2, "threshold age" = 2), line = FALSE) |> 
   write_lines(here("output/tabs/tab_upperbound.tex"))
 
 bounds_byt_tb <- read_csv(here("output/results/bounds_byt_tb.csv"),show_col_types = FALSE)
