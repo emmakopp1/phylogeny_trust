@@ -16,7 +16,7 @@ wdt <- 14
 hgt <- wdt * .7
 
 
-bounds_tb <- read_csv(here("output/results/bounds_tb.csv"))
+bounds_tb <- read_csv(here("output/results/bounds_tb.csv"),show_col_types = FALSE)
 bounds_tb |>
   mutate(across(where(is.numeric), ~ as.character(round(.x, 2)))) |>
   mutate(DT = ifelse(DT >= 1, "\\geq 1", DT)) |>
@@ -39,7 +39,7 @@ bounds_tb |>
   kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "S", "S", "S", "S")) |>
   write_lines(here("output/tabs/tab_upperbound.tex"))
 
-bounds_byt_tb <- read_csv(here("output/results/bounds_byt_tb.csv"))
+bounds_byt_tb <- read_csv(here("output/results/bounds_byt_tb.csv"),show_col_types = FALSE)
 fig_bounds <- bounds_byt_tb |>
   dplyr::filter(!str_detect(family, "subset")) |>
   mutate(Delta = factor(Delta, levels = c("T", "R"))) |>
@@ -70,7 +70,7 @@ fig_bounds_bantu <- bounds_byt_tb |>
 ggsave(here("output/figs/fig_bounds_bantu.pdf"), fig_bounds_bantu, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
 plot_crop(here("output/figs/fig_bounds_bantu.pdf"))
 
-qs_tb <- read_csv(here("output/results/qs_tb.csv"))
+qs_tb <- read_csv(here("output/results/qs_tb.csv"),show_col_types = FALSE)
 fig_qs <- qs_tb |>
   ggplot(aes(x = age, y = q_theo, group = family, color = family, linetype = family)) +
   geom_line() +
@@ -81,7 +81,7 @@ fig_qs <- qs_tb |>
 ggsave(here("output/figs/fig_qs.pdf"), fig_qs, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
 plot_crop(here("output/figs/fig_qs.pdf"))
 
-node_probs_tb <- read_csv(here("output/results/node_probs_tb.csv"))
+node_probs_tb <- read_csv(here("output/results/node_probs_tb.csv"),show_col_types = FALSE)
 fig_nodeprobs <- node_probs_tb |>
   ggplot(aes(x = factor(age), y = p, group = factor(age))) +
   geom_boxplot(fill = "gray90", outliers = FALSE) +
@@ -163,7 +163,7 @@ fig_t9consensus
 ggsave(here("output/figs/fig_t9trueconsensus.pdf"), fig_t5true + fig_t9consensus, device = cairo_pdf, width = wdt, height = hgt * 1.7, units = "cm")
 plot_crop(here("output/figs/fig_t9trueconsensus.pdf"))
 
-st_consensus <- read.newick(here("data/real/sino-tibet-ctmc-strict-bd-fossilsRemoved/sino-tibetan-ctmc-strict-bd-consensus.tree"))
+st_consensus <- read.newick(here("data/real/st_ctmc-strict-bd-fossilsRemoved/st_ctmc-strict-bd-fossilRemoved-consensus.tree"))
 st_consensus$root.edge.length <- 0
 fig_stconsensus <- ggtree(st_consensus) +
   geom_tiplab(family = font, size = 10 / .pt) +

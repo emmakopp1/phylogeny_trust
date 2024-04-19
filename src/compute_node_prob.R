@@ -41,6 +41,14 @@ for (i in 1:17){
   }
 }
 
+library(ape)
+trees = read.nexus("/Users/kopp/Documents/phylogeny_trust/data/simulated/beast-data-sim-7/ctmc-strict-bd-7.trees")
+trees = remove_burn_in(trees,0.9)
+consensus_tree = myconsensus(trees)
+write.tree(consensus_tree,"/Users/kopp/Documents/phylogeny_trust/data/simulated/beast-data-sim-7/consensus-7.tree")
+
+
+
 res.t = as.data.frame(t(res))
 colnames(res.t) = as.character(seq(1,17,1))
 node_probs_tb <- as_tibble(res.t) |> 
