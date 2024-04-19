@@ -1,6 +1,7 @@
 library(here)
 library(tidyverse)
 library(TreeTools)
+library(kableExtra)
 library(tracerer)
 
 # Compute the upper bound of the probability of inferring the true tree topology
