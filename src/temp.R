@@ -93,9 +93,6 @@ dt_real <- list.dirs(here("data/real"), full.names = TRUE, recursive = FALSE) |>
 write_csv(dt_real, here("output/results/bounds_real_tb.csv"))
 
 
-
-
-
 dt_sim <- list.dirs(here("data/simulated"), full.names = TRUE, recursive = FALSE) |>
   map_df(function(x) {
     d <- str_remove_all(x, ".*/")
@@ -108,32 +105,20 @@ dt_sim <- list.dirs(here("data/simulated"), full.names = TRUE, recursive = FALSE
   arrange(family)
 
 
-simtr <- treeio::read.tree(here("data/simulated/beast-data-sim-10/tree-sim-10.tree"))
-max(castor::get_all_pairwise_distances(simtr)[, Ntip(simtr)+1], na.rm = TRUE)
-
-read.nexus(here("data/simulated/beast-data-sim-1/ctmc-strict-bd-1.trees"))
-
-
-
+# simtr <- treeio::read.tree(here("data/simulated/beast-data-sim-10/tree-sim-10.tree"))
+# max(castor::get_all_pairwise_distances(simtr)[, Ntip(simtr)+1], na.rm = TRUE)
+# 
+# read.nexus(here("data/simulated/beast-data-sim-1/ctmc-strict-bd-1.trees"))
 
 t_values <- seq(0, 20, length.out = 101)
-
-dt |>
+bounds_real_byt_tb <- dt_real |>
   group_by(family) |>
   slice(1) |>
   mutate(count = length(t_values)) |>
   uncount(count) |>
   mutate(t = t_values) |>
-  ungroup() |>
   rowwise() |>
   mutate(ub_DT = compute_upperbound_DT(k, N, q, t)) |>
-  mutate(ub_DS = compute_upperbound_DS(pi0, pi1, N, q, t)) |>
-  mutate(ub_DT = min(1, ub_DT)) |>
-  mutate(ub_DS = min(1, ub_DS)) |>
-  ggplot(aes(x = t, y = ub_DT, linetype = family, color = family)) +
-  geom_line() +
-  xlab("age (ka BP)") +
-  ylab("upper bound") +
-  theme_minimal() +
-  ggthemes::scale_color_few("Dark")
+  mutate(ub_DS = compute_upperbound_DS(pi0, pi1, N, q, t))
+write_csv(bounds_real_byt_tb, here("output/results/bounds_real_byt_tb.csv"))
 

@@ -12,8 +12,37 @@ theme_set(
       aspect.ratio = .618
     )
 )
-wdt <- 14
+wdt <- 21/10*7
 hgt <- wdt * .7
+
+bounds_tb <- read_csv(here("output/results/bounds_real_tb.csv"),show_col_types = FALSE)
+clnms <- c("family", paste0("\\multicolumn{1}{c}{$", c("N", "k", "\\pi_0", "\\pi_1", "q", "t_R", "\\Delta^T(t_R)", "\\Delta^S(t_R)", "\\inf_t\\{\\Delta^R(t) = 1\\}", "\\inf_t\\{\\Delta^S(t) = 1\\}"), "$}"))
+bounds_tb |>
+  select(-nTrees) |>
+  mutate(ub_DT = ifelse(ub_DT >= 1, "\\geq 1", round(ub_DT, 2))) |>
+  mutate(ub_DS = ifelse(ub_DS >= 1, "\\geq 1", round(ub_DS, 2))) |>
+  kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "r", "r", rep("S", 8)), digits = 2, col.names = clnms) |>
+  add_header_above(c(" " = 7, "upper bound" = 2, "threshold age" = 2), line = FALSE) |> 
+  write_lines(here("output/tabs/tab_upperbound.tex"))
+
+bounds_byt_tb <- read_csv(here("output/results/bounds_real_byt_tb.csv"),show_col_types = FALSE)
+fig_bounds <- bounds_byt_tb |> 
+  rowwise() |> 
+  mutate(ub_DT = min(1, ub_DT)) |>
+  mutate(ub_DS = min(1, ub_DS)) |> 
+  select(family, t, ub_DT, ub_DS) |> 
+  pivot_longer(-c(family, t)) |> 
+  mutate(lbl = str_remove(name, "ub_D")) |> 
+  mutate(lbl = factor(lbl, levels = c("T", "S"))) |> 
+#   filter(!str_detect(family, "subset")) |>
+  ggplot(aes(x = t, y = value, linetype = family, color = family)) +
+  geom_line() +
+  xlab("age (ka BP)") +
+  ylab("upper bound") +
+  scale_color_few("Dark") +
+  facet_wrap(~lbl, scales = "free", labeller = label_bquote(Delta^italic(.(as.character(lbl)))))
+ggsave(here("output/figs/fig_bounds.pdf"), fig_bounds, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
+plot_crop(here("output/figs/fig_bounds.pdf"))
 
 
 # bounds_tb <- read_csv(here("output/results/bounds_tb.csv"),show_col_types = FALSE)
@@ -38,46 +67,38 @@ hgt <- wdt * .7
 #   rename(" " = parameter) |>
 #   kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "S", "S", "S", "S")) |>
 #   write_lines(here("output/tabs/tab_upperbound.tex"))
-bounds_tb <- read_csv(here("output/results/bounds_real_tb.csv"),show_col_types = FALSE)
-clnms <- c("family", paste0("\\multicolumn{1}{c}{$", c("N", "k", "\\pi_0", "\\pi_1", "q", "t_R", "\\Delta^T(t_R)", "\\Delta^S(t_R)", "\\inf_t\\{\\Delta^R(t) = 1\\}", "\\inf_t\\{\\Delta^S(t) = 1\\}"), "$}"))
-bounds_tb |>
-  select(-nTrees) |>
-  mutate(ub_DT = ifelse(ub_DT >= 1, "\\geq 1", round(ub_DT, 2))) |>
-  mutate(ub_DS = ifelse(ub_DS >= 1, "\\geq 1", round(ub_DS, 2))) |>
-  kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "r", "r", rep("S", 8)), digits = 2, col.names = clnms) |>
-  add_header_above(c(" " = 7, "upper bound" = 2, "threshold age" = 2), line = FALSE) |> 
-  write_lines(here("output/tabs/tab_upperbound.tex"))
 
-bounds_byt_tb <- read_csv(here("output/results/bounds_byt_tb.csv"),show_col_types = FALSE)
-fig_bounds <- bounds_byt_tb |>
-  dplyr::filter(!str_detect(family, "subset")) |>
-  mutate(Delta = factor(Delta, levels = c("T", "R"))) |>
-  ggplot(aes(x = t, y = value, linetype = family, color = family)) +
-  geom_line() +
-  xlab("age (ka BP)") +
-  ylab("upper bound") +
-  scale_color_few("Dark") +
-  facet_wrap(~Delta, scales = "free", labeller = label_bquote(Delta^italic(.(as.character(Delta)))))
-ggsave(here("output/figs/fig_bounds.pdf"), fig_bounds, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
-plot_crop(here("output/figs/fig_bounds.pdf"))
 
-fig_bounds_bantu <- bounds_byt_tb |>
-  dplyr::filter(str_detect(family, "Bantu")) |>
-  mutate(`number of languages` = case_when(
-    family == "Bantu" ~ 424,
-    family == "Bantu subset" ~ 107,
-    family == "Bantu subset 2" ~ 52,
-  )) |>
-  mutate(`number of languages` = fct_rev(factor(`number of languages`))) |>
-  mutate(Delta = factor(Delta, levels = c("T", "R"))) |>
-  ggplot(aes(x = t, y = value, linetype = `number of languages`, color = `number of languages`)) +
-  geom_line() +
-  xlab("age (ka BP)") +
-  ylab("upper bound") +
-  scale_color_few("Dark") +
-  facet_wrap(~Delta, scales = "free", labeller = label_bquote(Delta^italic(.(as.character(Delta)))))
-ggsave(here("output/figs/fig_bounds_bantu.pdf"), fig_bounds_bantu, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
-plot_crop(here("output/figs/fig_bounds_bantu.pdf"))
+# bounds_byt_tb <- read_csv(here("output/results/bounds_byt_tb.csv"),show_col_types = FALSE)
+# fig_bounds <- bounds_byt_tb |>
+#   dplyr::filter(!str_detect(family, "subset")) |>
+#   mutate(Delta = factor(Delta, levels = c("T", "R"))) |>
+#   ggplot(aes(x = t, y = value, linetype = family, color = family)) +
+#   geom_line() +
+#   xlab("age (ka BP)") +
+#   ylab("upper bound") +
+#   scale_color_few("Dark") +
+#   facet_wrap(~Delta, scales = "free", labeller = label_bquote(Delta^italic(.(as.character(Delta)))))
+# ggsave(here("output/figs/fig_bounds.pdf"), fig_bounds, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
+# plot_crop(here("output/figs/fig_bounds.pdf"))
+
+# fig_bounds_bantu <- bounds_byt_tb |>
+#   dplyr::filter(str_detect(family, "Bantu")) |>
+#   mutate(`number of languages` = case_when(
+#     family == "Bantu" ~ 424,
+#     family == "Bantu subset" ~ 107,
+#     family == "Bantu subset 2" ~ 52,
+#   )) |>
+#   mutate(`number of languages` = fct_rev(factor(`number of languages`))) |>
+#   mutate(Delta = factor(Delta, levels = c("T", "R"))) |>
+#   ggplot(aes(x = t, y = value, linetype = `number of languages`, color = `number of languages`)) +
+#   geom_line() +
+#   xlab("age (ka BP)") +
+#   ylab("upper bound") +
+#   scale_color_few("Dark") +
+#   facet_wrap(~Delta, scales = "free", labeller = label_bquote(Delta^italic(.(as.character(Delta)))))
+# ggsave(here("output/figs/fig_bounds_bantu.pdf"), fig_bounds_bantu, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
+# plot_crop(here("output/figs/fig_bounds_bantu.pdf"))
 
 qs_tb <- read_csv(here("output/results/qs_tb.csv"),show_col_types = FALSE)
 fig_qs <- qs_tb |>
