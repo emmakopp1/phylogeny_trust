@@ -66,12 +66,12 @@ get_all_parameters <- function(logfile, nexusfile, burnin = 0.2, interval = c(0,
 
 # Run get_all_parameters on the files within each folder
 dt_real <- list.dirs(here("data/real"), full.names = TRUE, recursive = FALSE) |>
-  str_subset("/iecor_co", negate = TRUE) |>
   map_df(function(x) {
     d <- str_remove_all(x, ".*/")
     logfile <- list.files(x, "\\.log", full.names = TRUE)
     nexusfile <- list.files(x, "\\.nex", full.names = TRUE)
-    burnin <- ifelse(str_detect(x, "^tea"), .8, .2)
+    #burnin <- ifelse(str_detect(x, "^tea"), .8, .2)
+    burnin <- 0.2
     if (length(logfile) > 0 & length(nexusfile) > 0) {
       bind_cols(tibble(d), get_all_parameters(logfile, nexusfile, burnin = burnin))
     } else {
@@ -84,6 +84,7 @@ dt_real <- list.dirs(here("data/real"), full.names = TRUE, recursive = FALSE) |>
     str_detect(d, "^bantu.+subsample2$") ~ "Bantu subset 2",
     str_detect(d, "^bantu") ~ "Bantu",
     str_detect(d, "^ie") ~ "Indo-European",
+    str_detect(d, "^st.+tibetanPrior$") ~ "Sino-Tibetan prior",
     str_detect(d, "^st") ~ "Sino-Tibetan",
     str_detect(d, "^tea") ~ "Trans-Eurasian",
   )) |>
