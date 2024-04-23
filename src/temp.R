@@ -43,7 +43,7 @@ get_tracerlog_parameters <- function(file, burnin = 0.2) {
   beast_log <- remove_burn_ins(beast_log_full, burn_in_fraction = burnin)
   beast_log |>
     select(starts_with("freqParameter"), TreeHeight.t.tree) |>
-    summarise(across(everything(), ~ mean(.x))) |>
+    summarise(across(everything(), ~ median(.x))) |>
     rename_all(str_replace, pattern = "freq.+(\\d)", replacement = "pi\\1") |>
     rename(pi0 = pi1, pi1 = pi2, t_R = TreeHeight.t.tree) |>
     mutate(q = 1 / (pi0^2 + pi1^2)) |>
