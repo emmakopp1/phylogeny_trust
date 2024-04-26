@@ -3,10 +3,27 @@ library(tidyverse)
 library(TreeTools)
 library(kableExtra)
 library(tracerer)
+library(ape)
+library(adephylo)
+library(phytools)
+library(castor)
+
 
 # Compute the upper bound of the probability of inferring the true tree topology
 compute_upperbound_DT <- function(k, N, q, t) {
   k * N * exp(-q * t)
+}
+
+# Compute the upper bound of the probability of correctly inferring ancestral states version2
+compute_upperbound_DS_2 <- function(pi0, pi1, q, trees) {
+  M = length(trees)
+  times = compute_age(trees[[M]])
+  max(pi0, pi1) + sum(exp(-q*times))
+}
+
+# Compute the age of the tips
+compute_age <- function(tree){
+  return(unname(distRoot(tree, tree$tip.label)))
 }
 
 # Compute the upper bound of the probability of correctly inferring ancestral states
