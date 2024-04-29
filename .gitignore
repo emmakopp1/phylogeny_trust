@@ -13,6 +13,10 @@ iecor_ctmc-strict-bd-fossilsRemoved.trees
 st_ctmc-strict-bd-fossilRemoved.trees
 tea_ctmc-strict-bd-fossilsRemoved.trees
 tea_ctmc-strict-fbd.trees
+st_ctmc-strict-fbd.trees
+data/real/bantu_ctmc-strict-bd-subsample/bantu_ctmc-strict-bd-subsample.trees
+data/real/st_ctmc-strict-bd-fossilsRemoved-tibetanPrior/st_ctmc-strict-bd-fossilsRemoved-tibetanPrior.trees
+
 
 ctmc-strict-bd.trees.zip
 IECoR2-chr_1695819208636.log.permeaning 

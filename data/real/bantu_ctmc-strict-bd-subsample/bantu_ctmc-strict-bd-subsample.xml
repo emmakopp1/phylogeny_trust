@@ -128,7 +128,7 @@ name="alignment">
 <map name="InverseGamma" >beast.math.distributions.InverseGamma</map>
 <map name="OneOnX" >beast.math.distributions.OneOnX</map>
 
-<run id="mcmc" spec="MCMC" chainLength="10000000">
+<run id="mcmc" spec="beast.coupledMCMC.CoupledMCMC" chainLength="100000000" storeEvery="10000" chains="4" resampleEvery="1000" logHeatedChains="false" optimise="true" >
     <state id="state" spec="State" storeEvery="5000">
         <tree id="Tree.t:tree" spec="beast.evolution.tree.Tree" name="stateNode">
             <taxonset id="TaxonSet.subsample" spec="TaxonSet">

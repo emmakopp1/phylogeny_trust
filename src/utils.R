@@ -13,11 +13,17 @@ myconsensus = function(trees){
 
 library(rwty)
 library(treeio)
-path = here("data/real/st_ctmc-strict-bd-fossilsRemoved/st_ctmc-strict-bd-fossilRemoved.trees")
+path = "/Users/kopp/Documents/phylogeny_trust/data/real/iecor_ctmc-strict-bd-fossilsRemoved/iecor_ctmc-strict-bd-fossilsRemoved.trees"
 trees = rwty::load.trees(path,trim=100)
 trees = trees$trees
 trees = remove_burnin(trees,0.1)
 
+
+consensus = myconsensus(trees)
+
+consensus$edge.length
+
+plot(consensus)
 
 tips = c(
   "TibetanAlike",

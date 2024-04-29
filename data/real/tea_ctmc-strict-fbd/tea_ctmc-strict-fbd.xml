@@ -122,106 +122,105 @@ name="alignment">
 <run id="mcmc" spec="beast.coupledMCMC.CoupledMCMC" chainLength="100000000" chains="4" resampleEvery="1000" storeEvery="10000">
     <state id="state" spec="State" storeEvery="5000">
         <tree id="Tree.t:tree" spec="beast.evolution.tree.Tree" name="stateNode">
-            <trait id="traitsetDate" spec="beast.evolution.tree.TraitSet" traitname="date-forward">
-                BarabaTatar=20,
-                CodexCumanicus=14.0,
-NorthAltai=20,
-OldTurkic=9.0,
-SouthAltai=20,
-Azeri=20,
-Bashkir=20,
-Chuvash=20,
-CrimeanTatar=20,
-Dolgan=20,
-Gagauz=20,
-KaraKalpak=20,
-KarachayBalkar=20,
-Karaim=20,
-Kazakh=20,
-Khakas=20,
-Khalaj=20,
-Kirghiz=20,
-Kumyk=20,
-MiddleChulym=20,
-Nogai=20,
-Salar=20,
-WestYugur=20,
-Shor=20,
-KazanTatar=20,
-Tofa=20,
-Turkish=20,
-Turkmen=20,
-Tuvan=20,
-Uyghur=20,
-Uzbek=20,
-Yakut=20,
-Khalkha=20,
-Buriat=20,
-Kalmyck=20,
-Oirat=20,
-Kamnigan=20,
-Dagur=20,
-Shira-Yughur=20,
-Baoan=20,
-Dongxian=20,
-Minhe=20,
-Huzhu=20,
-Kangjia=20,
-Moghol=20,
-Middle_Mongolian_(Secret_History)=12.5,
-Middle_Mongolian_(Muqaddimat_al-adab)=14.0,
-Hezhe=20,
-Oroch=20,
-Udihe=20,
-Nanai_(Middle_Amur)=20,
-Kur-Urmi=20,
-Nanai_(Bikin)=20,
-Orok=20,
-Ulcha=20,
-Jurchen=16.0,
-Manchu=19.11,
-Xibe=20,
-Even=20,
-Solon=20,
-Evenki_(Kamnigan)=20,
-Stony_Evenki=20,
-Southern_Evenki_(Chiringda)=20,
-Northern_Evenki_(Tutonchany)=20,
-Northern_Evenki_(Tura)=20,
-Negidal=20,
-Oroqen=20,
-Hwanghae=20,
-Southern_Hamgyong=20,
-Northern_Hamgyong=20,
-Southern_Pyongan=20,
-Northern_Pyongan=20,
-Jeju=20,
-Southern_Jeolla=20,
-Northern_Jeolla=20,
-Southern_Gyeongsang=20,
-Northern_Gyeongsang=20,
-Southern_Chungcheong=20,
-Northern_Chungcheong=20,
-Gyeonggi=20,
-Gangwon=20,
-(Late)_Middle_Korean=20,
-Japanese=20,
-Old_Japanese=20,
-Amami_Yamatohama=20,
-Amami_Asama=20,
-Amami_Yoron=20,
-Okinawa_Yonamine=20,
-Okinawa_Shuri=20,
-Miyako_Irabu=20,
-Yaeyama_Ishigaki=20,
-Yaeyama_Hatoma=20,
-Yonaguni=20,
-Kagoshima=20,
-Koshiki_islands=20,
-Kumamoto=20,
-Fukuoka=20,
-Hachijo=20                
-                            <taxa id="TaxonSet.data2" spec="TaxonSet">
+            <trait id="traitsetDate" spec="beast.evolution.tree.TraitSet" traitname="date-backward">
+                (Late)_Middle_Korean=0.408,
+Amami_Asama=0,
+Amami_Yamatohama=0,
+Amami_Yoron=0,
+Azeri=0,
+Baoan=0,
+BarabaTatar=0,
+Bashkir=0,
+Buriat=0,
+Chuvash=0,
+CodexCumanicus=0.6,
+CrimeanTatar=0,
+Dagur=0,
+Dolgan=0,
+Dongxian=0,
+Even=0,
+Evenki_(Kamnigan)=0,
+Fukuoka=0,
+Gagauz=0,
+Gangwon=0,
+Gyeonggi=0,
+Hachijo=0,
+Hezhe=0,
+Huzhu=0,
+Hwanghae=0,
+Japanese=0,
+Jeju=0,
+Jurchen=0.4,
+Kagoshima=0,
+Kalmyck=0,
+Kamnigan=0,
+Kangjia=0,
+KaraKalpak=0,
+KarachayBalkar=0,
+Karaim=0,
+Kazakh=0,
+KazanTatar=0,
+Khakas=0,
+Khalaj=0,
+Khalkha=0,
+Kirghiz=0,
+Koshiki_islands=0,
+Kumamoto=0,
+Kumyk=0,
+Kur-Urmi=0,
+Manchu=0.089,
+MiddleChulym=0,
+Middle_Mongolian_(Muqaddimat_al-adab)=0.6,
+Middle_Mongolian_(Secret_History)=0.75,
+Minhe=0,
+Miyako_Irabu=0,
+Moghol=0,
+Nanai_(Bikin)=0,
+Nanai_(Middle_Amur)=0,
+Negidal=0,
+Nogai=0,
+NorthAltai=0,
+Northern_Chungcheong=0,
+Northern_Evenki_(Tura)=0,
+Northern_Evenki_(Tutonchany)=0,
+Northern_Gyeongsang=0,
+Northern_Hamgyong=0,
+Northern_Jeolla=0,
+Northern_Pyongan=0,
+Oirat=0,
+Okinawa_Shuri=0,
+Okinawa_Yonamine=0,
+OldTurkic=0.11,
+Old_Japanese=1.2,
+Oroch=0,
+Orok=0,
+Oroqen=0,
+Salar=0,
+Shira-Yughur=0,
+Shor=0,
+Solon=0,
+SouthAltai=0,
+Southern_Chungcheong=0,
+Southern_Evenki_(Chiringda)=0,
+Southern_Gyeongsang=0,
+Southern_Hamgyong=0,
+Southern_Jeolla=0,
+Southern_Pyongan=0,
+Stony_Evenki=0,
+Tofa=0,
+Turkish=0,
+Turkmen=0,
+Tuvan=0,
+Udihe=0,
+Ulcha=0,
+Uyghur=0,
+Uzbek=0,
+WestYugur=0,
+Xibe=0,
+Yaeyama_Hatoma=0,
+Yaeyama_Ishigaki=0,
+Yakut=0,
+Yonaguni=0                <taxa id="TaxonSet.data2" spec="TaxonSet">
                     <alignment idref="data2"/>
                 </taxa>
             </trait>
@@ -282,8 +281,8 @@ Hachijo=20
                     <taxon id="Hachijo" spec="Taxon"/>
                 </taxonset>
                 <Normal id="Normal.0" name="distr">
-                    <parameter id="RealParameter.260" spec="parameter.RealParameter" estimate="false" name="mean">-1.5</parameter>
-                    <parameter id="RealParameter.261" spec="parameter.RealParameter" estimate="false" name="sigma">1.75</parameter>
+                    <parameter id="RealParameter.260" spec="parameter.RealParameter" estimate="false" name="mean">2.15</parameter>
+                    <parameter id="RealParameter.261" spec="parameter.RealParameter" estimate="false" name="sigma">0.175</parameter>
                 </Normal>
             </distribution>
             <distribution id="koreanic.prior" spec="beast.math.distributions.MRCAPrior" tree="@Tree.t:tree">
@@ -304,8 +303,8 @@ Hachijo=20
                     <taxon id="Gangwon" spec="Taxon"/>
                 </taxonset>
                 <Normal id="Normal.4" name="distr">
-                    <parameter id="RealParameter.115" spec="parameter.RealParameter" estimate="false" name="mean">11.5</parameter>
-                    <parameter id="RealParameter.116" spec="parameter.RealParameter" estimate="false" name="sigma">1.75</parameter>
+                    <parameter id="RealParameter.115" spec="parameter.RealParameter" estimate="false" name="mean">0.85</parameter>
+                    <parameter id="RealParameter.116" spec="parameter.RealParameter" estimate="false" name="sigma">0.175</parameter>
                 </Normal>
             </distribution>
             <distribution id="mongolian.prior" spec="beast.math.distributions.MRCAPrior" tree="@Tree.t:tree">
@@ -327,8 +326,8 @@ Hachijo=20
                     <taxon id="Middle_Mongolian_(Muqaddimat_al-adab)" spec="Taxon"/>
                 </taxonset>
                 <Normal id="Normal.5" name="distr">
-                    <parameter id="RealParameter.117" spec="parameter.RealParameter" estimate="false" name="mean">12.0</parameter>
-                    <parameter id="RealParameter.118" spec="parameter.RealParameter" estimate="false" name="sigma">0.5</parameter>
+                    <parameter id="RealParameter.117" spec="parameter.RealParameter" estimate="false" name="mean">0.8</parameter>
+                    <parameter id="RealParameter.118" spec="parameter.RealParameter" estimate="false" name="sigma">0.05</parameter>
                 </Normal>
             </distribution>
             <distribution id="tungusic.prior" spec="beast.math.distributions.MRCAPrior" tree="@Tree.t:tree">
@@ -355,8 +354,8 @@ Hachijo=20
                     <taxon id="Oroqen" spec="Taxon"/>
                 </taxonset>
                 <Normal id="Normal.6" name="distr">
-                    <parameter id="RealParameter.119" spec="parameter.RealParameter" estimate="false" name="mean">0.5</parameter>
-                    <parameter id="RealParameter.120" spec="parameter.RealParameter" estimate="false" name="sigma">2.75</parameter>
+                    <parameter id="RealParameter.119" spec="parameter.RealParameter" estimate="false" name="mean">1.95</parameter>
+                    <parameter id="RealParameter.120" spec="parameter.RealParameter" estimate="false" name="sigma">0.275</parameter>
                 </Normal>
             </distribution>
         </distribution>
@@ -409,7 +408,7 @@ filter="::">
     <operator id="SATreeRootScalerFBD.t:tree" spec="SAScaleOperator" rootOnly="true" scaleFactor="0.95" tree="@Tree.t:tree" weight="1.0"/>
     <operator id="SATreeScalerFBD.t:tree" spec="SAScaleOperator" scaleFactor="0.95" tree="@Tree.t:tree" weight="3.0"/>
     <operator id="allTipDatesRandomWalker.t:tree" spec="TipDatesRandomWalker" tree="@Tree.t:tree" weight="0.0" windowSize="1.0"/>
-    <logger id="tracelog" spec="Logger" fileName="data2.log" logEvery="1000" model="@posterior" sort="smart">
+    <logger id="tracelog" spec="Logger" fileName="tea_ctmc-strict-fbd.log" logEvery="1000" model="@posterior" sort="smart">
         <log idref="posterior"/>
         <log idref="likelihood"/>
         <log idref="prior"/>
@@ -436,7 +435,7 @@ filter="::">
         <log idref="likelihood"/>
         <log idref="prior"/>
     </logger>
-    <logger id="treelog.t:tree" spec="Logger" fileName="data2.trees" logEvery="1000" mode="tree">
+    <logger id="treelog.t:tree" spec="Logger" fileName="tea_ctmc-strict-fbd.trees" logEvery="1000" mode="tree">
         <log id="TreeWithMetaDataLogger.t:tree" spec="beast.evolution.tree.TreeWithMetaDataLogger" tree="@Tree.t:tree"/>
     </logger>
 </run>
