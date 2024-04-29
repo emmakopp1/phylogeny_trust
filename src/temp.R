@@ -17,13 +17,14 @@ compute_upperbound_DT <- function(k, N, q, t) {
 # Compute the upper bound of the probability of correctly inferring ancestral states version2
 compute_upperbound_DS_2 <- function(pi0, pi1, q, trees) {
   M = length(trees)
-  times = compute_age(trees[[M]])
+  times = compute_age(trees[(M-100):M])
   max(pi0, pi1) + sum(exp(-q*times))
 }
 
-# Compute the age of the tips
-compute_age <- function(tree){
-  return(unname(distRoot(tree, tree$tip.label)))
+
+compute_age <- function(trees){
+  M = length(trees)
+  return(rowMeans(sapply(trees[(M-100):M], function(tree) distRoot(tree,tips))))
 }
 
 # Compute the upper bound of the probability of correctly inferring ancestral states
