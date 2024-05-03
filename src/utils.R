@@ -1,6 +1,7 @@
 library(here)
+library(dplyr)
+library(tibble)
 source(here("src/init.R"))
-
 
 remove_burnin = function(trees,burnin_rate){
   n = as.numeric(length(trees))
@@ -11,38 +12,12 @@ myconsensus = function(trees){
 }
 
 
-library(rwty)
-library(treeio)
-path = "/Users/kopp/Documents/phylogeny_trust/data/real/iecor_ctmc-strict-bd-fossilsRemoved/iecor_ctmc-strict-bd-fossilsRemoved.trees"
-trees = rwty::load.trees(path,trim=100)
-trees = trees$trees
-trees = remove_burnin(trees,0.1)
+path= here("data/real/st_ctmc-strict-fbd/st_ctmc-strict-fbd.trees")
+trees = read.nexus(path)
+M = length(trees)
 
 
-consensus = myconsensus(trees)
-
-consensus$edge.length
-
-plot(consensus)
-
-tips = c(
-  "TibetanAlike",
-  "TibetanBatang",
-  "TibetanLhasa",
-  "TibetanXiahe")
-
-mrca_age = function(tree,tips){
-  
-  mrca = treeio::MRCA(tree,tips)
-  age_mrca = distRoot(tree,11)[[1]] - distRoot(tree,mrca)[[1]]
-  return(age_mrca)
-  
-}
-
-suppressWarnings(
-  mean(sapply(trees, function(tree) mrca_age(tree,tips)))
+fossils = c("BurmishOldBurmese","Tangut","SiniticOldChinese","TibetanOldTibetan")
+tibble(
+  age=min((rep(distRoot(trees[[M]],1),length(fossils)) - distRoot(trees[[M]],fossils))*1000)
   )
-
-
-
-

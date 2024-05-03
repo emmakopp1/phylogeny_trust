@@ -10,8 +10,8 @@ library(castor)
 
 
 # Compute the upper bound of the probability of inferring the true tree topology
-compute_upperbound_DT <- function(k, N, q, t) {
-  k * N * exp(-q * t)
+compute_upperbound_DT <- function(k, N, q, t, s=0) {
+  k * N * exp(-q * (t - s))
 }
 
 # Compute the upper bound of the probability of correctly inferring ancestral states version2
@@ -88,10 +88,11 @@ dt_real <- list.dirs(here("data/real"), full.names = TRUE, recursive = FALSE) |>
     d <- str_remove_all(x, ".*/")
     logfile <- list.files(x, "\\.log", full.names = TRUE)
     nexusfile <- list.files(x, "\\.nex", full.names = TRUE)
+    treefile <- list.files(x,"\\.trees", full.names=TRUE)
     #burnin <- ifelse(str_detect(x, "^tea"), .8, .2)
     burnin <- 0.2
     if (length(logfile) > 0 & length(nexusfile) > 0) {
-      bind_cols(tibble(d), get_all_parameters(logfile, nexusfile, treefile,burnin = burnin))
+      bind_cols(tibble(d), get_all_parameters(logfile, nexusfile, treefile, burnin = burnin))
     } else {
       tibble(d)
     }
@@ -117,7 +118,7 @@ dt_sim <- list.dirs(here("data/simulated"), full.names = TRUE, recursive = FALSE
     d <- str_remove_all(x, ".*/")
     logfile <- list.files(x, "\\.log", full.names = TRUE)
     nexusfile <- here("src/preprocess_simulated_data/tree-sim.nex")
-    bind_cols(tibble(d), get_all_parameters(logfile, nexusfile))
+    bind_cols(tibble(d), get_all_parameters(logfile, nexusfile, treefile))
   }) |> 
   mutate(d = str_remove_all(d, "[^0-9]") |> as.integer()) |>
   rename(family = d) |> 
