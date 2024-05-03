@@ -15,17 +15,10 @@ compute_upperbound_DT <- function(k, N, q, t) {
 }
 
 # Compute the upper bound of the probability of correctly inferring ancestral states version2
-compute_upperbound_DS_2 <- function(pi0, pi1, q, trees) {
-  M = length(trees)
-  times = compute_age(trees[(M-100):M])
-  max(pi0, pi1) + sum(exp(-q*times))
+compute_upperbound_DS_2 <- function(pi0, pi1, q, ages) {
+  max(pi0, pi1) + sum(exp(-q*ages))
 }
 
-
-compute_age <- function(trees){
-  M = length(trees)
-  return(rowMeans(sapply(trees[(M-100):M], function(tree) distRoot(tree,tips))))
-}
 
 # Compute the upper bound of the probability of correctly inferring ancestral states
 compute_upperbound_DS <- function(pi0, pi1, N, q, t) {
@@ -54,6 +47,13 @@ get_nexus_parameters <- function(file) {
   tibble(N = length(attributes(phydt)$names), k = length(attributes(phydt)$index))
 }
 
+get_tip_ages <- function(file){
+  trees <- parse_beast_trees(file)
+  M = length(trees)
+  tips = trees[[M]]$tip.label
+  tibble(ages=rowMeans(sapply(trees[(M-100):M], function(tree) distRoot(tree,tips))))
+}
+
 # Get the values of pi0, pi1, the number of generated trees, and compute q
 # from a BEAST .log file
 get_tracerlog_parameters <- function(file, burnin = 0.2) {
@@ -70,14 +70,14 @@ get_tracerlog_parameters <- function(file, burnin = 0.2) {
 }
 
 # Combine all of the above
-get_all_parameters <- function(logfile, nexusfile, burnin = 0.2, interval = c(0, 20), tol = 1e-6, maxiter = 1000) {
+get_all_parameters <- function(logfile, nexusfile, treefile, burnin = 0.2, interval = c(0, 20), tol = 1e-6, maxiter = 1000) {
   bind_cols(
     get_nexus_parameters(nexusfile),
     get_tracerlog_parameters(logfile)
   ) |>
     relocate(nTrees, .before = pi0) |>
     mutate(ub_DT = compute_upperbound_DT(k, N, q, t_R)) |>
-    mutate(ub_DS = compute_upperbound_DS(pi0, pi1, N, q, t_R)) |>
+    mutate(ub_DS = compute_upperbound_DS_2(pi0, pi1, q, get_tip_ages(treefile))) |>
     mutate(inf_t_DT = compute_inf_t_DT(k, N, q, t_R)) |>
     mutate(inf_t_DS = compute_inf_t_DS(pi0, pi1, N, q, t_R))
 }
@@ -91,7 +91,7 @@ dt_real <- list.dirs(here("data/real"), full.names = TRUE, recursive = FALSE) |>
     #burnin <- ifelse(str_detect(x, "^tea"), .8, .2)
     burnin <- 0.2
     if (length(logfile) > 0 & length(nexusfile) > 0) {
-      bind_cols(tibble(d), get_all_parameters(logfile, nexusfile, burnin = burnin))
+      bind_cols(tibble(d), get_all_parameters(logfile, nexusfile, treefile,burnin = burnin))
     } else {
       tibble(d)
     }
