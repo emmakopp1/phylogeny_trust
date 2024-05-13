@@ -126,11 +126,8 @@ dataType="binary">
 <map name="taxon" >beast.evolution.alignment.Taxon</map>
 <map name="taxonset" >beast.evolution.alignment.TaxonSet</map>
 
-
-<run id="mcmc" spec="beast.gss.NS" chainLength="1000000000" subChainLength="500000" preBurnin="0" particleCount="1" epsilon="1e-13">
-<!--
 <run id="mcmc" spec="MCMC" chainLength="100000000">
--->
+
     <state id="state" spec="State" storeEvery="5000">
         <tree id="Tree.t:tree" spec="beast.evolution.tree.Tree" name="stateNode">
             <trait id="traitsetDate" spec="beast.evolution.tree.TraitSet" traitname="date-forward">

@@ -77,7 +77,8 @@ get_all_parameters <- function(logfile, nexusfile, treefile, burnin = 0.2, inter
   ) |>
     relocate(nTrees, .before = pi0) |>
     mutate(ub_DT = compute_upperbound_DT(k, N, q, t_R)) |>
-    mutate(ub_DS = compute_upperbound_DS_2(pi0, pi1, q, get_tip_ages(treefile))) |>
+    #mutate(ub_DS = compute_upperbound_DS_2(pi0, pi1, q, get_tip_ages(treefile))) |>
+    mutate(ub_DS = compute_upperbound_DS(pi0, pi1, N, q, t_R )) |>
     mutate(inf_t_DT = compute_inf_t_DT(k, N, q, t_R)) |>
     mutate(inf_t_DS = compute_inf_t_DS(pi0, pi1, N, q, t_R))
 }
@@ -88,7 +89,7 @@ dt_real <- list.dirs(here("data/real"), full.names = TRUE, recursive = FALSE) |>
     d <- str_remove_all(x, ".*/")
     logfile <- list.files(x, "\\.log", full.names = TRUE)
     nexusfile <- list.files(x, "\\.nex", full.names = TRUE)
-    treefile <- list.files(x,"\\.trees", full.names=TRUE)
+    #treefile <- list.files(x,"\\.trees", full.names=TRUE)
     #burnin <- ifelse(str_detect(x, "^tea"), .8, .2)
     burnin <- 0.2
     if (length(logfile) > 0 & length(nexusfile) > 0) {
