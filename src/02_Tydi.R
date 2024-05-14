@@ -10,7 +10,7 @@ library(TreeTools)
 get_nexus_parameters <- function(file) {
   group_name <- str_extract(basename(file), "^[^.]+")
   phydt <- ReadAsPhyDat(file)
-  tibble(N = length(attributes(phydt)$names), k = length(attributes(phydt)$index), Group = group_name)
+  tibble(N = length(attributes(phydt)$names), k = length(attributes(phydt)$index), family = group_name)
 }
 
 # Get the values of pi0, pi1, the number of generated trees, and compute q
@@ -41,7 +41,8 @@ dt_real <- map2(
   list.files(here(directories, 'real'), pattern = "\\.nex", full.names = TRUE, recursive = TRUE),
   ~ bind_cols(get_tracerlog_parameters(.x), get_nexus_parameters(.y))
 ) %>%
-  bind_rows()
+  bind_rows() %>%
+  relocate(c(family,N,k), .before = pi0)
 
 dt_real
 
