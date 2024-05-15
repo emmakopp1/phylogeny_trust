@@ -9,7 +9,9 @@ get_tip_ages <- function(phylo) {
   map_df(1:(length(phylo)), function(i) {
     ages <- node.depth.edgelength(phylo[[i]])[1:ntips]
     tibble(tree = i, tip = phylo[[i]]$tip.label, age = ages)
-  })
+  })%>%
+    group_by(tip) %>%
+    summarise(age = mean(age, na.rm = TRUE))
 }
 
 # Bantu
