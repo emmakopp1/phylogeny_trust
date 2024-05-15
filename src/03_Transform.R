@@ -19,6 +19,10 @@ compute_upperbound_DS <- function(pi0, pi1, q, ages) {
   max(pi0, pi1) + sum(exp(-q*ages))
 }
 
+compute_upperbound_DS2 <- function(par, ages) {
+  max(pi0, pi1) + sum(exp(-q*ages))
+}
+
 # Compute the time threshold beyond which the upper bound of the probability
 # of inferring the true tree topology falls below 1
 compute_inf_t_DT <- function(k, N, q, t, interval = c(0, 20), tol = 1e-6, maxiter = 1000) {
@@ -34,3 +38,41 @@ compute_inf_t_DS <- function(pi0, pi1, N, q, t, interval = c(0, 20), tol = 1e-6,
     compute_upperbound_DS(pi0, pi1, N, q, t) - 1
   }, interval = interval, tol = tol, maxiter = maxiter)$root
 }
+
+
+
+dt_real_ages <- list.dirs(here("output/results"), full.names = TRUE, recursive = FALSE) %>%
+  map_df(function(x) {
+    ages <- list.files(list.dirs(here("output/results"), full.names = TRUE, recursive = FALSE), "tipages", full.names = TRUE)%>%
+      read_csv()%>%
+      select(age)%>%
+      tibble()
+    parameters <- read.csv(here("output/results/bounds_real_tb.csv"))
+    
+  })
+
+# Find the extension of a file
+path_extension <- function(path){
+  tolower(substr(path, nchar(path) - 3, nchar(path)))
+}
+
+
+# Liste des chemins des fichiers
+tipages_files <- list.files(list.dirs(here("output/results"), full.names = TRUE, recursive = FALSE), "tipages", full.names = TRUE)
+
+# Fonction qui lit les fichiers d'ages et sort les âges
+compute_ages<- function(x){
+  if (path_extension(x)==".csv") {
+    read_csv(x, col_types = cols()) %>% 
+      select(age)
+  } else {
+    readRDS(x) %>% 
+      select(age) 
+  }
+}
+
+map_df(tipages_files, ~compute_ages(.x)) #marche pas il ne fait pas de bind_rows()
+
+
+
+

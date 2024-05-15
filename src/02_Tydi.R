@@ -42,9 +42,33 @@ dt_real <- map2(
   ~ bind_cols(get_tracerlog_parameters(.x), get_nexus_parameters(.y))
 ) %>%
   bind_rows() %>%
-  relocate(c(family,N,k), .before = pi0)
+  relocate(c(family,N,k), .before = pi0) %>%
+  mutate(family = case_when(
+    str_detect(family, "^bantusubsample$") ~ "Bantu subset",
+    str_detect(family, "^bantusubsample2$") ~ "Bantu subset 2",
+    str_detect(family, "^bantu") ~ "Bantu",
+    str_detect(family, "^ie") ~ "Indo-European",
+    str_detect(family, "^st$") ~ "Sino-Tibetan",
+    str_detect(family, "^st.+tibetanPrior$") ~ "Sino-Tibetan prior",
+    str_detect(family, "^tea") ~ "Trans-Eurasian"
+  )) 
 
-dt_real
+tipages_files = list.files(
+  list.dirs(here("output/results"), full.names = TRUE, recursive = FALSE), 
+  "tipages", full.names = TRUE)
 
-write_csv(dt_real, here("output/results/bounds_real_tb.csv"))
+
+  
+get_age_for_row <-function(row){ 
+  read.csv(tipages_files[row])%>%
+    select(age)%>%
+    tibble()
+  }
+
+get_age_for_row(1)
+
+map_dfr(1:nrow(dt_real), ~get_age_for_row(.x))
+
+
+#write_csv(dt_real, here("output/results/bounds_real_tb.csv"))
 
