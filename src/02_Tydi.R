@@ -59,16 +59,5 @@ tipages_files = list.files(
 
 
   
-get_age_for_row <-function(row){ 
-  read.csv(tipages_files[row])%>%
-    select(age)%>%
-    tibble()
-  }
-
-get_age_for_row(1)
-
-map_dfr(1:nrow(dt_real), ~get_age_for_row(.x))
-
-
-#write_csv(dt_real, here("output/results/bounds_real_tb.csv"))
+write_csv(dt_real, here("output/results/bounds_real_tb.csv"))
 
