@@ -11,6 +11,7 @@ dir.create(here("output/results/bantu_subsample2"))
 dir.create(here("output/results/st"))
 dir.create(here("output/results/tea"))
 
+# Get the ages for all tips of each tree in a multiPhylo object
 get_tip_ages <- function(phylo) {
   ntips <- Ntip(phylo[[1]])
   map_df(1:(length(phylo)), function(i) {
