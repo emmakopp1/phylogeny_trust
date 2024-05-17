@@ -1,10 +1,36 @@
 library(here)
 library(tidyverse)
-library(ape)
-library(treeio)
-library(tracerer)
-library(TreeTools)
+# library(ape)
+# library(treeio)
+# library(tracerer)
+# library(TreeTools)
 
+burnin <- .2
+
+tipages_bantu <- read_csv(here("output/results/bantu/bantu_ctmc-strict-bd_ages.csv.bz")) |> 
+  mutate(family = "Bantu")
+tipages_bantu_subsample <- read_csv(here("output/results/bantu_subsample/bantu_ctmc-strict-bd-subsample_tipages.csv")) |>
+  mutate(family = "Bantu_subset")
+tipages_bantu_subsample2 <- read_csv(here("output/results/bantu_subsample2/bantu_ctmc-strict-bd-subsample2_tipages.csv")) |>
+  mutate(family = "Bantu_subset2")
+tipages_st <- read_csv(here("output/results/st/st_ctmc-strict-fbd_tipages.csv.bz")) |>
+  mutate(family = "ST")
+tipages_tea <- read_csv(here("output/results/tea/tea_ctmc-strict-fbd-constrained_tipages.csv")) |>
+  mutate(family = "TEA")
+
+tipages_bantu_subsample |> 
+  filter(tree > ceiling(max(tree) * burnin))
+
+read_csv(here("output/results/bantu/bantu_ctmc-strict-bd_tracelog.csv")) |> 
+  add_tally(name = "n_trees") |> 
+  filter(Sample > ceiling(max(Sample) * burnin)) |>
+  select(n_trees, starts_with("freqParameter"), TreeHeight.t.tree) |>
+  summarise(across(everything(), ~ median(.x))) |> 
+  rename(t_R = TreeHeight.t.tree) |> 
+  rename_with(~ str_replace(.x, "freqParameter\\D+", "pi")) |> 
+  rename(pi0 = pi1, pi1 = pi2) |> 
+  mutate(q = 1 / (pi0^2 + pi1^2)) %>%
+  relocate(q, .after = pi1)
 
 # Get the number of taxa and traits from a nexus file
 get_nexus_parameters <- function(file) {
