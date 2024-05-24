@@ -1,11 +1,10 @@
 library(here)
 library(tidyverse)
-# library(ape)
-# library(treeio)
-# library(tracerer)
-# library(TreeTools)
 
 burnin <- .2
+
+
+# Tip ages --------------------------------------------------------------------------------------------------------
 
 tipages_bantu <- read_csv(here("output/results/bantu/bantu_ctmc-strict-bd_ages.csv.bz")) |>
   mutate(family = "Bantu")
@@ -23,6 +22,11 @@ tipages_summary <- bind_rows(tipages_bantu, tipages_bantu_subsample, tipages_ban
   filter(tree > ceiling(max(tree) * burnin)) |>
   group_by(family, tip) |>
   summarise(age = median(age))
+
+write_csv(tipages_summary, here("output/results/tipages_summary.csv"))
+
+
+# Trace logs -------------------------------------------------------------------------------------------------------
 
 tracelog_bantu <- read_csv(here("output/results/bantu/bantu_ctmc-strict-bd_tracelog.csv")) |>
   mutate(family = "Bantu")
@@ -45,9 +49,10 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
     rename_with(~ str_replace(.x, "freqParameter.+(?=\\d$)", "pi")) |>
     rename(pi0 = pi1, pi1 = pi2) |>
     mutate(q = 1 / (pi0^2 + pi1^2)) %>%
-    relocate(q, .after = pi1)) |> 
+    relocate(q, .after = pi1)) |>
   bind_rows()
 
+write_csv(tracelog_summary, here("output/results/tracelog_summary.csv"))
 
 
 # # Get the number of taxa and traits from a nexus file
