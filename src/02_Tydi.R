@@ -35,29 +35,19 @@ tracelog_st <- read_csv(here("output/results/st/st_ctmc-strict-fbd_tracelog.csv"
 tracelog_tea <- read_csv(here("output/results/tea/tea_ctmc-strict-fbd-constrained_tracelog.csv")) |>
   mutate(family = "TEA")
 
-# list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_st, tracelog_tea) |>
-list(tracelog_tea) |>
+tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_st) |>
   map(~ .x |>
     add_tally(name = "n_trees") |>
     filter(Sample > ceiling(max(Sample) * burnin)) |>
-    select(n_trees, starts_with("freqParameter"), TreeHeight.t.tree) |>
-    summarise(across(everything(), ~ median(.x))) |>
+    select(family, n_trees, starts_with("freqParameter"), TreeHeight.t.tree) |>
+    summarise(family = unique(family), across(-family, ~ median(.x))) |>
     rename(t_R = TreeHeight.t.tree) |>
-    rename_with(~ str_replace(.x, "freqParameter\\D+", "pi")) |>
+    rename_with(~ str_replace(.x, "freqParameter.+(?=\\d$)", "pi")) |>
     rename(pi0 = pi1, pi1 = pi2) |>
     mutate(q = 1 / (pi0^2 + pi1^2)) %>%
-    relocate(q, .after = pi1))
+    relocate(q, .after = pi1)) |> 
+  bind_rows()
 
-tracelog_tea |>
-  add_tally(name = "n_trees") |>
-  filter(Sample > ceiling(max(Sample) * burnin)) |>
-  select(n_trees, starts_with("freqParameter"), TreeHeight.t.tree) |>
-  summarise(across(everything(), ~ median(.x))) |>
-  rename(t_R = TreeHeight.t.tree) |>
-  rename_with(~ str_replace(.x, "freqParameter\\D+", "pi")) |>
-  rename(pi0 = pi1, pi1 = pi2) |>
-  mutate(q = 1 / (pi0^2 + pi1^2)) %>%
-  relocate(q, .after = pi1)
 
 
 # # Get the number of taxa and traits from a nexus file
