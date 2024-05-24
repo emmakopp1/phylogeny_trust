@@ -3,6 +3,8 @@ library(tidyverse)
 
 burnin <- .2
 
+ntipschars <- read_csv(here("output/results/ntipschars.csv"))
+
 
 # Tip ages --------------------------------------------------------------------------------------------------------
 
@@ -50,7 +52,8 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
     rename(pi0 = pi1, pi1 = pi2) |>
     mutate(q = 1 / (pi0^2 + pi1^2)) %>%
     relocate(q, .after = pi1)) |>
-  bind_rows()
+  bind_rows() |> 
+  left_join(ntipschars)
 
 write_csv(tracelog_summary, here("output/results/tracelog_summary.csv"))
 
