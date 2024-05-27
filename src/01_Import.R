@@ -8,6 +8,7 @@ library(TreeTools)
 dir.create(here("output/results/bantu"))
 dir.create(here("output/results/bantu_subsample"))
 dir.create(here("output/results/bantu_subsample2"))
+dir.create(here("output/results/ie"))
 dir.create(here("output/results/st"))
 dir.create(here("output/results/tea"))
 
@@ -71,6 +72,20 @@ ntipschars_bantu_subset2 <- get_nexus_parameters(here("data/real/bantu_ctmc-stri
   mutate(family = "Bantu_subset2")
 
 
+# Indo-European ---------------------------------------------------------------------------------------------------
+
+phylo_ie <- read.nexus(here("data/real/iecor_ctmc-strict-M1/iecor_ctmc-strict-M1.trees"))
+
+ages_ie <- get_tip_ages(phylo_ie)
+write_csv(ages_ie, bzfile(here("output/results/ie/iecor_ctmc-strict-M1_tipages.csv.bz")))
+
+trace_ie <- parse_beast_tracelog_file(here("data/real/iecor_ctmc-strict-M1/iecor_ctmc-strict-M1.log"))
+write_csv(trace_ie, here("output/results/ie/iecor_ctmc-strict-M1.csv"))
+
+ntipschars_ie <- get_nexus_parameters(here("data/real/iecor_ctmc-strict-M1/ie.nex")) |>
+  mutate(family = "IE")
+
+
 # Sino-Tibetan ----------------------------------------------------------------------------------------------------
 
 phylo_st <- read.nexus(here("data/real/st_ctmc-strict-fbd/st_ctmc-strict-fbd.trees"))
@@ -101,6 +116,6 @@ ntipschars_tea <- get_nexus_parameters(here("data/real/tea_ctmc-strict-fbd-const
 
 # Number of tips and characters -----------------------------------------------------------------------------------
 
-ntipschars <- bind_rows(ntipschars_bantu, ntipschars_bantu_subset, ntipschars_bantu_subset2, ntipschars_st, ntipschars_tea) |>
+ntipschars <- bind_rows(ntipschars_bantu, ntipschars_bantu_subset, ntipschars_bantu_subset2, ntipschars_ie, ntipschars_st, ntipschars_tea) |>
   relocate(family, 1)
 write_csv(ntipschars, here("output/results/ntipschars.csv"))
