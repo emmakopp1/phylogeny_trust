@@ -82,7 +82,7 @@ write_csv(ages_ie, bzfile(here("output/results/ie/iecor_ctmc-strict-M1_tipages.c
 trace_ie <- parse_beast_tracelog_file(here("data/real/iecor_ctmc-strict-M1/iecor_ctmc-strict-M1.log"))
 write_csv(trace_ie, here("output/results/ie/iecor_ctmc-strict-M1.csv"))
 
-ntipschars_ie <- get_nexus_parameters(here("data/real/iecor_ctmc-strict-M1/ie.nex")) |>
+ntipschars_ie <- get_nexus_parameters(here("data/real/iecor_ctmc-strict-M1/iecor.nex")) |>
   mutate(family = "IE")
 
 
