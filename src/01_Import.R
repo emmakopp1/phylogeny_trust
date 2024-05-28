@@ -28,11 +28,13 @@ get_tip_ages <- function(phylo) {
 get_nexus_parameters <- function(file) {
   if (str_detect(file, "tea")) {
     phydt <- ReadAsPhyDat(file)
-    }
-    else phydt <- read.nexus.data(file) |> 
-    PhyDat()
+  } else {
+    phydt <- read.nexus.data(file) |>
+      PhyDat()
+  }
   tibble(N = length(attributes(phydt)$names), k = length(attributes(phydt)$index))
 }
+
 
 # Bantu -----------------------------------------------------------------------------------------------------------
 
