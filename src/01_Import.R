@@ -26,7 +26,8 @@ get_tip_ages <- function(phylo) {
 
 # Get the number of taxa and traits from a nexus file
 get_nexus_parameters <- function(file) {
-  phydt <- ReadAsPhyDat(file)
+  phydt <- read.nexus.data(file) |> 
+    PhyDat()
   tibble(N = length(attributes(phydt)$names), k = length(attributes(phydt)$index))
 }
 
