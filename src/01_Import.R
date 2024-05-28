@@ -26,7 +26,10 @@ get_tip_ages <- function(phylo) {
 
 # Get the number of taxa and traits from a nexus file
 get_nexus_parameters <- function(file) {
-  phydt <- read.nexus.data(file) |> 
+  if (str_detect(file, "tea")) {
+    phydt <- ReadAsPhyDat(file)
+    }
+    else phydt <- read.nexus.data(file) |> 
     PhyDat()
   tibble(N = length(attributes(phydt)$names), k = length(attributes(phydt)$index))
 }
@@ -83,7 +86,7 @@ write_csv(ages_ie, bzfile(here("output/results/ie/iecor_ctmc-strict-M1_tipages.c
 trace_ie <- parse_beast_tracelog_file(here("data/real/iecor_ctmc-strict-M1/iecor_ctmc-strict-M1.log"))
 write_csv(trace_ie, here("output/results/ie/iecor_ctmc-strict-M1.csv"))
 
-ntipschars_ie <- get_nexus_parameters(here("data/real/iecor_ctmc-strict-M1/iecor.nex")) |>
+ntipschars_ie <- get_nexus_parameters(here("data/real/iecor_ctmc-strict-M1/iecor_old.nex")) |>
   mutate(family = "IE")
 
 
