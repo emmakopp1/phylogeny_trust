@@ -14,12 +14,14 @@ tipages_bantu_subsample <- read_csv(here("output/results/bantu_subsample/bantu_c
   mutate(family = "Bantu_subset")
 tipages_bantu_subsample2 <- read_csv(here("output/results/bantu_subsample2/bantu_ctmc-strict-bd-subsample2_tipages.csv")) |>
   mutate(family = "Bantu_subset2")
+tipages_ie <- read_csv(here("output/results/ie/iecor_ctmc-strict-M1_tipages.csv.bz")) |>
+  mutate(family = "IE")
 tipages_st <- read_csv(here("output/results/st/st_ctmc-strict-fbd_tipages.csv.bz")) |>
   mutate(family = "ST")
 tipages_tea <- read_csv(here("output/results/tea/tea_ctmc-strict-fbd-constrained_tipages.csv")) |>
   mutate(family = "TEA")
 
-tipages_summary <- bind_rows(tipages_bantu, tipages_bantu_subsample, tipages_bantu_subsample2, tipages_st, tipages_tea) |>
+tipages_summary <- bind_rows(tipages_bantu, tipages_bantu_subsample, tipages_bantu_subsample2, tipages_ie, tipages_st, tipages_tea) |>
   group_by(family) |>
   filter(tree > ceiling(max(tree) * burnin)) |>
   group_by(family, tip) |>
