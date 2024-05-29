@@ -45,6 +45,34 @@ tracelog_st <- read_csv(here("output/results/st/st_ctmc-strict-fbd_tracelog.csv"
 tracelog_tea <- read_csv(here("output/results/tea/tea_ctmc-strict-fbd-constrained_tracelog.csv")) |>
   mutate(family = "TEA")
 
+n_cogids_tea <- here("data/real/tea_ctmc-strict-fbd-constrained/tea.nex") |>
+  read_lines() |>
+  str_subset("^charset") |>
+  str_remove_all("^charset |;|\\?") |>
+  enframe(name = NULL, value = "concept") |>
+  separate(concept, into = c("concept", "sets"), sep = " = ") |>
+  separate(sets, into = c("start", "end"), sep = "-") |>
+  mutate(n_cogids = as.integer(end) - as.integer(start) + 1) |>
+  select(concept, n_cogids)
+
+tracelog_tea_summary <- tracelog_tea |>
+  add_tally(name = "n_trees") |>
+  filter(Sample > ceiling(max(Sample) * burnin)) |>
+  select(family, n_trees, starts_with("freqParameter"), TreeHeight.t.tree) |>
+  pivot_longer(starts_with("freqParameter")) |>
+  mutate(name = str_remove(name, "freqParameter\\.s\\.")) |>
+  separate(name, into = c("concept", "pi"), sep = "\\.(?=[12]$)") |>
+  mutate(pi = paste0("pi", as.integer(pi) - 1)) |>
+  mutate(concept = str_remove(concept, "\\.$")) |>
+  mutate(concept = str_replace(concept, "^fly$", "fly_noun")) |>
+  rename(t_R = TreeHeight.t.tree) |>
+  pivot_wider(names_from = pi, values_from = value) |>
+  group_by(family, n_trees, concept) |>
+  summarise(across(c(t_R, pi0, pi1), ~ median(.x))) |>
+  ungroup() |>
+  left_join(n_cogids_tea) |>
+  relocate(n_cogids, .after = concept)
+
 tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_st) |>
   map(~ .x |>
     add_tally(name = "n_trees") |>
@@ -53,34 +81,11 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
     summarise(family = unique(family), across(-family, ~ median(.x))) |>
     rename(t_R = TreeHeight.t.tree) |>
     rename_with(~ str_replace(.x, "freqParameter.+(?=\\d$)", "pi")) |>
-    rename(pi0 = pi1, pi1 = pi2) |>
-    mutate(q = 1 / (pi0^2 + pi1^2)) %>%
-    relocate(q, .after = pi1)) |>
-  bind_rows() |> 
+    rename(pi0 = pi1, pi1 = pi2)) |>
+  bind_rows(tracelog_tea_summary) |>
+  mutate(q = 1 / (pi0^2 + pi1^2)) |>
+  relocate(q, .after = pi1) |>
   left_join(ntipschars)
-
-tracelog_tea |> 
-  add_tally(name = "n_trees") |>
-  filter(Sample > ceiling(max(Sample) * burnin)) |>
-  select(family, n_trees, starts_with("freqParameter")) |> 
-  pivot_longer(starts_with("freqParameter")) |> 
-  mutate(name = str_remove(name, "freqParameter\\.s\\.")) |> 
-  separate(name, into = c("concept", "pi"), sep = "\\.(?=[12]$)") |> 
-  mutate(pi = paste0("pi_", pi)) |> 
-  group_by(family, concept, pi) |> 
-  summarise(value = median(value)) |> 
-  pivot_wider(names_from = pi, values_from = value)
-
-here("data/real/tea_ctmc-strict-fbd-constrained/tea.nex") |> 
-  read_lines() |> 
-  str_subset("[01]+$") |> 
-  str_remove("^[a-zA-Z_()=-]+\\s+") |> 
-  str_replace_all("1", "0") |> 
-  unique() |> 
-  str_split(" ") |> 
-  unlist() |> 
-  enframe(name = "set", value = "k") |> 
-  mutate(k = nchar(k))
 
 write_csv(tracelog_summary, here("output/results/tracelog_summary.csv"))
 
