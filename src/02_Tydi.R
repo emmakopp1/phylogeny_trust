@@ -52,8 +52,8 @@ n_cogids_tea <- here("data/real/tea_ctmc-strict-fbd-constrained/tea.nex") |>
   enframe(name = NULL, value = "concept") |>
   separate(concept, into = c("concept", "sets"), sep = " = ") |>
   separate(sets, into = c("start", "end"), sep = "-") |>
-  mutate(n_cogids = as.integer(end) - as.integer(start) + 1) |>
-  select(concept, n_cogids)
+  mutate(n_cogsets = as.integer(end) - as.integer(start) + 1) |>
+  select(concept, n_cogsets)
 
 tracelog_tea_summary <- tracelog_tea |>
   add_tally(name = "n_trees") |>
@@ -71,7 +71,7 @@ tracelog_tea_summary <- tracelog_tea |>
   summarise(across(c(t_R, pi0, pi1), ~ median(.x))) |>
   ungroup() |>
   left_join(n_cogids_tea) |>
-  relocate(n_cogids, .after = concept)
+  relocate(n_cogsets, .after = concept)
 
 tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_st) |>
   map(~ .x |>
