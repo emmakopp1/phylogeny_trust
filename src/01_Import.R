@@ -86,7 +86,7 @@ ages_ie <- get_tip_ages(phylo_ie)
 write_csv(ages_ie, bzfile(here("output/results/ie/iecor_ctmc-strict-M1_tipages.csv.bz")))
 
 trace_ie <- parse_beast_tracelog_file(here("data/real/iecor_ctmc-strict-M1/iecor_ctmc-strict-M1.log"))
-write_csv(trace_ie, here("output/results/ie/iecor_ctmc-strict-M1.csv"))
+write_csv(trace_ie, here("output/results/ie/iecor_ctmc-strict-M1_tracelog.csv"))
 
 ntipschars_ie <- get_nexus_parameters(here("data/real/iecor_ctmc-strict-M1/iecor.nex")) |>
   mutate(family = "IE")
