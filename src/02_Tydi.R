@@ -38,6 +38,8 @@ tracelog_bantu_subsample <- read_csv(here("output/results/bantu_subsample/bantu_
   mutate(family = "Bantu_subset")
 tracelog_bantu_subsample2 <- read_csv(here("output/results/bantu_subsample2/bantu_ctmc-strict-bd-subsample2_tracelog.csv")) |>
   mutate(family = "Bantu_subset2")
+tracelog_ie <- read_csv(here("output/results/ie/iecor_ctmc-strict-M1_tracelog.csv")) |>
+  mutate(family = "IE")
 tracelog_st <- read_csv(here("output/results/st/st_ctmc-strict-fbd_tracelog.csv")) |>
   mutate(family = "ST")
 tracelog_tea <- read_csv(here("output/results/tea/tea_ctmc-strict-fbd-constrained_tracelog.csv")) |>
@@ -56,6 +58,29 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
     relocate(q, .after = pi1)) |>
   bind_rows() |> 
   left_join(ntipschars)
+
+tracelog_tea |> 
+  add_tally(name = "n_trees") |>
+  filter(Sample > ceiling(max(Sample) * burnin)) |>
+  select(family, n_trees, starts_with("freqParameter")) |> 
+  pivot_longer(starts_with("freqParameter")) |> 
+  mutate(name = str_remove(name, "freqParameter\\.s\\.")) |> 
+  separate(name, into = c("concept", "pi"), sep = "\\.(?=[12]$)") |> 
+  mutate(pi = paste0("pi_", pi)) |> 
+  group_by(family, concept, pi) |> 
+  summarise(value = median(value)) |> 
+  pivot_wider(names_from = pi, values_from = value)
+
+here("data/real/tea_ctmc-strict-fbd-constrained/tea.nex") |> 
+  read_lines() |> 
+  str_subset("[01]+$") |> 
+  str_remove("^[a-zA-Z_()=-]+\\s+") |> 
+  str_replace_all("1", "0") |> 
+  unique() |> 
+  str_split(" ") |> 
+  unlist() |> 
+  enframe(name = "set", value = "k") |> 
+  mutate(k = nchar(k))
 
 write_csv(tracelog_summary, here("output/results/tracelog_summary.csv"))
 
