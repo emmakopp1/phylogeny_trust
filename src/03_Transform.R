@@ -9,11 +9,11 @@ compute_upperbound_DT <- function(k, N, q, t, s = 0) {
 
 # Compute the upper bound of the probability of correctly inferring ancestral states version2
 compute_upperbound_DS <- function(pi0, pi1, q, ages) {
-  max(pi0, pi1) + sum(exp(-as.numeric(q) * ages))
+  max(as.numeric(pi0), as.numeric(pi1)) + sum(exp(-as.numeric(q) * ages))
 }
 
 compute_upperbound_DS2 <- function(pi0, pi1, q, t, N) {
-  max(pi0, pi1) + N*exp(-q * t)
+  max(as.numeric(pi0), as.numeric(pi1))  + as.numeric(N) * exp(-as.numeric(q) * as.numeric(t))
 }
 
 
@@ -43,12 +43,12 @@ bounds_real_tb <- tracelog_summary |>
   rowwise() |>
   mutate(
     #ub_DT = compute_upperbound_DT(k, N, q, t_R),
-    #ub_DS = compute_upperbound_DS(pi0, pi1, q, ages = filter(tipages_summary, family == family)$age, N),
     ub_DS = compute_upperbound_DS(pi0, pi1, q, ages = filter(tipages_summary, family == family)$age),
+    ub_DS2 = compute_upperbound_DS2(pi0, pi1, q, t_R, N),
+    
     #inf_t_DT = compute_inf_t_DT(k, N, q, t_R),
     inf_t_DS = compute_inf_t_DS(pi0, pi1, q, N)
   )
-
 
 write_csv(bounds_real_tb, here("output/results/bounds_real_tb.csv"))
 
