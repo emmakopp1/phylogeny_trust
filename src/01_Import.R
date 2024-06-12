@@ -17,7 +17,7 @@ get_tip_ages <- function(phylo) {
   ntips <- Ntip(phylo[[1]])
   map_df(1:(length(phylo)), function(i) {
     ages <- node.depth.edgelength(phylo[[i]])[1:ntips]
-    depths <- max(ages) - ages
+    depths <- round(max(ages) - ages,2)
     tibble(tree = i, tip = phylo[[i]]$tip.label, age = ages, depth = depths)
   })
   # %>%
