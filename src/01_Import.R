@@ -20,9 +20,6 @@ get_tip_ages <- function(phylo) {
     depths <- round(max(ages) - ages,2)
     tibble(tree = i, tip = phylo[[i]]$tip.label, age = ages, depth = depths)
   })
-  # %>%
-  #   group_by(tip) %>%
-  #   summarise(age = mean(age, na.rm = TRUE))
 }
 
 # Get the number of taxa and traits from a nexus file

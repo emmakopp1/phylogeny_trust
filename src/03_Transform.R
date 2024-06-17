@@ -7,15 +7,15 @@ compute_upperbound_DT <- function(k, N, q, t, s = 0) {
   k * N * exp(-q * (t - s))
 }
 
+# Compute the upper bound of the probability of inferring the true tree topology
+compute_upperbound_DT <- function(k, N, q, t, depth, s) {
+  k * N * exp(-q * (t - depth - s))
+}
+
 # Compute the upper bound of the probability of correctly inferring ancestral states version2
-compute_upperbound_DS <- function(pi0, pi1, q, ages) {
-  max(as.numeric(pi0), as.numeric(pi1)) + sum(exp(-as.numeric(q) * ages))
+compute_upperbound_DS <- function(pi0, pi1, q, t, depth) {
+  max(as.numeric(pi0), as.numeric(pi1)) + sum(exp(-as.numeric(q) *(t - depth)))
 }
-
-compute_upperbound_DS2 <- function(pi0, pi1, q, t, N) {
-  max(as.numeric(pi0), as.numeric(pi1))  + as.numeric(N) * exp(-as.numeric(q) * as.numeric(t))
-}
-
 
 # Compute the time threshold beyond which the upper bound of the probability
 # of inferring the true tree topology falls below 1
@@ -27,9 +27,9 @@ compute_inf_t_DT <- function(k, N, q, t, interval = c(0, 20), tol = 1e-6, maxite
 
 # Compute the time threshold beyond which the upper bound of the probability
 # of correctly inferring ancestral states falls below 1
-compute_inf_t_DS <- function(pi0, pi1, q, N, interval = c(0, 20), tol = 1e-6, maxiter = 1000) {
+compute_inf_t_DS <- function(pi0, pi1, q, depth, interval = c(0, 20), tol = 1e-6, maxiter = 1000) {
   uniroot(function(t) {
-    compute_upperbound_DS2(pi0,pi1,q,t,N) - 1
+    compute_upperbound_DS(pi0,pi1,q,t,depth) - 1
   }, interval = interval, tol = tol, maxiter = maxiter)$root
 }
 
@@ -42,17 +42,27 @@ bounds_real_tb <- tracelog_summary |>
   relocate(c(N, k), .after = n_trees) |> 
   rowwise() |>
   mutate(
-    #ub_DT = compute_upperbound_DT(k, N, q, t_R),
-    ub_DS = compute_upperbound_DS(pi0, pi1, q, ages = filter(tipages_summary, family == family)$age),
-    ub_DS2 = compute_upperbound_DS2(pi0, pi1, q, t_R, N),
-    
-    #inf_t_DT = compute_inf_t_DT(k, N, q, t_R),
-    inf_t_DS = compute_inf_t_DS(pi0, pi1, q, N)
+    ub_DS = compute_upperbound_DS(pi0, pi1, q, t =filter(tipages_summary, family == family)$root_age, 
+                                  depth = filter(tipages_summary, family == family)$depth),
+    inf_t_DS = compute_inf_t_DS(pi0, pi1, q, depth = filter(tipages_summary, family == family)$depth)
   )
+
+TEA_summary <- bounds_real_tb %>% 
+  filter(family == "TEA") %>%
+  select(-concept, -family, -n_cogsets) %>%
+  colMeans() %>%
+  as.data.frame() %>%
+  t() %>%
+  as_tibble()%>%
+  mutate(concept = NA, family = "TEA_all", n_cogsets = NA) %>%
+  relocate(family, .before=n_trees) %>%
+  relocate(c(concept,n_cogsets), .before = ub_DS)
+
+bounds_real_tb <- bind_rows(bounds_real_tb,TEA_summary)
 
 write_csv(bounds_real_tb, here("output/results/bounds_real_tb.csv"))
 
-tt
+
 
 # dt_real_ages <- list.dirs(here("output/results"), full.names = TRUE, recursive = FALSE) %>%
 #   map_df(function(x) {
