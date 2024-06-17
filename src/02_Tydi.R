@@ -20,7 +20,9 @@ tipages_ie <- read_csv(here("output/results/ie/iecor_ctmc-strict-M1_tipages.csv.
 tipages_st <- read_csv(here("output/results/st/st_ctmc-strict-fbd_tipages.csv.bz")) |>
   mutate(family = "ST")
 tipages_tea <- read_csv(here("output/results/tea/tea_ctmc-strict-fbd-constrained_tipages.csv")) |>
-  mutate(family = "TEA")
+  mutate(family = "TEA") |> 
+  mutate(age = 0.1 * age) |> 
+  mutate(depth = 0.1 * depth)
 
 tipages_summary <- bind_rows(tipages_bantu, tipages_bantu_subsample, tipages_bantu_subsample2, tipages_ie, tipages_st, tipages_tea) |>
   group_by(family) |>
@@ -76,6 +78,7 @@ tracelog_tea_summary <- tracelog_tea |>
   mutate(concept = str_remove(concept, "\\.$")) |>
   mutate(concept = str_replace(concept, "^fly$", "fly_noun")) |>
   rename(t_R = TreeHeight.t.tree) |>
+  mutate(t_R = t_R * 0.1) |>
   pivot_wider(names_from = pi, values_from = value) |>
   group_by(family, n_trees, concept) |>
   summarise(across(c(t_R, pi0, pi1), ~ median(.x))) |>

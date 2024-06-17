@@ -51,7 +51,6 @@ TEA_summary <- bounds_real_tb %>%
   filter(family == "TEA") %>%
   select(-concept, -family, -n_cogsets) %>%
   colMeans() %>%
-  as.data.frame() %>%
   t() %>%
   as_tibble()%>%
   mutate(concept = NA, family = "TEA_all", n_cogsets = NA) %>%
@@ -61,7 +60,6 @@ TEA_summary <- bounds_real_tb %>%
 bounds_real_tb <- bind_rows(bounds_real_tb,TEA_summary)
 
 write_csv(bounds_real_tb, here("output/results/bounds_real_tb.csv"))
-
 
 
 # dt_real_ages <- list.dirs(here("output/results"), full.names = TRUE, recursive = FALSE) %>%
