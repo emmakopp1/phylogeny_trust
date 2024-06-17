@@ -1,5 +1,6 @@
 library(here)
 library(tidyverse)
+library(openxlsx) 
 
 burnin <- .2
 
@@ -9,9 +10,9 @@ ntipschars <- read_csv(here("output/results/ntipschars.csv"))
 # Tip ages --------------------------------------------------------------------------------------------------------
 
 tipages_bantu <- read_csv(here("output/results/bantu/bantu_ctmc-strict-bd_ages.csv.bz")) |>
-  mutate(family = "Bantu")
+  mutate(family = "Bantu") 
 tipages_bantu_subsample <- read_csv(here("output/results/bantu_subsample/bantu_ctmc-strict-bd-subsample_tipages.csv")) |>
-  mutate(family = "Bantu_subset")
+  mutate(family = "Bantu_subset") 
 tipages_bantu_subsample2 <- read_csv(here("output/results/bantu_subsample2/bantu_ctmc-strict-bd-subsample2_tipages.csv")) |>
   mutate(family = "Bantu_subset2")
 tipages_ie <- read_csv(here("output/results/ie/iecor_ctmc-strict-M1_tipages.csv.bz")) |>
@@ -25,10 +26,19 @@ tipages_summary <- bind_rows(tipages_bantu, tipages_bantu_subsample, tipages_ban
   group_by(family) |>
   filter(tree > ceiling(max(tree) * burnin)) |>
   group_by(family, tip) |>
-  summarise(age = median(age))
+  summarise(age = median(age), depth = median(depth)) |>
+  mutate(root_age = round(depth + age,2)) |>
+  mutate(depth = round(depth,2)) 
 
 write_csv(tipages_summary, here("output/results/tipages_summary.csv"))
 
+# Cutting points
+
+tipages_names <- tipages_summary |> 
+  select(family, tip, root_age) |> 
+  mutate(s=NA)
+
+write.xlsx(tipages_names, here("output/results/tipages_time_prior.xlsx"))
 
 # Trace logs -------------------------------------------------------------------------------------------------------
 
@@ -73,7 +83,7 @@ tracelog_tea_summary <- tracelog_tea |>
   left_join(n_cogids_tea) |>
   relocate(n_cogsets, .after = concept)
 
-tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_st) |>
+tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_ie, tracelog_st) |>
   map(~ .x |>
     add_tally(name = "n_trees") |>
     filter(Sample > ceiling(max(Sample) * burnin)) |>
