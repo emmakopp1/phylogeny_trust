@@ -34,7 +34,7 @@ tipages_summary <- bind_rows(tipages_bantu, tipages_bantu_subsample, tipages_ban
 
 write_csv(tipages_summary, here("output/results/tipages_summary.csv"))
 
-# Cutting points
+# Cutting points -------------------------------------------------------------------------------------------------
 
 tipages_names <- tipages_summary |> 
   select(family, tip, root_age) |> 

@@ -1,7 +1,11 @@
 library(here)
 library(dplyr)
 library(tibble)
-source(here("src/init.R"))
+library(ape)
+library(TreeTools)
+library(phytools)
+library(adephylo)
+library(castor)
 
 remove_burnin = function(trees,burnin_rate){
   n = as.numeric(length(trees))
@@ -12,11 +16,36 @@ myconsensus = function(trees){
   consensus.edges(trees, consensus.tree = consensus(trees, p=.5), rooted=T)    
 }
 
-rwty::load.trees(file,trim=100)
 
-path= here("data/real/st_ctmc-strict-fbd/st_ctmc-strict-fbd.trees")
+path= here("data/real/tea_ctmc-strict-fbd-constrained/tea_ctmc-strict-fbd-constrained.trees")
 trees = read.nexus(path)
+trees = remove_burnin(trees,0.2)
 M = length(trees)
+tree = trees[[M]]
+
+
+
+# Age of MRCA japonic 
+mrca_japonic = getMRCA(tree,tea_group_japonic$tip)
+age_mrca_japonic = (distRoot(tree,1)[[1]] - distRoot(tree,mrca_japonic)[[1]])*0.1
+
+# Age of MRCA koreanic
+mrca_koreanic = getMRCA(tree,tea_group_koreanic$tip)
+age_mrca_koreanic = (distRoot(tree,1)[[1]] - distRoot(tree,mrca_koreanic)[[1]])*0.1
+
+
+# Age of MRCA turkic
+mrca_turkic = getMRCA(tree,tea_group_turkic$tip)
+age_mrca_turkic = (distRoot(tree,1)[[1]] - distRoot(tree,mrca_turkic)[[1]])*0.1
+
+# Age of MRCA mongolian
+mrca_mongolian = getMRCA(tree,tea_group_mongolian$tip)
+age_mrca_mongolian = (distRoot(tree,1)[[1]] - distRoot(tree,mrca_mongolian)[[1]])*0.1
+
+# Age of MRCA tungusic
+mrca_tungusic = getMRCA(tree,tea_group_tungusic$tip)
+age_mrca_tungusic = (distRoot(tree,1)[[1]] - distRoot(tree,mrca_tungusic)[[1]])*0.1
+
 
 
 fossils_st = c("BurmishOldBurmese","Tangut","SiniticOldChinese","TibetanOldTibetan")
@@ -85,5 +114,11 @@ df = tibble(
   age= compute_min_age_fossil(trees,fossils_st)
     )
 
+
+path= here("data/real/st_ctmc-strict-fbd/st_ctmc-strict-fbd.trees")
+trees = read.nexus(path)
+trees = remove_burnin(trees,0.99)
+
+c = mean(sapply(trees, function(tree) distRoot(tree)[[1]]))
 
 
