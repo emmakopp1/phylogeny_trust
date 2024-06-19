@@ -46,6 +46,7 @@ tracelog_summary <- read_csv(here("output/results/tracelog_summary.csv"))
 # Bounds
 bounds_real_tb <- tracelog_summary |>
   mutate(n_cogsets = if_else(is.na(n_cogsets), k, n_cogsets)) |>
+  rename(familyx = family) |> 
   relocate(c(N, k), .after = n_trees) |>
   rowwise() |>
   mutate(
@@ -54,9 +55,10 @@ bounds_real_tb <- tracelog_summary |>
       depth = filter(tipages_summary, family == family)$depth
     ),
     inf_t_DS = compute_inf_t_DS(pi0, pi1, q, depth = filter(tipages_summary, family == family)$depth),
-    ub_DT = compute_upperbound_DT(k = n_cogsets, q = q, t = t_R, depth = filter(tipages_summary, family == family)$depth, s = filter(tipages_summary, family == family)$s)
+    ub_DT = compute_upperbound_DT(k = n_cogsets, q = q, t = t_R, depth = filter(tipages_summary, family == familyx)$depth, s = filter(tipages_summary, family == familyx)$s)
   ) |> 
-  ungroup()
+  ungroup() |> 
+  rename(family = familyx)
 
 compute_upperbound_DT(
   k = 3859, 
