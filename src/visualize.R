@@ -16,12 +16,12 @@ wdt <- 21/10*7
 hgt <- wdt * .7
 
 bounds_tb <- read_csv(here("output/results/bounds_real_tb.csv"),show_col_types = FALSE)
-clnms <- c("family", paste0("\\multicolumn{1}{c}{$", c("N", "k", "\\pi_0", "\\pi_1", "q", "t_R", "\\Delta^T(t_R)", "\\Delta^S(t_R)", "\\inf_t\\{\\Delta^R(t) = 1\\}", "\\inf_t\\{\\Delta^S(t) = 1\\}"), "$}"))
+clnms <- c("family", paste0("\\multicolumn{1}{c}{$", c("N", "k", "\\pi_0", "\\pi_1", "q", "t_R","concept", "n_cogsets", "\\Delta^S(t_R)", "\\inf_t\\{\\Delta^S(t) = 1\\}", "\\Delta^T(t_R)", "\\inf_t\\{\\Delta^R(t) = 1\\}"), "$}"))
 bounds_tb |>
-  select(-nTrees) |>
+  select(-n_trees) |>
   mutate(ub_DT = ifelse(ub_DT >= 1, "\\geq 1", round(ub_DT, 2))) |>
   mutate(ub_DS = ifelse(ub_DS >= 1, "\\geq 1", round(ub_DS, 2))) |>
-  kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "r", "r", rep("S", 8)), digits = 2, col.names = clnms) |>
+  kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "r", "r", rep("S", 10)), digits = 2, col.names = clnms) |>
   add_header_above(c(" " = 7, "upper bound" = 2, "threshold age" = 2), line = FALSE) |> 
   write_lines(here("output/tabs/tab_upperbound.tex"))
 

@@ -1,0 +1,50 @@
+{
+    "sino-tibetan": [
+      "data/real/sino-tibet-ctmc-strict-bd-fossilsRemoved/sino-tibetan-ctmc-strict-bd.trees",
+      "0.942",
+      "5.84e-2",
+      "3785",
+	"src/cognat_survival_prob/cognates_data/cognates_st.txt",
+	"8.867"
+    ],
+    "bantu":[
+        "data/real/bantu-ctmc-strict-bd/ctmc-strict-bd.trees",
+        "0.985",
+        "1.476e-2",
+        "3859",
+	"src/cognat_survival_prob/cognates_data/cognates_bantu.txt",
+	"6.965"
+    ],
+    "iecor" : [
+        "data/real/IECoR-cov-strict-bd/IECoR2-chr_1695819208636.trees",
+        "0.996",
+        "4.297E-3",
+        "4990",
+	"src/cognat_survival_prob/cognates_data/cognates_iecor.txt",
+	"8.589"
+    ],
+    "bantu_subsample" : [
+        "data/real/bantu-ctmc-strict-bd-subsample/subsample.trees",
+        "0.98",
+        "0.196",
+        "3859",
+	"",
+	"5.239"
+    ],
+    "bantu_subsample_2":[
+       "data/real/bantu-ctmc-strict-bd-subsample2/subsample2.trees",
+        "0.978",
+        "2.227e-2",
+        "3859",
+	"",
+	"6.165"
+    ],
+    "transeurasian":[
+      "data/real/trans-ctmc-strict-fbd/data2.trees",
+      "0.969",
+      "3.081e-3",
+      "3421",
+      "",
+      "20.5"
+    ]
+}
