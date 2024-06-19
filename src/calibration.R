@@ -1083,12 +1083,3 @@ calibration <- bind_rows(
 
 write.csv(calibration, here("output/results/calibration.csv"))
 
-
-
-# calibration_bantu <- bind_rows(df_a, df_b, df_c, df_d) |>
-
-#  group_by(family,calibration)
-
-# write.csv(calibration_bantu, here("phylogeny_trust/data/calibrations/bantu.csv"))
-
-# tt = tipages_summary |> right_join(df_bantu, by = c("tip","family"))

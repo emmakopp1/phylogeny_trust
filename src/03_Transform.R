@@ -52,49 +52,43 @@ bounds_real_tb <- tracelog_summary |>
   mutate(
     ub_DS = compute_upperbound_DS(pi0, pi1, q,
       t = t_R,
-      depth = filter(tipages_summary, family == family)$depth
+      depth = filter(tipages_summary, family == familyx)$depth
     ),
-    inf_t_DS = compute_inf_t_DS(pi0, pi1, q, depth = filter(tipages_summary, family == family)$depth),
-    ub_DT = compute_upperbound_DT(k = n_cogsets, q = q, t = t_R, depth = filter(tipages_summary, family == familyx)$depth, s = filter(tipages_summary, family == familyx)$s)
+    inf_t_DS = compute_inf_t_DS(pi0, pi1, q, depth = filter(tipages_summary, family == familyx)$depth),
+    ub_DT = compute_upperbound_DT(k = n_cogsets, q = q, t = t_R, depth = filter(tipages_summary, family == familyx)$depth, s = filter(tipages_summary, family == familyx)$s),
+    inf_t_DT = compute_inf_t_DT(k=k, q=q, 
+                                depth = filter(tipages_summary, family == familyx)$depth, 
+                                s = filter(tipages_summary, family == familyx)$s)
   ) |> 
   ungroup() |> 
   rename(family = familyx)
 
-compute_upperbound_DT(
-  k = 3859, 
-  q = 1.03, 
-  t = 6.17, 
-  depth = filter(tipages_summary, family == "Bantu")$depth, 
-  s = filter(tipages_summary, family == "Bantu")$s)
 
 
 # TEA add line with the mean of parameter for all cognates
-TEA_summary <- bounds_real_tb %>%
-  filter(family == "TEA") %>%
-  select(-concept, -family, -n_cogsets, -ub_DT) %>%
-  colMeans() %>%
-  t() %>%
-  as_tibble() %>%
-  mutate(concept = NA, family = "TEA_all", n_cogsets = NA) %>%
-  relocate(family, .before = n_trees) %>%
+TEA_summary <- bounds_real_tb |>
+  filter(family == "TEA") |>
+  select(-concept, -family, -n_cogsets, -ub_DT) |>
+  colMeans() |>
+  t() |>
+  as_tibble() |>
+  mutate(concept = NA, family = "TEA_all", n_cogsets = NA) |>
+  relocate(family, .before = n_trees) |>
   relocate(c(concept, n_cogsets), .before = ub_DS) |>
-  mutate(ub_DT = sum(filter(bounds_real_tb, family == "TEA")$n_cogsets * filter(bounds_real_tb, family == "TEA")$ub_DT))
-
-bounds_real_tb <- bind_rows(TEA_summary, bounds_real_tb) |>
   mutate(
-    inf_t_DT = compute_inf_t_DT(
-    k=k, q=q, 
-    depth = filter(tipages_summary, family == family)$depth, 
-    s = filter(tipages_summary, family == family)$s
-    ))
+    ub_DT = sum(filter(bounds_real_tb, family == "TEA")$n_cogsets * filter(bounds_real_tb, family == "TEA")$ub_DT),
+    inf_t_DT = compute_inf_t_DT(k=k, q=q, 
+                                depth = filter(tipages_summary, family == "TEA")$depth, 
+                                s = filter(tipages_summary, family == "TEA")$s)
+    )
+
+bounds_real_tb <- bind_rows(TEA_summary, bounds_real_tb)|>
+  relocate(inf_t_DT, .after=ub_DT) |> 
+  filter(family %in% c("TEA_all", "Bantu", "Bantu_subset", "Bantu_subset2", "IE", "ST"))
+
+
 
 write_csv(bounds_real_tb, here("output/results/bounds_real_tb.csv"))
-
-
-compute_inf_t_DT(3421,1.10,filter(tipages_summary, family == 'TEA')$depth, filter(tipages_summary, family == 'TEA')$s)
-
-compute_inf_t_DT(57120,1.03,filter(tipages_summary, family == 'Bantu')$depth, filter(tipages_summary, family == 'Bantu')$s,
-                 interval = c(-20, 0))
 
 
 
