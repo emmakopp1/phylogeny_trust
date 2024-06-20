@@ -46,7 +46,7 @@ tracelog_summary <- read_csv(here("output/results/tracelog_summary.csv"))
 # Bounds
 bounds_real_tb <- tracelog_summary |>
   mutate(n_cogsets = if_else(is.na(n_cogsets), k, n_cogsets)) |>
-  rename(familyx = family) |> 
+  rename(familyx = family) |>
   relocate(c(N, k), .after = n_trees) |>
   rowwise() |>
   mutate(
@@ -56,11 +56,13 @@ bounds_real_tb <- tracelog_summary |>
     ),
     inf_t_DS = compute_inf_t_DS(pi0, pi1, q, depth = filter(tipages_summary, family == familyx)$depth),
     ub_DT = compute_upperbound_DT(k = n_cogsets, q = q, t = t_R, depth = filter(tipages_summary, family == familyx)$depth, s = filter(tipages_summary, family == familyx)$s),
-    inf_t_DT = compute_inf_t_DT(k=k, q=q, 
-                                depth = filter(tipages_summary, family == familyx)$depth, 
-                                s = filter(tipages_summary, family == familyx)$s)
-  ) |> 
-  ungroup() |> 
+    inf_t_DT = compute_inf_t_DT(
+      k = k, q = q,
+      depth = filter(tipages_summary, family == familyx)$depth,
+      s = filter(tipages_summary, family == familyx)$s
+    )
+  ) |>
+  ungroup() |>
   rename(family = familyx)
 
 
@@ -73,22 +75,43 @@ TEA_summary <- bounds_real_tb |>
   t() |>
   as_tibble() |>
   mutate(concept = NA, family = "TEA_all", n_cogsets = NA) |>
+  mutate(n_cogsets = if_else(is.na(n_cogsets), k, n_cogsets)) |>
   relocate(family, .before = n_trees) |>
   relocate(c(concept, n_cogsets), .before = ub_DS) |>
   mutate(
     ub_DT = sum(filter(bounds_real_tb, family == "TEA")$n_cogsets * filter(bounds_real_tb, family == "TEA")$ub_DT),
-    inf_t_DT = compute_inf_t_DT(k=k, q=q, 
-                                depth = filter(tipages_summary, family == "TEA")$depth, 
-                                s = filter(tipages_summary, family == "TEA")$s)
+    inf_t_DT = compute_inf_t_DT(
+      k = k, q = q,
+      depth = filter(tipages_summary, family == "TEA")$depth,
+      s = filter(tipages_summary, family == "TEA")$s
     )
+  )
 
-bounds_real_tb <- bind_rows(TEA_summary, bounds_real_tb)|>
-  relocate(inf_t_DT, .after=ub_DT) |> 
-  filter(family %in% c("TEA_all", "Bantu", "Bantu_subset", "Bantu_subset2", "IE", "ST"))
-
+bounds_real_tb <- bind_rows(TEA_summary, bounds_real_tb) |>
+  relocate(inf_t_DT, .after = ub_DT) |>
+  select(-concept) |>
+  filter(family %in% c("TEA_all", "Bantu", "Bantu_subset", "Bantu_subset2", "IE", "ST")) |> 
+  mutate(family = ifelse(family == "TEA_all", "TEA", family)) 
 
 
 write_csv(bounds_real_tb, here("output/results/bounds_real_tb.csv"))
+
+
+t_values <- seq(0, 20, length.out = 101)
+bounds_real_byt_tb <- bounds_real_tb |>
+  select(-inf_t_DS, -inf_t_DT, -n_cogsets)|>
+  group_by(family) |>
+  mutate(count = length(t_values)) |>
+  uncount(count) |>
+  mutate(t = t_values) |>
+  rename(familyx = family) |>
+  rowwise() |>
+  mutate(ub_DT = compute_upperbound_DT(k, q, t, filter(tipages_summary, family == familyx)$depth ,filter(tipages_summary, family == familyx)$s),
+         ub_DS = compute_upperbound_DS(pi0, pi1, q, t, filter(tipages_summary, family == familyx)$depth)
+         ) |>
+  rename(family = familyx)
+write_csv(bounds_real_byt_tb, here("output/results/bounds_real_byt_tb.csv"))
+
 
 
 

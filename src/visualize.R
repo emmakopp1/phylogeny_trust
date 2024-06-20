@@ -3,6 +3,7 @@ library(tidyverse)
 library(ggthemes)
 library(knitr)
 library(kableExtra)
+library(crow_top)
 
 font <- "Noto Sans SemiCondensed"
 theme_set(
@@ -26,14 +27,14 @@ bounds_tb |>
   write_lines(here("output/tabs/tab_upperbound.tex"))
 
 bounds_byt_tb <- read_csv(here("output/results/bounds_real_byt_tb.csv"),show_col_types = FALSE)
-fig_bounds <- bounds_byt_tb |> 
+fig_bounds <- bounds_byt_tb |>
   rowwise() |> 
   mutate(ub_DT = min(1, ub_DT)) |>
   mutate(ub_DS = min(1, ub_DS)) |> 
   select(family, t, ub_DT, ub_DS) |> 
   pivot_longer(-c(family, t)) |> 
   mutate(lbl = str_remove(name, "ub_D")) |> 
-  mutate(lbl = factor(lbl, levels = c("T", "S"))) |> 
+  mutate(lbl = factor(lbl, levels = c("T", "S"))) |>
 #   filter(!str_detect(family, "subset")) |>
   ggplot(aes(x = t, y = value, linetype = family, color = family)) +
   geom_line() +
