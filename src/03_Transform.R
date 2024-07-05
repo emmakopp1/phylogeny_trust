@@ -7,17 +7,17 @@ compute_upperbound_DT <- function(k, q, t, depth, s) {
   k * sum(exp(-q * (t - depth - s)))
 }
 
-# Compute the upper bound of the probability of correctly inferring ancestral states
-compute_upperbound_DS <- function(pi0, pi1, q, t, depth) {
-  max(as.numeric(pi0), as.numeric(pi1)) + sum(exp(-as.numeric(q) * (t - depth)))
-}
-
 # Compute the time threshold beyond which the upper bound of the probability
 # of inferring the true tree topology falls below 1
 compute_inf_t_DT <- function(k, q, depth, s, interval = c(0, 20), tol = 1e-6, maxiter = 1000) {
   uniroot(function(t) {
     compute_upperbound_DT(k, q, t, depth, s) - 1
   }, interval = interval, tol = tol, maxiter = maxiter)$root
+}
+
+# Compute the upper bound of the probability of correctly inferring ancestral states
+compute_upperbound_DS <- function(pi0, pi1, q, t, depth) {
+  max(as.numeric(pi0), as.numeric(pi1)) + sum(exp(-as.numeric(q) * (t - depth)))
 }
 
 # Compute the time threshold beyond which the upper bound of the probability
@@ -65,6 +65,12 @@ bounds_real_tb <- tracelog_summary |>
   ungroup() |>
   rename(family = familyx)
 
+# For first meaning of TEA 
+# Problem resultat différent que la table 
+compute_upperbound_DT(3421, 1.41, 14.7, filter(tipages_summary, family == "TEA")$depth, filter(tipages_summary, family == "TEA")$s)
+# But inf coherent 
+compute_inf_t_DT(3421, 1.41,  filter(tipages_summary, family == "TEA")$depth,  filter(tipages_summary, family == "TEA")$s)
+
 
 
 # TEA add line with the mean of parameter for all cognates
@@ -80,12 +86,7 @@ TEA_summary <- bounds_real_tb |>
   relocate(c(concept, n_cogsets), .before = ub_DS) |>
   mutate(
     ub_DT = sum(filter(bounds_real_tb, family == "TEA")$n_cogsets * filter(bounds_real_tb, family == "TEA")$ub_DT),
-    inf_t_DT = compute_inf_t_DT(
-      k = k, q = q,
-      depth = filter(tipages_summary, family == "TEA")$depth,
-      s = filter(tipages_summary, family == "TEA")$s
-    )
-  )
+    inf_t_DT = NA)
 
 bounds_real_tb <- bind_rows(TEA_summary, bounds_real_tb) |>
   relocate(inf_t_DT, .after = ub_DT) |>
@@ -111,8 +112,6 @@ bounds_real_byt_tb <- bounds_real_tb |>
          ) |>
   rename(family = familyx)
 write_csv(bounds_real_byt_tb, here("output/results/bounds_real_byt_tb.csv"))
-
-
 
 
 # dt_real_ages <- list.dirs(here("output/results"), full.names = TRUE, recursive = FALSE) %>%
