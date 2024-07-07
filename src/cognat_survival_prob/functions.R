@@ -131,18 +131,16 @@ compute_survival_prob_by_ages = function(tree,n_sens,mu= 0.2052587){
   )
   
   
-  p = ggplot(df_theo, aes(x = age, y = q_theo)) +
-    geom_line(color = "darkblue") +
-    labs(
-      x = "age of the tree (in millenial)",
-      y = "",
-      title = ""
-    )+
-    theme(plot.title = element_text(hjust = 0.5))
+  #p = ggplot(df_theo, aes(x = age, y = q_theo)) +
+  #  geom_line(color = "darkblue") +
+  #  labs(
+  #    x = "age of the tree (in millenial)",
+  #    y = "",
+  #    title = ""
+  #  )+
+  #  theme(plot.title = element_text(hjust = 0.5))
   
-  return(list(
-    data=df_theo, plot=p
-  ))
+  return(df_theo)
   
 }
 
