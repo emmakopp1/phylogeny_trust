@@ -11,6 +11,7 @@ dir.create(here("output/results/bantu_subsample2"))
 dir.create(here("output/results/ie"))
 dir.create(here("output/results/st"))
 dir.create(here("output/results/tea"))
+dir.create(here("output/trees"))
 
 # Get the ages for all tips of each tree in a multiPhylo object
 get_tip_ages <- function(phylo) {
@@ -38,6 +39,9 @@ get_nexus_parameters <- function(file) {
 
 phylo_bantu <- read.nexus(here("data/real/bantu_ctmc-strict-bd/bantu_ctmc-strict-bd.trees"))
 
+tree_bantu = phylo_bantu[[length(phylo_bantu)]]
+write.tree(tree_bantu, here("output/results/bantu/bantu_ctmc-strict-bd_tree.nex"))
+
 ages_bantu <- get_tip_ages(phylo_bantu)
 write_csv(ages_bantu, bzfile(here("output/results/bantu/bantu_ctmc-strict-bd_ages.csv.bz")))
 
@@ -51,6 +55,9 @@ ntipschars_bantu <- get_nexus_parameters(here("data/real/bantu_ctmc-strict-bd/ba
 # Bantu subsample -------------------------------------------------------------------------------------------------
 
 phylo_bantu_subset <- read.nexus(here("data/real/bantu_ctmc-strict-bd-subsample/bantu_ctmc-strict-bd-subsample.trees"))
+
+tree_bantu_subset = phylo_bantu_subset[[length(phylo_bantu_subset)]]
+write.tree(tree_bantu_subset, here("output/results/bantu_subsample/bantu_ctmc-strict-bd-subsample_tree.nex"))
 
 ages_bantu_subset <- get_tip_ages(phylo_bantu_subset)
 write_csv(ages_bantu_subset, here("output/results/bantu_subsample/bantu_ctmc-strict-bd-subsample_tipages.csv"))
@@ -66,6 +73,9 @@ ntipschars_bantu_subset <- get_nexus_parameters(here("data/real/bantu_ctmc-stric
 
 phylo_bantu_subset2 <- read.nexus(here("data/real/bantu_ctmc-strict-bd-subsample2/bantu_ctmc-strict-bd-subsample2.trees"))
 
+tree_bantu_subset2 = phylo_bantu_subset2[[length(phylo_bantu_subset2)]]
+write.tree(tree_bantu_subset2, here("output/results/bantu_subsample2/bantu_ctmc-strict-bd-subsample2_tree.nex"))
+
 ages_bantu_subset2 <- get_tip_ages(phylo_bantu_subset2)
 write_csv(ages_bantu_subset2, here("output/results/bantu_subsample2/bantu_ctmc-strict-bd-subsample2_tipages.csv"))
 
@@ -79,6 +89,9 @@ ntipschars_bantu_subset2 <- get_nexus_parameters(here("data/real/bantu_ctmc-stri
 # Indo-European ---------------------------------------------------------------------------------------------------
 
 phylo_ie <- read.nexus(here("data/real/iecor_ctmc-strict-M1/iecor_ctmc-strict-M1.trees"))
+
+tree_ie= phylo_ie[[length(phylo_ie)]]
+write.tree(tree_ie, here("output/results/ie/iecor_ctmc-strict-M1_tree.nex"))
 
 ages_ie <- get_tip_ages(phylo_ie)
 write_csv(ages_ie, bzfile(here("output/results/ie/iecor_ctmc-strict-M1_tipages.csv.bz")))
@@ -94,6 +107,9 @@ ntipschars_ie <- get_nexus_parameters(here("data/real/iecor_ctmc-strict-M1/iecor
 
 phylo_st <- read.nexus(here("data/real/st_ctmc-strict-fbd/st_ctmc-strict-fbd.trees"))
 
+tree_st= phylo_st[[length(phylo_st)]]
+write.tree(tree_st, here("output/results/st/st_ctmc-strict-fbd_tree.nex"))
+
 ages_st <- get_tip_ages(phylo_st)
 write_csv(ages_st, bzfile(here("output/results/st/st_ctmc-strict-fbd_tipages.csv.bz")))
 
@@ -107,6 +123,9 @@ ntipschars_st <- get_nexus_parameters(here("data/real/st_ctmc-strict-fbd/st.nex"
 # Transeurasian ---------------------------------------------------------------------------------------------------
 
 phylo_tea <- read.nexus(here("data/real/tea_ctmc-strict-fbd-constrained/tea_ctmc-strict-fbd-constrained.trees"))
+
+tree_tea= phylo_tea[[length(phylo_tea)]]
+write.tree(tree_tea, here("output/results/tea/tea_ctmc-strict-fbd-constrained_tree.nex"))
 
 ages_tea <- get_tip_ages(phylo_tea)
 write_csv(ages_tea, here("output/results/tea/tea_ctmc-strict-fbd-constrained_tipages.csv"))
