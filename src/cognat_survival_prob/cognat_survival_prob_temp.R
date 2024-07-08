@@ -1,8 +1,9 @@
 library(here)
 library(tidyverse)
 library(ape)
-library(adephy)
+library(adephylo)
 library(dplyr)
+
 
 # 1. Theoretical value
 # Initialise the number of meanings 
@@ -35,7 +36,7 @@ tree <- c(tree_tea, tree_bantu,tree_bantu_subset,tree_bantu_subset2,tree_ie,tree
 n_meanings <- bounds_real_tb$n_meanings
 pi10 <- transition$pi10
 
-qs_tb <- map_df(1:length(phylo), function(i) {compute_survival_prob(family[i], tree[[i]], n_meanings[i], pi10[i])}) |>
+qs_tb <- map_df(1:length(tree), function(i) {compute_survival_prob(family[i], tree[[i]], n_meanings[i], pi10[i])}) |>
   pivot_wider(names_from = age, values_from = q_theo) |>
   group_by(family) 
   
@@ -69,27 +70,29 @@ tip_set$B
 
 
 # Convert nexus data into dataframe
-df_cognates = as_tibble(read.nexus.data(here("data/real/st_ctmc-strict-fbd/st.nex"))) |> 
-  t() |>
-  rename(Language = V1)
 
-#df_cognates = data_to_df(data_st$path_cognates)
+trait = read.nexus.data(here("data/real/st_ctmc-strict-fbd/st.nex")) 
+languages = names(trait)
 
-# Dataframe of Sinitc group & other groups
-
-v1 <- df_cognates %>% filter(tip_set$B) 
-
-mutate_all(~replace(as.numeric(replace(., . == "?", NA)), is.na(.), NA))
-
-v1 = df_cognates[tip_set$B,] |> as.numeric()
-v2 = df_cognates[tip_set$A,]
+trait_by_family = trait|> 
+  as_tibble() |>
+  mutate_all(~replace(as.numeric(replace(., . == "?", NA)), is.na(.), NA)) |>
+  t() |> 
+  as_tibble() |> 
+  mutate(Family = languages) |>
+  mutate(
+    Subtree = case_when(
+      Family %in% tip_set$A ~ 1,
+      Family %in% tip_set$B ~ 2,
+      TRUE ~ NA)) |> 
+  relocate(c(Family,Subtree), .before = 1)
+  
 
 
 resultats = c()
 
-for (sinitic_row in tip_set$B){
-  #x = apply(v2, 1, function(row) sum(v1[sinitic_row,] == row & v1[sinitic_row,] == 1, na.rm = TRUE))
-  x = sum(apply(v2, 2, max,na.rm=T)&v1[sinitic_row,],na.rm=T)
+for (row in tip_set$B){
+  x = sum(apply(df_cognates2, 2, max,na.rm=T) & df_cognates1[,row], na.rm = T)
   resultats = cbind(resultats,x)
 }
 
