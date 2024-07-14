@@ -3,7 +3,6 @@ library(tidyverse)
 library(ggthemes)
 library(knitr)
 library(kableExtra)
-library(crow_top)
 
 font <- "Noto Sans SemiCondensed"
 theme_set(
@@ -13,29 +12,35 @@ theme_set(
       aspect.ratio = .618
     )
 )
-wdt <- 21/10*7
+wdt <- 21 / 10 * 7
 hgt <- wdt * .7
 
-bounds_tb <- read_csv(here("output/results/bounds_real_tb.csv"),show_col_types = FALSE)
-clnms <- c("family", paste0("\\multicolumn{1}{c}{$", c("N", "k", "\\pi_0", "\\pi_1", "q", "t_R","concept", "n_cogsets", "\\Delta^S(t_R)", "\\inf_t\\{\\Delta^S(t) = 1\\}", "\\Delta^T(t_R)", "\\inf_t\\{\\Delta^R(t) = 1\\}"), "$}"))
-bounds_tb |>
-  select(-n_trees) |>
+bounds_tb <- read_csv(here("output/results/bounds_real_tb.csv"), show_col_types = FALSE)
+clnms <- c("family", paste0("\\multicolumn{1}{c}{$", c("N", "k", "\\pi_0", "\\pi_1", "q", "t", "n_{cogsets}", "\\Delta^S(t)", "\\inf_t\\{\\Delta^S(t) = 1\\}", "\\Delta^T(t)", "\\inf_t\\{\\Delta^R(t) = 1\\}"), "$}"))
+bounds_tb |> 
+  select(-n_trees) |> 
   mutate(ub_DT = ifelse(ub_DT >= 1, "\\geq 1", round(ub_DT, 2))) |>
   mutate(ub_DS = ifelse(ub_DS >= 1, "\\geq 1", round(ub_DS, 2))) |>
-  kbl(format = "latex", booktabs = TRUE, linesep = "", escape = FALSE, align = c("l", "r", "r", rep("S", 10)), digits = 2, col.names = clnms) |>
-  add_header_above(c(" " = 7, "upper bound" = 2, "threshold age" = 2), line = FALSE) |> 
+  kbl(format = "latex",
+      booktabs = T,
+      linesep = "",
+      escape = FALSE,
+      align = c("l", "r", "r", rep("S", 10)),
+      digits = 2,
+      col.names = clnms) |>
+  add_header_above(c(" " = 9, "upper bound" = 2, "threshold age" = 2), line = FALSE)|>
   write_lines(here("output/tabs/tab_upperbound.tex"))
 
-bounds_byt_tb <- read_csv(here("output/results/bounds_real_byt_tb.csv"),show_col_types = FALSE)
+bounds_byt_tb <- read_csv(here("output/results/bounds_real_byt_tb.csv"), show_col_types = FALSE)
 fig_bounds <- bounds_byt_tb |>
-  rowwise() |> 
+  rowwise() |>
   mutate(ub_DT = min(1, ub_DT)) |>
-  mutate(ub_DS = min(1, ub_DS)) |> 
-  select(family, t, ub_DT, ub_DS) |> 
-  pivot_longer(-c(family, t)) |> 
-  mutate(lbl = str_remove(name, "ub_D")) |> 
+  mutate(ub_DS = min(1, ub_DS)) |>
+  select(family, t, ub_DT, ub_DS) |>
+  pivot_longer(-c(family, t)) |>
+  mutate(lbl = str_remove(name, "ub_D")) |>
   mutate(lbl = factor(lbl, levels = c("T", "S"))) |>
-#   filter(!str_detect(family, "subset")) |>
+  #   filter(!str_detect(family, "subset")) |>
   ggplot(aes(x = t, y = value, linetype = family, color = family)) +
   geom_line() +
   xlab("age (ka BP)") +
@@ -101,7 +106,7 @@ plot_crop(here("output/figs/fig_bounds.pdf"))
 # ggsave(here("output/figs/fig_bounds_bantu.pdf"), fig_bounds_bantu, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
 # plot_crop(here("output/figs/fig_bounds_bantu.pdf"))
 
-qs_tb <- read_csv(here("output/results/qs_tb.csv"),show_col_types = FALSE)
+qs_tb <- read_csv(here("output/results/qs_tb.csv"), show_col_types = FALSE)
 fig_qs <- qs_tb |>
   ggplot(aes(x = age, y = q_theo, group = family, color = family, linetype = family)) +
   geom_line() +
@@ -112,7 +117,7 @@ fig_qs <- qs_tb |>
 ggsave(here("output/figs/fig_qs.pdf"), fig_qs, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
 plot_crop(here("output/figs/fig_qs.pdf"))
 
-node_probs_tb <- read_csv(here("output/results/node_probs_tb.csv"),show_col_types = FALSE)
+node_probs_tb <- read_csv(here("output/results/node_probs_tb.csv"), show_col_types = FALSE)
 fig_nodeprobs <- node_probs_tb |>
   ggplot(aes(x = factor(age), y = p, group = factor(age))) +
   geom_boxplot(fill = "gray90", outliers = FALSE) +
