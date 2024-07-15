@@ -16,11 +16,13 @@ wdt <- 21 / 10 * 7
 hgt <- wdt * .7
 
 bounds_tb <- read_csv(here("output/results/bounds_real_tb.csv"), show_col_types = FALSE)
-clnms <- c("family", paste0("\\multicolumn{1}{c}{$", c("N", "k", "\\pi_0", "\\pi_1", "q", "t", "n_{cogsets}", "\\Delta^S(t)", "\\inf_t\\{\\Delta^S(t) = 1\\}", "\\Delta^T(t)", "\\inf_t\\{\\Delta^R(t) = 1\\}"), "$}"))
+clnms <- c("family", paste0("\\multicolumn{1}{c}{$", c("N", "k", "\\pi_0", "\\pi_1", "q", "t", "n_{cogsets}", "\\Delta^S(t)", "\\Delta^T(t)", "\\inf_t\\{\\Delta^S(t) = 1\\}", "\\inf_t\\{\\Delta^R(t) = 1\\}"), "$}"))
 bounds_tb |> 
   select(-n_trees) |> 
   mutate(ub_DT = ifelse(ub_DT >= 1, "\\geq 1", round(ub_DT, 2))) |>
   mutate(ub_DS = ifelse(ub_DS >= 1, "\\geq 1", round(ub_DS, 2))) |>
+  relocate(ub_DS, .after = ub_DT) |> 
+  mutate(family = str_replace_all(family, "_", " ")) |> 
   kbl(format = "latex",
       booktabs = T,
       linesep = "",
@@ -28,7 +30,7 @@ bounds_tb |>
       align = c("l", "r", "r", rep("S", 10)),
       digits = 2,
       col.names = clnms) |>
-  add_header_above(c(" " = 9, "upper bound" = 2, "threshold age" = 2), line = FALSE)|>
+  add_header_above(c(" " = 9, "upper bound" = 1, "threshold age" = 2), line = FALSE)|>
   write_lines(here("output/tabs/tab_upperbound.tex"))
 
 bounds_byt_tb <- read_csv(here("output/results/bounds_real_byt_tb.csv"), show_col_types = FALSE)
@@ -218,3 +220,4 @@ fig_ieconsensus <- ggtree(ie_consensus) +
   theme(plot.margin = margin(.5, 0, .5, 0, unit = "line"))
 ggsave(here("output/figs/fig_ieconsensus.pdf"), fig_ieconsensus, device = cairo_pdf, width = wdt, height = hgt * 2, units = "cm")
 plot_crop(here("output/figs/fig_ieconsensus.pdf"))
+

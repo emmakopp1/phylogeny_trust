@@ -65,15 +65,18 @@ bounds_real_tb <- tracelog_summary |>
   ungroup() |>
   rename(family = familyx)
 
+
 # For first meaning of TEA 
 # Problem resultat différent que la table 
-compute_upperbound_DT(3421, 1.41, 14.7, filter(tipages_summary, family == "TEA")$depth, filter(tipages_summary, family == "TEA")$s)
+#compute_upperbound_DT(3421, 1.41, 14.7, filter(tipages_summary, family == "TEA")$depth, filter(tipages_summary, family == "TEA")$s)
 # But inf coherent 
-compute_inf_t_DT(3421, 1.41,  filter(tipages_summary, family == "TEA")$depth,  filter(tipages_summary, family == "TEA")$s)
+#compute_inf_t_DT(3421, 1.41,  filter(tipages_summary, family == "TEA")$depth,  filter(tipages_summary, family == "TEA")$s)
 
 
+#sum(filter(bounds_real_tb,family=="TEA")$ub_DT)
 
 # TEA add line with the mean of parameter for all cognates
+# check
 TEA_summary <- bounds_real_tb |>
   filter(family == "TEA") |>
   select(-concept, -family, -n_cogsets, -ub_DT) |>
@@ -85,8 +88,9 @@ TEA_summary <- bounds_real_tb |>
   relocate(family, .before = n_trees) |>
   relocate(c(concept, n_cogsets), .before = ub_DS) |>
   mutate(
-    ub_DT = sum(filter(bounds_real_tb, family == "TEA")$n_cogsets * filter(bounds_real_tb, family == "TEA")$ub_DT),
-    inf_t_DT = NA)
+    ub_DT = sum(filter(bounds_real_tb, family == "TEA")$ub_DT),
+    inf_t_DT = 13.0)
+
 
 bounds_real_tb <- bind_rows(TEA_summary, bounds_real_tb) |>
   relocate(inf_t_DT, .after = ub_DT) |>
@@ -112,6 +116,7 @@ bounds_real_byt_tb <- bounds_real_tb |>
          ) |>
   rename(family = familyx)
 write_csv(bounds_real_byt_tb, here("output/results/bounds_real_byt_tb.csv"))
+
 
 
 # dt_real_ages <- list.dirs(here("output/results"), full.names = TRUE, recursive = FALSE) %>%
