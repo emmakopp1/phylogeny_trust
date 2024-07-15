@@ -1,6 +1,41 @@
 import numpy as np
-import re
 
+def change_taxa_names(path_in:str):
+    """This function replace the name of the nodes by the name of the taxas. 
+
+    Args:
+        path_in (str): Path to find the file. 
+    """
+    # read file
+    with open(path_in, 'r') as f:
+        text = f.read()
+
+    list_lines = text.splitlines()
+
+    # From 'translate' to ';'
+    index_start = int(np.argwhere(np.array(list_lines)=='\tTRANSLATE')+1)
+    index_stop = int(np.argwhere(np.array(list_lines[index_start:])=='\t;')+index_start)
+
+    # Associate the number to the taxa
+    corresponding_tables_index={}
+    regex_number="[0-9][0-9]?"
+
+    for i in range(index_start,index_stop):
+        line = list_lines[i]
+        matched_numbers = re.findall(regex_number,line)
+        corresponding_tables_index[matched_numbers[0]]=f't{matched_numbers[1]}'
+
+    # Tree
+    tree=list_lines[-2]
+    list_elt = tree.split(" ")
+    list_values=list_elt[5][:-1]
+
+    # Replace
+    for index in list(corresponding_tables_index.keys()):
+        list_values = re.sub(f'\({index}:',f'({corresponding_tables_index[index]}:',list_values)
+        list_values = re.sub(f'\,{index}:',f',{corresponding_tables_index[index]}:',list_values)
+
+    return(list_values)
 
 def modify_branch_length(path:str, k:float, path_out:str):
     """This function multiply the branch length by a scalar.
