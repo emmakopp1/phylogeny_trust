@@ -21,7 +21,7 @@ bounds_tb |>
   select(-n_trees) |> 
   mutate(ub_DT = ifelse(ub_DT >= 1, "\\geq 1", round(ub_DT, 2))) |>
   mutate(ub_DS = ifelse(ub_DS >= 1, "\\geq 1", round(ub_DS, 2))) |>
-  relocate(ub_DS, .after = ub_DT) |> 
+  relocate(ub_DT, .after = ub_DS) |> 
   mutate(family = str_replace_all(family, "_", " ")) |> 
   kbl(format = "latex",
       booktabs = T,
@@ -30,7 +30,7 @@ bounds_tb |>
       align = c("l", "r", "r", rep("S", 10)),
       digits = 2,
       col.names = clnms) |>
-  add_header_above(c(" " = 9, "upper bound" = 1, "threshold age" = 2), line = FALSE)|>
+  add_header_above(c(" " = 9, "upper bound" = 1, "threshold age" = 2), line = FALSE) |>
   write_lines(here("output/tabs/tab_upperbound.tex"))
 
 bounds_byt_tb <- read_csv(here("output/results/bounds_real_byt_tb.csv"), show_col_types = FALSE)
