@@ -1,4 +1,5 @@
 import numpy as np
+import re
 
 def change_taxa_names(path_in:str):
     """This function replace the name of the nodes by the name of the taxas. 
