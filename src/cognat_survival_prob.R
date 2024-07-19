@@ -60,16 +60,17 @@ tips_of_subtree = function(tree){
 # 1. Theoretical value
 # Initialize the number of meanings 
 bounds_real_tb = read_csv(here("output/results/bounds_real_tb.csv")) |> 
-  mutate(n_meanings = c(254,150,150,150,170,200)) |> 
+  mutate(n_meanings = c(254,150,150,150,170,200,200)) |> 
   relocate(n_meanings, .after = n_cogsets)
 
-# Load the tree 
+# Load the trees 
 tree_bantu = read.tree(here("output/results/bantu/bantu_ctmc-strict-bd_tree.nex"))
 tree_bantu_subset = read.tree(here("output/results/bantu_subsample/bantu_ctmc-strict-bd-subsample_tree.nex"))
 tree_bantu_subset2 = read.tree(here("output/results/bantu_subsample2/bantu_ctmc-strict-bd-subsample2_tree.nex"))
 tree_ie = read.tree(here("output/results/ie/iecor_ctmc-strict-M1_tree.nex"))
 tree_st = read.tree(here("output/results/st/st_ctmc-strict-fbd_tree.nex"))
 tree_tea = read.tree(here("output/results/tea/tea_ctmc-strict-fbd-constrained_tree.nex"))
+tree_st_bysens = read.tree(here("output/results/st_by_sens/st_ctmc-strict-fbd_by_sens_tree.nex"))
 
 # Transition from 1 to 0 i.e death trait rate
 transition = bounds_real_tb |> 
@@ -78,10 +79,10 @@ transition = bounds_real_tb |>
 
 
 # Functions to transform into tidy 
-compute_survival_prob_by_ages <- function(tree, n_sens, mu) {
+compute_survival_prob_by_ages <- function(tree, n_sens, mu, age_min = 1, age_max = 20) {
   t <- as.numeric(distRoot(tree, 1))
   root <- find_root(tree)
-  ks <- (1:20) / t
+  ks <- (age_min:age_max) / t
   
   # Create 20 trees with modified edge lengths
   trees_scaled <- purrr::map(ks, function(x) {
@@ -92,13 +93,13 @@ compute_survival_prob_by_ages <- function(tree, n_sens, mu) {
   
   # Compute theoretical survival probabilities
   tibble(
-    age = 1:20,
+    age = age_min:age_max,
     q_theo = map2_dbl(trees_scaled, ks, ~ Q(.x, root, mu * .y) * n_sens)
   )
 }
 
 # Apply the function to each family and combine the results
-trees <- c(tree_tea, tree_bantu, tree_bantu_subset, tree_bantu_subset2, tree_ie, tree_st)
+trees <- c(tree_tea, tree_bantu, tree_bantu_subset, tree_bantu_subset2, tree_ie, tree_st, tree_st_bysens)
 
 
 qs_tb <- map_df(1:length(trees), function(i) {
@@ -106,16 +107,24 @@ qs_tb <- map_df(1:length(trees), function(i) {
   n_meanings <- bounds_real_tb$n_meanings
   pi10 <- transition$pi10
   
-  compute_survival_prob_by_ages(trees[[i]], n_meanings[i], pi10[i]) |>
+  compute_survival_prob_by_ages(trees[[i]], n_meanings[i], pi10[i], 0, 60) |>
     mutate(family = family[i])
 }) |>
   pivot_wider(names_from = age, values_from = q_theo) |>
-  group_by(family) 
-
+  group_by(family)  
 
 # Write outputs
 write_csv(qs_tb, here("output/results/qs_tb.csv"))
 
+
+qs_tb_min <- qs_tb |>
+  pivot_longer(cols = -family, names_to = "millennium", values_to = "value") |>
+  mutate(millennium = as.numeric(millennium)) %>%
+  left_join(qs_tb %>% select(family, value_1 = '1' ), by = "family") |>
+  filter(value < 0.05*value_1) |>
+  group_by(family) |>
+  summarise(min_millennium = min(millennium), .groups = 'drop')
+write_csv(qs_tb_min, here("output/results/qs_tb_min.csv"))
 
 
 # 2. Number of common meanings between a leaf and a groups  

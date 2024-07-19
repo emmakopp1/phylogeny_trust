@@ -924,7 +924,18 @@ group_sinitic = c("SiniticBeijing" ,
 
 st_group_sinitic <- tibble(family = "ST", calibration = "sinitic", tip = group_sinitic, s=2.076)
 
-# TEA --------------------------------------------------------------------------------------------------------------------
+# Sino-Tibetan par sens ----------------------------------------------------------------------------------------
+
+group_sinitic = c("SiniticBeijing",
+                  "SiniticChaozhou",
+                  "SiniticGuangzhou",
+                  "SiniticJieyang",
+                  "SiniticLonggang",
+                  "SiniticXingning")
+
+st_by_sens_group_sinitic <- tibble(family = "ST_by_sens", calibration = "sinitic", tip = group_sinitic, s=2.077)
+
+# TEA --------------------------------------------------------------------------------------------------------------
 
 tea_group_japonic = c("Japanese",
   "Old_Japanese",
@@ -1077,7 +1088,7 @@ calibration <- bind_rows(
   bantu_group_a, bantu_group_b, bantu_group_c, bantu_group_d,
   bantusubsample_group_a,bantusubsample_group_b,bantusubsample_group_c,bantusubsample_group_d,
   bantusubsample2_group_a,bantusubsample2_group_b,bantusubsample2_group_c,bantusubsample2_group_d,
-  st_group_sinitic,
+  st_group_sinitic,st_by_sens_group_sinitic,
   tea_group_japonic,tea_group_koreanic,tea_group_mongolian,tea_group_tungusic,tea_group_turkic)
 
 

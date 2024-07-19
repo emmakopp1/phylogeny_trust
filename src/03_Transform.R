@@ -91,13 +91,25 @@ TEA_summary <- bounds_real_tb |>
     ub_DT = sum(filter(bounds_real_tb, family == "TEA")$ub_DT),
     inf_t_DT = 13.0)
 
+ST_bysens_summary <- bounds_real_tb |>
+  filter(family == "ST_by_sens") |>
+  select(-concept, -family, -n_cogsets, -ub_DT) |>
+  colMeans() |>
+  t() |>
+  as_tibble() |>
+  mutate(concept = NA, family = "ST_bysens", n_cogsets = NA) |>
+  mutate(n_cogsets = if_else(is.na(n_cogsets), k, n_cogsets)) |>
+  relocate(family, .before = n_trees) |>
+  relocate(c(concept, n_cogsets), .before = ub_DS) |>
+  mutate(
+    ub_DT = sum(filter(bounds_real_tb, family == "ST_by_sens")$ub_DT),
+    inf_t_DT = 13.8)
 
 
-
-bounds_real_tb <- bind_rows(TEA_summary, bounds_real_tb) |>
+bounds_real_tb <- bind_rows(TEA_summary, bounds_real_tb, ST_bysens_summary) |>
   relocate(inf_t_DT, .after = ub_DT) |>
   select(-concept) |>
-  filter(family %in% c("TEA_all", "Bantu", "Bantu_subset", "Bantu_subset2", "IE", "ST")) |> 
+  filter(family %in% c("TEA_all", "Bantu", "Bantu_subset", "Bantu_subset2", "IE", "ST","ST_bysens")) |> 
   mutate(family = ifelse(family == "TEA_all", "TEA", family)) 
 
 
@@ -111,6 +123,7 @@ bounds_real_byt_tb <- bounds_real_tb |>
   mutate(count = length(t_values)) |>
   uncount(count) |>
   mutate(t = t_values) |>
+  mutate(family = ifelse(family == "ST_bysens", "ST_by_sens", family)) |>
   rename(familyx = family) |>
   rowwise() |>
   mutate(ub_DT = compute_upperbound_DT(k, q, t, filter(tipages_summary, family == familyx)$depth ,filter(tipages_summary, family == familyx)$s),

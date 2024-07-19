@@ -33,6 +33,18 @@ bounds_tb |>
   add_header_above(c(" " = 9, "upper bound" = 1, "threshold age" = 2), line = FALSE) |>
   write_lines(here("output/tabs/tab_upperbound.tex"))
 
+qs_tb_min = read_csv(here("output/results/qs_tb_min.csv"), show_col_types = FALSE)
+
+qs_tb_min |> 
+  mutate(family = str_replace_all(family, "_", " ")) |>
+  kbl(format = "latex",
+      booktabs = T,
+      linesep = "",
+      escape = FALSE,
+      digits = 2,
+      col.names = c("family","$t_{min}$")) |> 
+  write_lines(here("output/tabs/tab_qs_upperbound.tex"))
+
 bounds_byt_tb <- read_csv(here("output/results/bounds_real_byt_tb.csv"), show_col_types = FALSE)
 fig_bounds <- bounds_byt_tb |>
   rowwise() |>
@@ -118,6 +130,7 @@ fig_qs <- qs_tb |>
   scale_color_few("Dark")
 ggsave(here("output/figs/fig_qs.pdf"), fig_qs, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
 plot_crop(here("output/figs/fig_qs.pdf"))
+
 
 node_probs_tb <- read_csv(here("output/results/node_probs_tb.csv"), show_col_types = FALSE)
 fig_nodeprobs <- node_probs_tb |>
