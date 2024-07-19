@@ -4,12 +4,23 @@ library(ape)
 library(treeio)
 library(tracerer)
 library(TreeTools)
+library(readr)
 
+
+# Add the missing "End;" line at the end of the beast tree files ---------------
+write_file("End;",
+           here("data/real/st_ctmc-strict-fbd-by-sens/st_ctmc-strict-fbd.trees"),
+           append = TRUE
+)
+
+
+# Create directories
 dir.create(here("output/results/bantu"))
 dir.create(here("output/results/bantu_subsample"))
 dir.create(here("output/results/bantu_subsample2"))
 dir.create(here("output/results/ie"))
 dir.create(here("output/results/st"))
+dir.create(here("output/results/st_by_sens"))
 dir.create(here("output/results/tea"))
 dir.create(here("output/trees"))
 
@@ -120,6 +131,26 @@ ntipschars_st <- get_nexus_parameters(here("data/real/st_ctmc-strict-fbd/st.nex"
   mutate(family = "ST")
 
 
+
+# Sino-Tibetan by sens -----------------------------------------------------------------------------------------
+
+phylo_st_by_sens <- read.nexus(here("data/real/st_ctmc-strict-fbd-by-sens/st_ctmc-strict-fbd.trees"))
+
+tree_st_by_sens = phylo_st_by_sens[[length(phylo_st_by_sens)]]
+write.tree(tree_st_by_sens, here("output/results/st_by_sens/st_ctmc-strict-fbd_by_sens_tree.nex"))
+
+ages_st_by_sens <- get_tip_ages(phylo_st_by_sens)
+write_csv(ages_st_by_sens, bzfile(here("output/results/st_by_sens/st_ctmc-strict-fbd_by_sens_tipages.csv.bz")))
+
+trace_st_by_sens <- parse_beast_tracelog_file(here("data/real/st_ctmc-strict-fbd-by-sens/st_ctmc-strict-fbd.log"))
+write_csv(trace_st_by_sens, here("output/results/st_by_sens/st_ctmc-strict-fbd_by_sens_tracelog.csv"))
+
+ntipschars_st_by_sens <- get_nexus_parameters(here("data/real/st_ctmc-strict-fbd-by-sens/st.nex")) |>
+  mutate(family = "ST_by_sens")
+
+
+
+
 # Transeurasian ---------------------------------------------------------------------------------------------------
 
 phylo_tea <- read.nexus(here("data/real/tea_ctmc-strict-fbd-constrained/tea_ctmc-strict-fbd-constrained.trees"))
@@ -139,6 +170,6 @@ ntipschars_tea <- get_nexus_parameters(here("data/real/tea_ctmc-strict-fbd-const
 
 # Number of tips and characters -----------------------------------------------------------------------------------
 
-ntipschars <- bind_rows(ntipschars_bantu, ntipschars_bantu_subset, ntipschars_bantu_subset2, ntipschars_ie, ntipschars_st, ntipschars_tea) |>
+ntipschars <- bind_rows(ntipschars_bantu, ntipschars_bantu_subset, ntipschars_bantu_subset2, ntipschars_ie, ntipschars_st, ntipschars_st_by_sens, ntipschars_tea) |>
   relocate(family, 1)
 write_csv(ntipschars, here("output/results/ntipschars.csv"))
