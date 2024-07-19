@@ -1,6 +1,7 @@
 library(here)
 library(TreeSim)
 library(ape)
+library(purrr)
 
 # 1. Simulation of the initial tree
 path <- here("data/simulated_temp/beast-data-sim-")
@@ -44,4 +45,26 @@ for (k in l) {
     file = sprintf(here("data/simulated_temp/beast-data-sim-%d/tree-sim-%d.tree"), k, k)
   )
 }
+
+# Files manipulation
+
+files = list.files(here('data/simulated_temp'),full.names = TRUE, recursive = TRUE) 
+target_text = read_lines(here("data/beast-data-sim.xml")) %>% paste(collapse = "\n")
+
+process_file <- function(file) {
+  file_text <- read_lines(file) |> paste(collapse = "\n")
+  str_replace(target_text, "xyz", file_text) |>
+    write_lines(
+      file %>%
+        str_replace("/tree-sim-\\d+\\.tree$", "") %>%  # Remove the tree file part
+        str_replace("beast-data-sim-\\d+", "\\0/\\0.xml")
+    )
+}
+
+updated_texts <- files |>
+  map_chr(~ process_file(.x)) 
+
+
+
+
 
