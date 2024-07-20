@@ -2,6 +2,8 @@ library(here)
 library(TreeSim)
 library(ape)
 library(purrr)
+library(stringr)
+library(readr)
 
 # 1. Simulation of the initial tree
 path <- here("data/simulated_temp/beast-data-sim-")
@@ -31,8 +33,8 @@ tree <- sim.bd.taxa.age(
 
 tree <- tree[[1]]
 
-dir.create(sprintf(here("data/simulated_temp/beast-data-sim-1")))
-write.nexus(tree, file = sprintf(here("data/simulated_temp/beast-data-sim-%d/tree-sim-%d.tree"), t, t))
+#dir.create(sprintf(here("data/simulated_temp/beast-data-sim-1")))
+#write.nexus(tree, file = sprintf(here("data/simulated_temp/beast-data-sim-%d/tree-sim-%d.tree"), t, t))
 
 # 2. Construction of the scaled trees
 l <- seq(1, 17, 1)
@@ -54,15 +56,24 @@ target_text = read_lines(here("data/beast-data-sim.xml")) %>% paste(collapse = "
 process_file <- function(file) {
   file_text <- read_lines(file) |> paste(collapse = "\n")
   str_replace(target_text, "xyz", file_text) |>
+  str_replace("output_name", sprintf("beast-simulated-seq-%d.xml",as.numeric(str_extract(file, "(\\d+)(?=\\.tree)")))) |> 
     write_lines(
       file %>%
         str_replace("/tree-sim-\\d+\\.tree$", "") %>%  # Remove the tree file part
-        str_replace("beast-data-sim-\\d+", "\\0/\\0.xml")
+        str_replace("beast-data-sim-\\d+", "\\0/\\0.xml") 
     )
 }
 
+
 updated_texts <- files |>
   map_chr(~ process_file(.x)) 
+
+for (i in 1:17){
+  # Run beast to generate sequence
+  system(sprintf(("../../../../Applications/beast/bin/beast -overwrite /Users/kopp/Documents/phylogeny_trust/data/simulated_temp/beast-data-sim-%d/beast-data-sim-%d.xml"), i, i))
+  # Change the emplacement of the output
+  system(sprintf(("mv beast-simulated-seq-%d.xml  data/simulated_temp/beast-data-sim-%d/beast-simulated-seq-%d.xml"), i, i, i))
+}
 
 
 

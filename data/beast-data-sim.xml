@@ -60,7 +60,7 @@
     
 
     <!-- configure the Sequence Simulator -->
-    <run spec="beast.app.seqgen.SequenceSimulator" id="seqgen" data="@alignment" tree="@tree" sequencelength="3000" outputFileName="beast-simulated-seq-1.xml">
+    <run spec="beast.app.seqgen.SequenceSimulator" id="seqgen" data="@alignment" tree="@tree" sequencelength="3000" outputFileName="output_name">
     	<!-- set up site model -->     
 	    <siteModel spec="SiteModel" id="siteModel" gammaCategoryCount="4">
 			<!-- specify gamma shape parameter -->
