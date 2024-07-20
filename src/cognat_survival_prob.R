@@ -98,16 +98,42 @@ compute_survival_prob_by_ages <- function(tree, n_sens, mu, age_min = 1, age_max
   )
 }
 
+
+compute_survival_prob_by_ages2 = function(tree,n_sens,mu){
+  t = as.numeric(distRoot(tree,1))
+  root = find_root(tree)
+  ks = (1:20)/t
+  
+  # create 20 trees
+  for (k in ks) {
+    tree_k = tree
+    tree_k$edge.length = tree_k$edge.length * k 
+    assign(paste0("tree_", k*t), tree_k)
+  }
+  
+  q_theo =c()
+  for (k in 1:20){
+    tree_k = get(paste0("tree_",k))
+    q_theo=c(q_theo,Q(tree,root,mu*k/t)*n_sens)
+  }
+  
+  
+  df_theo = data.frame(
+    age = 1:length(q_theo),
+    q_theo = q_theo
+  )
+  
+  return(df_theo)}
+
 # Apply the function to each family and combine the results
 trees <- c(tree_tea, tree_bantu, tree_bantu_subset, tree_bantu_subset2, tree_ie, tree_st, tree_st_bysens)
-
 
 qs_tb <- map_df(1:length(trees), function(i) {
   family <- bounds_real_tb$family
   n_meanings <- bounds_real_tb$n_meanings
   pi10 <- transition$pi10
   
-  compute_survival_prob_by_ages(trees[[i]], n_meanings[i], pi10[i], 0, 60) |>
+  compute_survival_prob_by_ages2(trees[[i]], n_meanings[i], pi10[i]) |>
     mutate(family = family[i])
 }) |>
   pivot_wider(names_from = age, values_from = q_theo) |>
@@ -115,6 +141,11 @@ qs_tb <- map_df(1:length(trees), function(i) {
 
 # Write outputs
 write_csv(qs_tb, here("output/results/qs_tb.csv"))
+
+
+
+
+
 
 
 qs_tb_min <- qs_tb |>
