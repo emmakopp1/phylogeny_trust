@@ -65,7 +65,9 @@ bounds_real_tb <- tracelog_summary |>
   ungroup() |>
   rename(family = familyx)
 
-
+st_bysens = filter(bounds_real_tb,family=="ST_by_sens") |> 
+  arrange(desc(ub_DS)) |> 
+  write_csv(here("output/results/st_bysens.csv"))
 # For first meaning of TEA 
 # Problem resultat différent que la table 
 #compute_upperbound_DT(3421, 1.41, 14.7, filter(tipages_summary, family == "TEA")$depth, filter(tipages_summary, family == "TEA")$s)

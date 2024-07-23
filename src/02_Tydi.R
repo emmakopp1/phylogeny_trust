@@ -84,35 +84,46 @@ n_cogids_st_by_sens <- here("data/real/st_ctmc-strict-fbd-by-sens/st.nex") |>
 tracelog_tea_summary <- tracelog_tea |>
   add_tally(name = "n_trees") |>
   filter(Sample > ceiling(max(Sample) * burnin)) |>
-  select(family, n_trees, starts_with("freqParameter"), TreeHeight.t.tree) |>
-  pivot_longer(starts_with("freqParameter")) |>
+  select(family, n_trees, starts_with("freqParameter"), TreeHeight.t.tree, starts_with("mutationRate")) |>
+  pivot_longer(cols = matches("freqParameter|mutationRate")) |>
   mutate(name = str_remove(name, "freqParameter\\.s\\.")) |>
-  separate(name, into = c("concept", "pi"), sep = "\\.(?=[12]$)") |>
-  mutate(pi = paste0("pi", as.integer(pi) - 1)) |>
+  mutate(name = str_replace(name, "mutationRate", "mu.")) |>
+  mutate(name = str_remove(name, "\\.s\\.")) |>
+  mutate(name = str_replace_all(name, "(mu.)(.*)", "\\2.mu")) |>
+  separate(name, into = c("concept", "pi"), sep = "\\.(?=[12]$|mu$)", remove = FALSE) |>
+  mutate(pi = if_else(str_detect(name, "mu$"), "mu", pi)) |>
+  select(-name) |>
+  mutate(pi = if_else(pi == "mu", "mu", paste0("pi", as.integer(str_remove(pi, "pi")) - 1))) |>
   mutate(concept = str_remove(concept, "\\.$")) |>
   mutate(concept = str_replace(concept, "^fly$", "fly_noun")) |>
   rename(t_R = TreeHeight.t.tree) |>
   mutate(t_R = t_R * 0.1) |>
   pivot_wider(names_from = pi, values_from = value) |>
   group_by(family, n_trees, concept) |>
-  summarise(across(c(t_R, pi0, pi1), ~ median(.x))) |>
+  summarise(across(c(t_R, pi0, pi1, mu), ~ median(.x))) |>
   ungroup() |>
   left_join(n_cogids_tea) |>
   relocate(n_cogsets, .after = concept)
 
+
 tracelog_st_by_sens_summary <- tracelog_st_by_sens |>
   add_tally(name = "n_trees") |>
   filter(Sample > ceiling(max(Sample) * burnin)) |>
-  select(family, n_trees, starts_with("freqParameter"), TreeHeight.t.tree) |>
-  pivot_longer(starts_with("freqParameter")) |>
+  select(family, n_trees, starts_with("freqParameter"), TreeHeight.t.tree, starts_with("mutationRate")) |>
+  pivot_longer(cols = matches("freqParameter|mutationRate")) |>
   mutate(name = str_remove(name, "freqParameter\\.s\\.")) |>
-  separate(name, into = c("concept", "pi"), sep = "\\.(?=[12]$)") |>
-  mutate(pi = paste0("pi", as.integer(pi) - 1)) |>
+  mutate(name = str_replace(name, "mutationRate", "mu.")) |>
+  mutate(name = str_remove(name, "\\.s\\.")) |>
+  mutate(name = str_replace_all(name, "(mu.)(.*)", "\\2.mu")) |>
+  separate(name, into = c("concept", "pi"), sep = "\\.(?=[12]$|mu$)", remove = FALSE) |>
+  mutate(pi = if_else(str_detect(name, "mu$"), "mu", pi)) |>
+  select(-name) |>
+  mutate(pi = if_else(pi == "mu", "mu", paste0("pi", as.integer(str_remove(pi, "pi")) - 1))) |>
   mutate(concept = str_remove(concept, "\\.$")) |>
   rename(t_R = TreeHeight.t.tree) |>
   pivot_wider(names_from = pi, values_from = value) |>
   group_by(family, n_trees, concept) |>
-  summarise(across(c(t_R, pi0, pi1), ~ median(.x))) |>
+  summarise(across(c(t_R, pi0, pi1, mu), ~ median(.x))) |>
   ungroup() |>
   left_join(n_cogids_st_by_sens) |>
   relocate(n_cogsets, .after = concept)
@@ -121,7 +132,7 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
   map(~ .x |>
     add_tally(name = "n_trees") |>
     filter(Sample > ceiling(max(Sample) * burnin)) |>
-    select(family, n_trees, starts_with("freqParameter"), TreeHeight.t.tree) |>
+    select(family, n_trees, starts_with("freqParameter"), TreeHeight.t.tree, starts_with("mutationRate")) |>
     summarise(family = unique(family), across(-family, ~ median(.x))) |>
     rename(t_R = TreeHeight.t.tree) |>
     rename_with(~ str_replace(.x, "freqParameter.+(?=\\d$)", "pi"))|>
@@ -131,6 +142,16 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
   mutate(q = 1 / (pi0^2 + pi1^2)) |>
   relocate(q, .after = pi1) |>
   left_join(ntipschars)
+
+tt = tracelog_bantu |> 
+  add_tally(name = "n_trees") |> 
+  filter(Sample > ceiling(max(Sample) * burnin)) |>
+  select(family, n_trees, starts_with("freqParameter"), TreeHeight.t.tree, starts_with("mutationRate")) |>
+  summarise(family = unique(family), across(-family, ~ median(.x))) |>
+  rename(t_R = TreeHeight.t.tree) |>
+  rename_with(~ str_replace(.x, "mutationRate\\.s\\.(.*)", "mu")) |>
+  rename_with(~ str_replace(.x, "freqParameter.+(?=\\d$)", "pi")) |>
+  rename(pi0 = pi1, pi1 = pi2)
 
 write_csv(tracelog_summary, here("output/results/tracelog_summary.csv"))
 
