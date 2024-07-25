@@ -102,7 +102,7 @@ tracelog_tea_summary <- tracelog_tea |>
   group_by(family, n_trees, concept) |>
   summarise(across(c(t_R, pi0, pi1, mu), ~ median(.x))) |>
   ungroup() |>
-  left_join(n_cogids_tea) |>
+  left_join(n_cogids_tea, by = "concept") |>
   relocate(n_cogsets, .after = concept)
 
 
@@ -125,7 +125,7 @@ tracelog_st_by_sens_summary <- tracelog_st_by_sens |>
   group_by(family, n_trees, concept) |>
   summarise(across(c(t_R, pi0, pi1, mu), ~ median(.x))) |>
   ungroup() |>
-  left_join(n_cogids_st_by_sens) |>
+  left_join(n_cogids_st_by_sens, by = "concept") |>
   relocate(n_cogsets, .after = concept)
 
 tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_ie, tracelog_st) |>
@@ -136,22 +136,15 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
     summarise(family = unique(family), across(-family, ~ median(.x))) |>
     rename(t_R = TreeHeight.t.tree) |>
     rename_with(~ str_replace(.x, "freqParameter.+(?=\\d$)", "pi"))|>
+    rename_with(~ str_replace(.x, "mutationRate\\.s\\.(.*)", "mu")) |>
     rename(pi0 = pi1, pi1 = pi2)) |>
   bind_rows(tracelog_tea_summary) |>
   bind_rows(tracelog_st_by_sens_summary) |> 
   mutate(q = 1 / (pi0^2 + pi1^2)) |>
   relocate(q, .after = pi1) |>
+  relocate(mu, .before = q) |> 
   left_join(ntipschars)
 
-tt = tracelog_bantu |> 
-  add_tally(name = "n_trees") |> 
-  filter(Sample > ceiling(max(Sample) * burnin)) |>
-  select(family, n_trees, starts_with("freqParameter"), TreeHeight.t.tree, starts_with("mutationRate")) |>
-  summarise(family = unique(family), across(-family, ~ median(.x))) |>
-  rename(t_R = TreeHeight.t.tree) |>
-  rename_with(~ str_replace(.x, "mutationRate\\.s\\.(.*)", "mu")) |>
-  rename_with(~ str_replace(.x, "freqParameter.+(?=\\d$)", "pi")) |>
-  rename(pi0 = pi1, pi1 = pi2)
 
 write_csv(tracelog_summary, here("output/results/tracelog_summary.csv"))
 
