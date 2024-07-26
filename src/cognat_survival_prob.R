@@ -116,7 +116,7 @@ compute_survival_prob_by_ages2 <- function(tree, n_sens, mu) {
   q_theo <- c()
   for (k in 1:20) {
     tree_k <- get(paste0("tree_", k))
-    q_theo <- c(q_theo, Q(tree, root, mu * k / t) * n_sens)
+    q_theo <- c(q_theo, Q(tree_k, root, mu * k / t) * n_sens)
   }
 
 
@@ -136,7 +136,7 @@ qs_tb <- map_df(1:length(trees), function(i) {
   n_meanings <- bounds_real_tb$n_meanings
   pi10 <- transition$pi10
 
-  compute_survival_prob_by_ages2(trees[[i]], n_meanings[i], pi10[i]) |>
+  compute_survival_prob_by_ages(trees[[i]], n_meanings[i], pi10[i]) |>
     mutate(family = family[i])
 }) |>
   pivot_wider(names_from = age, values_from = q_theo) |>

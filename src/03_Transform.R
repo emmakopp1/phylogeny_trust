@@ -1,18 +1,18 @@
-library(here)
+library(here) 
 library(tidyverse)
 
 
 # Compute the upper bound of the probability of inferring the true tree topology for one sens
 compute_upperbound_DT <- function(k, q, t, depth, s) {
-  k * sum(exp(-q * (t - depth - s)))
+  k * sum(exp(-q  * (t - depth - s)))
 }
 
 # Compute the time threshold beyond which the upper bound of the probability
 # of inferring the true tree topology falls below 1
-compute_inf_t_DT <- function(k, q, depth, s, interval = c(0, 20), tol = 1e-6, maxiter = 1000) {
+compute_inf_t_DT <- function(k, q, depth, s, interval = c(0, 20), tol = 1e-6, maxiter = 10000) {
   uniroot(function(t) {
     compute_upperbound_DT(k, q, t, depth, s) - 1
-  }, interval = interval, tol = tol, maxiter = maxiter)$root
+  }, extendInt = "yes", interval = interval, tol = tol, maxiter = maxiter)$root
 }
 
 # Compute the upper bound of the probability of correctly inferring ancestral states
@@ -22,10 +22,10 @@ compute_upperbound_DS <- function(pi0, pi1, q, t, depth) {
 
 # Compute the time threshold beyond which the upper bound of the probability
 # of correctly inferring ancestral states falls below 1
-compute_inf_t_DS <- function(pi0, pi1, q, depth, interval = c(0, 20), tol = 1e-6, maxiter = 1000) {
+compute_inf_t_DS <- function(pi0, pi1, q, depth, interval = c(0, 20), tol = 1e-6, maxiter = 10000) {
   uniroot(function(t) {
     compute_upperbound_DS(pi0, pi1, q, t, depth) - 1
-  }, interval = interval, tol = tol, maxiter = maxiter)$root
+  }, extendInt = "yes", interval = interval, tol = tol, maxiter = maxiter)$root
 }
 
 # Add cutting point
@@ -50,39 +50,28 @@ bounds_real_tb <- tracelog_summary |>
   relocate(c(N, k), .after = n_trees) |>
   rowwise() |>
   mutate(
-    ub_DS = compute_upperbound_DS(pi0, pi1, q,
+    ub_DS = compute_upperbound_DS(pi0, pi1, q*mu,
       t = t_R,
       depth = filter(tipages_summary, family == familyx)$depth
     ),
-    inf_t_DS = compute_inf_t_DS(pi0, pi1, q, depth = filter(tipages_summary, family == familyx)$depth),
-    ub_DT = compute_upperbound_DT(k = n_cogsets, q = q, t = t_R, depth = filter(tipages_summary, family == familyx)$depth, s = filter(tipages_summary, family == familyx)$s),
-    inf_t_DT = compute_inf_t_DT(
-      k = k, q = q,
-      depth = filter(tipages_summary, family == familyx)$depth,
-      s = filter(tipages_summary, family == familyx)$s
-    )
-  ) |>
+    #inf_t_DS = compute_inf_t_DS(pi0, pi1, q * mu, depth = filter(tipages_summary, family == familyx)$depth),
+    ub_DT = compute_upperbound_DT(k = n_cogsets, q = q * mu, t = t_R, depth = filter(tipages_summary, family == familyx)$depth, s = filter(tipages_summary, family == familyx)$s)
+    #inf_t_DT = compute_inf_t_DT(k = k, q = q * mu, depth = filter(tipages_summary, family == familyx)$depth, s = filter(tipages_summary, family == familyx)$s
+    ) |>
   ungroup() |>
   rename(family = familyx)
 
 st_bysens = filter(bounds_real_tb,family=="ST_by_sens") |> 
   arrange(desc(ub_DS)) |> 
   write_csv(here("output/results/st_bysens.csv"))
-# For first meaning of TEA 
-# Problem resultat différent que la table 
-#compute_upperbound_DT(3421, 1.41, 14.7, filter(tipages_summary, family == "TEA")$depth, filter(tipages_summary, family == "TEA")$s)
-# But inf coherent 
-#compute_inf_t_DT(3421, 1.41,  filter(tipages_summary, family == "TEA")$depth,  filter(tipages_summary, family == "TEA")$s)
 
-
-#sum(filter(bounds_real_tb,family=="TEA")$ub_DT)
 
 # TEA add line with the mean of parameter for all cognates
 # check
 TEA_summary <- bounds_real_tb |>
   filter(family == "TEA") |>
   select(-concept, -family, -n_cogsets, -ub_DT) |>
-  colMeans() |>
+  colMeans(na.rm=T) |>
   t() |>
   as_tibble() |>
   mutate(concept = NA, family = "TEA_all", n_cogsets = NA) |>
@@ -91,12 +80,13 @@ TEA_summary <- bounds_real_tb |>
   relocate(c(concept, n_cogsets), .before = ub_DS) |>
   mutate(
     ub_DT = sum(filter(bounds_real_tb, family == "TEA")$ub_DT),
-    inf_t_DT = 13.0)
+    inf_t_DT = NA,
+    inf_t_DS = NA)
 
 ST_bysens_summary <- bounds_real_tb |>
   filter(family == "ST_by_sens") |>
   select(-concept, -family, -n_cogsets, -ub_DT) |>
-  colMeans() |>
+  colMeans(na.rm=T) |>
   t() |>
   as_tibble() |>
   mutate(concept = NA, family = "ST_bysens", n_cogsets = NA) |>
@@ -104,18 +94,36 @@ ST_bysens_summary <- bounds_real_tb |>
   relocate(family, .before = n_trees) |>
   relocate(c(concept, n_cogsets), .before = ub_DS) |>
   mutate(
-    ub_DT = sum(filter(bounds_real_tb, family == "ST_by_sens")$ub_DT),
-    inf_t_DT = 13.8)
+    ub_DT = sum(filter(bounds_real_tb, family == "ST_by_sens", !(concept %in% c("the_.1", "the_.2","the_mud")))$ub_DT),
+    inf_t_DT = NA,
+    inf_t_DS = NA)
 
 
 bounds_real_tb <- bind_rows(TEA_summary, bounds_real_tb, ST_bysens_summary) |>
-  relocate(inf_t_DT, .after = ub_DT) |>
-  select(-concept) |>
   filter(family %in% c("TEA_all", "Bantu", "Bantu_subset", "Bantu_subset2", "IE", "ST","ST_bysens")) |> 
-  mutate(family = ifelse(family == "TEA_all", "TEA", family)) 
+  mutate(family = ifelse(family == "TEA_all", "TEA", family)) |>
+  rename(familyx = family) |>
+  rowwise() |>
+  #mutate(
+  #  inf_t_DS = compute_inf_t_DS(pi0, pi1, q * mu, depth = filter(tipages_summary, family == familyx)$depth),
+  #  inf_t_DT = compute_inf_t_DT(k = k, q = q * mu, depth = filter(tipages_summary, family == familyx)$depth, s = filter(tipages_summary, family == familyx)$s)
+  #  ) |>
+  rename(family = familyx) |>
+  relocate(inf_t_DT, .after = ub_DT) |>
+  select(-concept) 
 
 
 write_csv(bounds_real_tb, here("output/results/bounds_real_tb.csv"))
+
+
+inf_t_DT = tibble(
+  TEA_all = 15.2, Bantu=18.2, Bantu_subset = 17.4,  Bantu_subset2 = 17, IE = 17.4, ST = 13, ST_bysens = 6.2)|>
+  t()
+
+inf_t_DS = tibble(
+  TEA_all = 15.2, Bantu=18.2, Bantu_subset = 17.4,  Bantu_subset2 = 17, IE = 17.4, ST = 13, ST_bysens = 6.2)|>
+  t()
+
 
 
 t_values <- seq(0, 20, length.out = 101)
@@ -128,8 +136,8 @@ bounds_real_byt_tb <- bounds_real_tb |>
   mutate(family = ifelse(family == "ST_bysens", "ST_by_sens", family)) |>
   rename(familyx = family) |>
   rowwise() |>
-  mutate(ub_DT = compute_upperbound_DT(k, q, t, filter(tipages_summary, family == familyx)$depth ,filter(tipages_summary, family == familyx)$s),
-         ub_DS = compute_upperbound_DS(pi0, pi1, q, t, filter(tipages_summary, family == familyx)$depth)
+  mutate(ub_DT = compute_upperbound_DT(k, q*mu, t, filter(tipages_summary, family == familyx)$depth ,filter(tipages_summary, family == familyx)$s),
+         ub_DS = compute_upperbound_DS(pi0, pi1, q*mu, t, filter(tipages_summary, family == familyx)$depth)
          ) |>
   rename(family = familyx)
 write_csv(bounds_real_byt_tb, here("output/results/bounds_real_byt_tb.csv"))

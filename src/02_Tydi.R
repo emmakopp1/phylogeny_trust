@@ -106,6 +106,7 @@ tracelog_tea_summary <- tracelog_tea |>
   relocate(n_cogsets, .after = concept)
 
 
+
 tracelog_st_by_sens_summary <- tracelog_st_by_sens |>
   add_tally(name = "n_trees") |>
   filter(Sample > ceiling(max(Sample) * burnin)) |>
@@ -126,7 +127,27 @@ tracelog_st_by_sens_summary <- tracelog_st_by_sens |>
   summarise(across(c(t_R, pi0, pi1, mu), ~ median(.x))) |>
   ungroup() |>
   left_join(n_cogids_st_by_sens, by = "concept") |>
+  filter(!(concept %in% c("the_.1", "the_.2","the_mud"))) |> # To automatize
   relocate(n_cogsets, .after = concept)
+
+
+# Check ESS < 200 
+## Multiple rates
+test <- tracelog_st_by_sens |>
+  rowid_to_column() |>
+  mutate(burnin = rowid <= max(rowid) * burnin) |>
+  mutate(data = "st-by-sens") |> 
+  select(-family)
+
+test_final <- test |>
+  filter(burnin == FALSE) |>
+  select(-rowid, -burnin, -data) |>
+  calc_esses(sample_interval = max(test$Sample) / (nrow(test) - 1)) |>
+  as_tibble() |>
+  pivot_longer(everything(), names_to = "parameter", values_to = "ESS")
+filter(kd_lgs_bcov_byconcept_ess, ESS < 200)
+
+
 
 tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_ie, tracelog_st) |>
   map(~ .x |>
