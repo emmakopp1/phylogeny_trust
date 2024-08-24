@@ -1,6 +1,6 @@
 library(here)
 source(here("src/utils.R"))
-source(here("src/init.R"))
+
 
 # Functions
 get_deepest_node = function(tree,N){
@@ -8,6 +8,15 @@ get_deepest_node = function(tree,N){
   colnames(ages)=c('ages')
   # We don't select the root
   return(order(ages$ages,decreasing = T)[2:(N+1)])
+}
+
+remove_burnin = function(trees,burnin_rate){
+  n = as.numeric(length(trees))
+  return(trees[as.integer(n*burnin_rate):n])
+}
+
+myconsensus = function(trees){
+  consensus.edges(trees, consensus.tree = consensus(trees, p=.5), rooted=T)    
 }
 
 

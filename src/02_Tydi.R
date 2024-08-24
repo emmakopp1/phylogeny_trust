@@ -118,11 +118,10 @@ tea_ess <- tea_log |>
   select(parameter)
 
 
-tracelog_tea |> select(-tea_ess$parameter)
 
 # Tracelog summaries
 tracelog_tea_summary <- tracelog_tea |>
-  select(-tea_ess$parameter)|>
+  #select(-tea_ess$parameter)|>
   add_tally(name = "n_trees") |>
   filter(Sample > ceiling(max(Sample) * burnin)) |>
   select(family, n_trees, starts_with("freqParameter"), TreeHeight.t.tree, starts_with("mutationRate")) |>
@@ -148,8 +147,8 @@ tracelog_tea_summary <- tracelog_tea |>
 
 
 tracelog_st_by_sens_summary <- tracelog_st_by_sens |>
+  #select(-st_ess$parameter)|>
   add_tally(name = "n_trees") |>
-  select(-st_ess$parameter)|>
   filter(Sample > ceiling(max(Sample) * burnin)) |>
   select(family, n_trees, starts_with("freqParameter"), TreeHeight.t.tree, starts_with("mutationRate")) |>
   pivot_longer(cols = matches("freqParameter|mutationRate")) |>
