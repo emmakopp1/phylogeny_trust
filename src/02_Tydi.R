@@ -120,54 +120,99 @@ tea_ess <- tea_log |>
 
 
 # Tracelog summaries
-tracelog_tea_summary <- tracelog_tea |>
+tracelog_tea_by_sens_summary <- tracelog_tea |>
   #select(-tea_ess$parameter)|>
+  # Ajouter un compteur de lignes si nécessaire
   add_tally(name = "n_trees") |>
+  # Filtrer les échantillons en fonction de burnin
   filter(Sample > ceiling(max(Sample) * burnin)) |>
-  select(family, n_trees, starts_with("freqParameter"), TreeHeight.t.tree, starts_with("mutationRate")) |>
-  pivot_longer(cols = matches("freqParameter|mutationRate")) |>
-  mutate(name = str_remove(name, "freqParameter\\.s\\.")) |>
-  mutate(name = str_replace(name, "mutationRate", "mu.")) |>
-  mutate(name = str_remove(name, "\\.s\\.")) |>
-  mutate(name = str_replace_all(name, "(mu.)(.*)", "\\2.mu")) |>
-  separate(name, into = c("concept", "pi"), sep = "\\.(?=[12]$|mu$)", remove = FALSE) |>
-  mutate(pi = if_else(str_detect(name, "mu$"), "mu", pi)) |>
-  select(-name) |>
-  mutate(pi = if_else(pi == "mu", "mu", paste0("pi", as.integer(str_remove(pi, "pi")) - 1))) |>
-  mutate(concept = str_remove(concept, "\\.$")) |>
-  mutate(concept = str_replace(concept, "^fly$", "fly_noun")) |>
+  # Sélectionner les colonnes d'intérêt
+  select(family, n_trees, starts_with("freqParameter"), clockrate.c.clock, TreeHeight.t.tree, starts_with("mutationRate")) |>
+  # Transformer en format long
+  pivot_longer(cols = matches("freqParameter|mutationRate"), names_to = "name", values_to = "value") |>
+  mutate(
+    name = str_replace(name, "^freqParameter.s.", "pi@"),
+    name = str_replace(name, "^mutationRate.s.", "mu@"),
+    name = str_replace(name, "\\.(\\d+)$", "@\\1")
+  ) |>
+  # Séparer la colonne 'name' en 'prefix', 'main_name', 'suffix' en utilisant '@' comme séparateur
+  separate(name, into = c("prefix", "main_name", "suffix"), sep = "@", fill = "right")|>
+  # Remplacer NA dans 'suffix' par une chaîne vide
+  mutate(suffix = ifelse(is.na(suffix), "", suffix)) |>
+  # Créer les noms de variables pour pivot_wider
+  mutate(variable = case_when(
+    prefix == "pi" & suffix != "" ~ paste0(prefix, suffix),
+    prefix == "mu" ~ prefix,
+    TRUE ~ prefix
+  )) |>
+  # Transformer en format large
+  pivot_wider(names_from = variable, values_from = value)|>
+  # Agréger les données sans modifier les colonnes non concernées
+  group_by(family, n_trees, clockrate.c.clock, TreeHeight.t.tree, main_name) |>
+  summarise(
+    pi1 = sum(pi1, na.rm = TRUE),
+    pi2 = sum(pi2, na.rm = TRUE),
+    mu = sum(mu, na.rm = TRUE),
+    .groups = 'drop'
+  ) |>
+  # Simplifier la colonne 'name'
+  mutate(concept = main_name) |>
+  select(family, n_trees, clockrate.c.clock, TreeHeight.t.tree, concept, pi1, pi2, mu) |>
   rename(t_R = TreeHeight.t.tree) |>
-  mutate(t_R = t_R * 0.1) |>
-  pivot_wider(names_from = pi, values_from = value) |>
+  rename(pi0 = pi1, pi1 = pi2) |>
+  rename(clock_rate = clockrate.c.clock) |>
   group_by(family, n_trees, concept) |>
-  summarise(across(c(t_R, pi0, pi1, mu), ~ median(.x))) |>
+  summarise(across(c(t_R, pi0, pi1, mu, clock_rate), ~ median(.x))) |>
   ungroup() |>
   left_join(n_cogids_tea, by = "concept") |>
   relocate(n_cogsets, .after = concept)
 
 
-tracelog_st_by_sens_summary <- tracelog_st_by_sens |>
+# Sino-Tibetan family
+tracelog_st_by_sens_summary = tracelog_st_by_sens |>
   #select(-st_ess$parameter)|>
+  # Ajouter un compteur de lignes si nécessaire
   add_tally(name = "n_trees") |>
+  # Filtrer les échantillons en fonction de burnin
   filter(Sample > ceiling(max(Sample) * burnin)) |>
-  select(family, n_trees, starts_with("freqParameter"), TreeHeight.t.tree, starts_with("mutationRate")) |>
-  pivot_longer(cols = matches("freqParameter|mutationRate")) |>
-  mutate(name = str_remove(name, "freqParameter\\.s\\.")) |>
-  mutate(name = str_replace(name, "mutationRate", "mu.")) |>
-  mutate(name = str_remove(name, "\\.s\\.")) |>
-  mutate(name = str_replace_all(name, "(mu.)(.*)", "\\2.mu")) |>
-  separate(name, into = c("concept", "pi"), sep = "\\.(?=[12]$|mu$)", remove = FALSE) |>
-  mutate(pi = if_else(str_detect(name, "mu$"), "mu", pi)) |>
-  select(-name) |>
-  mutate(pi = if_else(pi == "mu", "mu", paste0("pi", as.integer(str_remove(pi, "pi")) - 1))) |>
-  mutate(concept = str_remove(concept, "\\.$")) |>
+  # Sélectionner les colonnes d'intérêt
+  select(family, n_trees, starts_with("freqParameter"), clockRate.c.clock, TreeHeight.t.tree, starts_with("mutationRate")) |>
+  # Transformer en format long
+  pivot_longer(cols = matches("freqParameter|mutationRate"), names_to = "name", values_to = "value") |>
+  mutate(
+    name = str_replace(name, "^freqParameter.s.", "pi@"),
+    name = str_replace(name, "^mutationRate.s.", "mu@"),
+    name = str_replace(name, "\\.(\\d+)$", "@\\1")
+  ) |>
+  # Séparer la colonne 'name' en 'prefix', 'main_name', 'suffix' en utilisant '@' comme séparateur
+  separate(name, into = c("prefix", "main_name", "suffix"), sep = "@", fill = "right")|>
+  # Remplacer NA dans 'suffix' par une chaîne vide
+  mutate(suffix = ifelse(is.na(suffix), "", suffix)) |>
+  # Créer les noms de variables pour pivot_wider
+  mutate(variable = case_when(
+    prefix == "pi" & suffix != "" ~ paste0(prefix, suffix),
+    prefix == "mu" ~ prefix,
+    TRUE ~ prefix
+  )) |>
+  # Transformer en format large
+  pivot_wider(names_from = variable, values_from = value)|>
+  # Agréger les données sans modifier les colonnes non concernées
+  group_by(family, n_trees, clockRate.c.clock, TreeHeight.t.tree, main_name) |>
+  summarise(
+    pi1 = sum(pi1, na.rm = TRUE),
+    pi2 = sum(pi2, na.rm = TRUE),
+    mu = sum(mu, na.rm = TRUE),
+    .groups = 'drop'
+  ) |>
+  mutate(concept = main_name) |>
+  select(family, n_trees, clockRate.c.clock, TreeHeight.t.tree, concept, pi1, pi2, mu) |>
   rename(t_R = TreeHeight.t.tree) |>
-  pivot_wider(names_from = pi, values_from = value) |>
+  rename(pi0 = pi1, pi1 = pi2) |>
+  rename(clock_rate = clockRate.c.clock) |>
   group_by(family, n_trees, concept) |>
-  summarise(across(c(t_R, pi0, pi1, mu), ~ median(.x))) |>
+  summarise(across(c(t_R, pi0, pi1, mu, clock_rate), ~ median(.x))) |>
   ungroup() |>
   left_join(n_cogids_st_by_sens, by = "concept") |>
-  filter(!(concept %in% c("the_.1", "the_.2","the_mud"))) |> # To automatize
   relocate(n_cogsets, .after = concept)
 
 
@@ -175,13 +220,14 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
   map(~ .x |>
     add_tally(name = "n_trees") |>
     filter(Sample > ceiling(max(Sample) * burnin)) |>
-    select(family, n_trees, starts_with("freqParameter"), TreeHeight.t.tree, starts_with("mutationRate")) |>
+    select(family, n_trees, starts_with("freqParameter"), clockRate.c.clock, TreeHeight.t.tree, starts_with("mutationRate")) |>
     summarise(family = unique(family), across(-family, ~ median(.x))) |>
     rename(t_R = TreeHeight.t.tree) |>
+    rename(clock_rate = clockRate.c.clock) |>
     rename_with(~ str_replace(.x, "freqParameter.+(?=\\d$)", "pi"))|>
     rename_with(~ str_replace(.x, "mutationRate\\.s\\.(.*)", "mu")) |>
-    rename(pi0 = pi1, pi1 = pi2)) |>
-  bind_rows(tracelog_tea_summary) |>
+    rename(pi0 = pi1, pi1 = pi2)) |> 
+  bind_rows(tracelog_tea_by_sens_summary) |>
   bind_rows(tracelog_st_by_sens_summary) |> 
   mutate(q = 1 / (pi0^2 + pi1^2)) |>
   relocate(q, .after = pi1) |>
