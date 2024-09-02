@@ -165,7 +165,8 @@ tracelog_tea_by_sens_summary <- tracelog_tea |>
   summarise(across(c(t_R, pi0, pi1, mu, clock_rate), ~ median(.x))) |>
   ungroup() |>
   left_join(n_cogids_tea, by = "concept") |>
-  relocate(n_cogsets, .after = concept)
+  relocate(n_cogsets, .after = concept) |> 
+  mutate(t_R = 0.1 * t_R)
 
 
 # Sino-Tibetan family
@@ -229,7 +230,8 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
     rename(pi0 = pi1, pi1 = pi2)) |> 
   bind_rows(tracelog_tea_by_sens_summary) |>
   bind_rows(tracelog_st_by_sens_summary) |> 
-  mutate(q = 1 / (pi0^2 + pi1^2)) |>
+  #mutate(q = 1 / (pi0^2 + pi1^2)) |>
+  mutate(q = pi0 + pi1)|> 
   relocate(q, .after = pi1) |>
   relocate(mu, .before = q) |> 
   left_join(ntipschars)

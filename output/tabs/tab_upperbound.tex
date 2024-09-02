@@ -1,15 +1,15 @@
 
-\begin{tabular}[t]{lrrSSSSSSSSS}
+\begin{tabular}[t]{lrrSSSSSSSSSS}
 \toprule
-\multicolumn{9}{c}{ } & \multicolumn{1}{c}{upper bound} & \multicolumn{2}{c}{threshold age} \\
-family & \multicolumn{1}{c}{$N$} & \multicolumn{1}{c}{$k$} & \multicolumn{1}{c}{$\pi_0$} & \multicolumn{1}{c}{$\pi_1$} & \multicolumn{1}{c}{$q$} & \multicolumn{1}{c}{$t$} & \multicolumn{1}{c}{$n_{cogsets}$} & \multicolumn{1}{c}{$\Delta^S(t)$} & \multicolumn{1}{c}{$\Delta^T(t)$} & \multicolumn{1}{c}{$\inf_t\{\Delta^S(t) = 1\}$} & \multicolumn{1}{c}{$\inf_t\{\Delta^R(t) = 1\}$}\\
+\multicolumn{10}{c}{ } & \multicolumn{1}{c}{upper bound} & \multicolumn{2}{c}{threshold age} \\
+family & \multicolumn{1}{c}{$N$} & \multicolumn{1}{c}{$k$} & \multicolumn{1}{c}{$\pi_0$} & \multicolumn{1}{c}{$\pi_1$} & \multicolumn{1}{c}{$\mu$} & \multicolumn{1}{c}{$c$} & \multicolumn{1}{c}{$n_{cogsets}$} & \multicolumn{1}{c}{$t$} & \multicolumn{1}{c}{$\Delta^S(t)$} & \multicolumn{1}{c}{$\Delta^T(t)$} & \multicolumn{1}{c}{$t_{\text{max}}^S$} & \multicolumn{1}{c}{$t_{\text{max}}^D$}\\
 \midrule
-TEA & 98 & 3421 & 0.96 & 0.04 & 1.10 & 14.67 & 3421 & 0.96 & 0.25 & 7.44 & 13.00\\
-Bantu & 424 & 3859 & 0.99 & 0.01 & 1.03 & 6.17 & 3859 & \geq 1 & \geq 1 & 9.97 & 18.14\\
-Bantu subset & 107 & 3859 & 0.98 & 0.02 & 1.04 & 5.20 & 3859 & \geq 1 & \geq 1 & 8.28 & 17.23\\
-Bantu subset2 & 52 & 3859 & 0.98 & 0.02 & 1.05 & 6.06 & 3859 & \geq 1 & \geq 1 & 7.41 & 16.81\\
-IE & 161 & 4990 & 1.00 & 0.00 & 1.01 & 9.36 & 4990 & \geq 1 & \geq 1 & 11.60 & 17.22\\
-ST & 50 & 3963 & 0.94 & 0.06 & 1.12 & 8.45 & 3963 & 0.95 & \geq 1 & 6.40 & 12.91\\
-ST bysens & 50 & 3963 & 0.97 & 0.03 & 1.04 & 10.35 & 3963 & 0.98 & \geq 1 & 8.37 & 13.80\\
+TEA & 98 & 3421 & 0.96 & 0.04 & 0.84 & 0.00 & 3421 & 14.67 & NA & \geq 1 & \geq 1 & NA\\
+Bantu & 424 & 3859 & 0.99 & 0.01 & 1.00 & 1.00 & 3859 & 6.17 & 18.53 & \geq 1 & \geq 1 & 10.27\\
+Bantu subset & 107 & 3859 & 0.98 & 0.02 & 1.00 & 0.01 & 3859 & 5.20 & 17.69 & \geq 1 & \geq 1 & 8.61\\
+Bantu subset2 & 52 & 3859 & 0.98 & 0.02 & 1.00 & 0.01 & 3859 & 6.06 & 17.30 & \geq 1 & \geq 1 & 7.75\\
+IE & 161 & 4990 & 1.00 & 0.00 & 1.00 & 0.00 & 4990 & 9.36 & 17.30 & \geq 1 & \geq 1 & 11.67\\
+ST & 50 & 3963 & 0.94 & 0.06 & 1.00 & 0.02 & 3963 & 8.45 & 13.98 & 0.96 & \geq 1 & 7.08\\
+ST bysens & 50 & 3963 & 0.97 & 0.03 & 10.26 & 0.01 & 3963 & 10.35 & NA & \geq 1 & \geq 1 & NA\\
 \bottomrule
 \end{tabular}

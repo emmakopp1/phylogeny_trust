@@ -44,7 +44,7 @@ tipages_summary <- read_csv(here("output/results/tipages_summary.csv")) |>
 tracelog_summary <- read_csv(here("output/results/tracelog_summary.csv"))
 
 # Bounds
-bounds_real_tb <- tracelog_summary |>
+bounds_real_tb_by_sens <- tracelog_summary |>
   mutate(n_cogsets = if_else(is.na(n_cogsets), k, n_cogsets)) |>
   rename(familyx = family) |>
   relocate(c(N, k), .after = n_trees) |>
@@ -54,36 +54,37 @@ bounds_real_tb <- tracelog_summary |>
       t = t_R,
       depth = filter(tipages_summary, family == familyx)$depth
     ),
-    #inf_t_DS = compute_inf_t_DS(pi0, pi1, q * mu, depth = filter(tipages_summary, family == familyx)$depth),
-    ub_DT = compute_upperbound_DT(k = n_cogsets, q = q * mu, t = t_R, depth = filter(tipages_summary, family == familyx)$depth, s = filter(tipages_summary, family == familyx)$s)
-    #inf_t_DT = compute_inf_t_DT(k = k, q = q * mu, depth = filter(tipages_summary, family == familyx)$depth, s = filter(tipages_summary, family == familyx)$s
+    inf_t_DS = compute_inf_t_DS(pi0, pi1, q * mu, depth = filter(tipages_summary, family == familyx)$depth),
+    ub_DT = compute_upperbound_DT(k = n_cogsets, q = q * mu, t = t_R, depth = filter(tipages_summary, family == familyx)$depth, s = filter(tipages_summary, family == familyx)$s),
+    inf_t_DT = compute_inf_t_DT(k = k, q = q * mu, depth = filter(tipages_summary, family == familyx)$depth, s = filter(tipages_summary, family == familyx)$s)
     ) |>
+  mutate(inf_t_DS = round(inf_t_DS, 3)) |>
+  mutate(inf_t_DT = round(inf_t_DT, 3)) |>
   ungroup() |>
   rename(family = familyx)
 
-st_bysens = filter(bounds_real_tb,family=="ST_by_sens") |> 
-  arrange(desc(ub_DS)) |> 
-  write_csv(here("output/results/st_bysens.csv"))
+write_csv(bounds_real_tb_by_sens, here("output/results/bounds_real_tb_by_sens.csv"))
 
 
 # TEA add line with the mean of parameter for all cognates
 # check
-TEA_summary <- bounds_real_tb |>
+TEA_summary <- bounds_real_tb_by_sens |>
   filter(family == "TEA") |>
-  select(-concept, -family, -n_cogsets, -ub_DT) |>
+  select(-concept, -family, -n_cogsets, -ub_DT, -ub_DS) |>
   colMeans(na.rm=T) |>
   t() |>
   as_tibble() |>
   mutate(concept = NA, family = "TEA_all", n_cogsets = NA) |>
   mutate(n_cogsets = if_else(is.na(n_cogsets), k, n_cogsets)) |>
   relocate(family, .before = n_trees) |>
-  relocate(c(concept, n_cogsets), .before = ub_DS) |>
+  relocate(c(concept, n_cogsets), .before = t_R) |>
   mutate(
-    ub_DT = sum(filter(bounds_real_tb, family == "TEA")$ub_DT),
+    ub_DT = sum(filter(bounds_real_tb_by_sens, family == "TEA")$ub_DT),
+    ub_DS = sum(filter(bounds_real_tb_by_sens, family == 'TEA')$ub_DS),
     inf_t_DT = NA,
     inf_t_DS = NA)
 
-ST_bysens_summary <- bounds_real_tb |>
+ST_bysens_summary <- bounds_real_tb_by_sens |>
   filter(family == "ST_by_sens") |>
   select(-concept, -family, -n_cogsets, -ub_DT) |>
   colMeans(na.rm=T) |>
@@ -94,12 +95,13 @@ ST_bysens_summary <- bounds_real_tb |>
   relocate(family, .before = n_trees) |>
   relocate(c(concept, n_cogsets), .before = ub_DS) |>
   mutate(
-    ub_DT = sum(filter(bounds_real_tb, family == "ST_by_sens", !(concept %in% c("the_.1", "the_.2","the_mud")))$ub_DT),
+    ub_DT = sum(filter(bounds_real_tb_by_sens, family == "ST_by_sens")$ub_DT),
+    ub_DS = sum(filter(bounds_real_tb_by_sens, family == 'ST_by_sens')$ub_DS),
     inf_t_DT = NA,
     inf_t_DS = NA)
 
 
-bounds_real_tb <- bind_rows(TEA_summary, bounds_real_tb, ST_bysens_summary) |>
+bounds_real_tb <- bind_rows(TEA_summary, bounds_real_tb_by_sens, ST_bysens_summary) |>
   filter(family %in% c("TEA_all", "Bantu", "Bantu_subset", "Bantu_subset2", "IE", "ST","ST_bysens")) |> 
   mutate(family = ifelse(family == "TEA_all", "TEA", family)) |>
   rename(familyx = family) |>
@@ -114,16 +116,6 @@ bounds_real_tb <- bind_rows(TEA_summary, bounds_real_tb, ST_bysens_summary) |>
 
 
 write_csv(bounds_real_tb, here("output/results/bounds_real_tb.csv"))
-
-
-inf_t_DT = tibble(
-  TEA_all = 15.2, Bantu=18.2, Bantu_subset = 17.4,  Bantu_subset2 = 17, IE = 17.4, ST = 13, ST_bysens = 6.2)|>
-  t()
-
-inf_t_DS = tibble(
-  TEA_all = 15.2, Bantu=18.2, Bantu_subset = 17.4,  Bantu_subset2 = 17, IE = 17.4, ST = 13, ST_bysens = 6.2)|>
-  t()
-
 
 
 t_values <- seq(0, 20, length.out = 101)
