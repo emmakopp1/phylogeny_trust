@@ -65,7 +65,6 @@ bounds_real_tb_by_sens <- tracelog_summary |>
 
 write_csv(bounds_real_tb_by_sens, here("output/results/bounds_real_tb_by_sens.csv"))
 
-
 # TEA add line with the mean of parameter for all cognates
 # check
 TEA_summary <- bounds_real_tb_by_sens |>
@@ -78,6 +77,7 @@ TEA_summary <- bounds_real_tb_by_sens |>
   mutate(n_cogsets = if_else(is.na(n_cogsets), k, n_cogsets)) |>
   relocate(family, .before = n_trees) |>
   relocate(c(concept, n_cogsets), .before = t_R) |>
+  #rowwise() |>
   mutate(
     ub_DT = sum(filter(bounds_real_tb_by_sens, family == "TEA")$ub_DT),
     ub_DS = sum(filter(bounds_real_tb_by_sens, family == 'TEA')$ub_DS),
@@ -94,6 +94,7 @@ ST_bysens_summary <- bounds_real_tb_by_sens |>
   mutate(n_cogsets = if_else(is.na(n_cogsets), k, n_cogsets)) |>
   relocate(family, .before = n_trees) |>
   relocate(c(concept, n_cogsets), .before = ub_DS) |>
+  rowwise() |>
   mutate(
     ub_DT = sum(filter(bounds_real_tb_by_sens, family == "ST_by_sens")$ub_DT),
     ub_DS = sum(filter(bounds_real_tb_by_sens, family == 'ST_by_sens')$ub_DS),
@@ -118,6 +119,7 @@ bounds_real_tb <- bind_rows(TEA_summary, bounds_real_tb_by_sens, ST_bysens_summa
 write_csv(bounds_real_tb, here("output/results/bounds_real_tb.csv"))
 
 
+# Bounds by millenia 
 t_values <- seq(0, 20, length.out = 101)
 bounds_real_byt_tb <- bounds_real_tb |>
   select(-inf_t_DS, -inf_t_DT, -n_cogsets)|>
@@ -133,6 +135,27 @@ bounds_real_byt_tb <- bounds_real_tb |>
          ) |>
   rename(family = familyx)
 write_csv(bounds_real_byt_tb, here("output/results/bounds_real_byt_tb.csv"))
+
+
+# Bounds by millenia by sens for sino tibetan
+
+# Sino-tibetan by sens
+t_values <- seq(0, 20, length.out = 101)
+bounds_real_byt_tb_st <- bounds_real_tb_by_sens |>
+  filter(family=="ST_by_sens") |>
+  mutate(family = ifelse(family == "ST_bysens", "ST_by_sens", family)) |>
+  select(-inf_t_DS, -inf_t_DT, -n_cogsets, -ub_DS, -ub_DT) |>
+  mutate(count = length(t_values)) |>
+  uncount(count) |>
+  mutate(t = t_values) |>
+  rowwise() |>
+  mutate(ub_DT = compute_upperbound_DT(k, q*mu, t, filter(tipages_summary, family == familyx)$depth ,filter(tipages_summary, family == familyx)$s),
+         ub_DS = compute_upperbound_DS(pi0, pi1, q*mu, t, filter(tipages_summary, family == familyx)$depth)
+  ) |>
+  rename(family = familyx)
+write_csv(bounds_real_byt_tb, here("output/results/bounds_real_byt_tb.csv"))
+  write_csv(here("output/results/st_by_sens.csv"))
+
 
 
 

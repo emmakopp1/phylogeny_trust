@@ -66,6 +66,8 @@ fig_bounds <- bounds_byt_tb |>
 ggsave(here("output/figs/fig_bounds.pdf"), fig_bounds, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
 plot_crop(here("output/figs/fig_bounds.pdf"))
 
+bounds_st_bysens <- read_csv(here("output/results/st_by_sens.csv")) 
+
 
 # bounds_tb <- read_csv(here("output/results/bounds_tb.csv"),show_col_types = FALSE)
 # bounds_tb |>

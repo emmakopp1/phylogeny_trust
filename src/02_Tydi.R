@@ -39,11 +39,11 @@ write_csv(tipages_summary, here("output/results/tipages_summary.csv"))
 
 # Cutting points -------------------------------------------------------------------------------------------------
 
-tipages_names <- tipages_summary |> 
-  select(family, tip, root_age) |> 
-  mutate(s=NA)
+#tipages_names <- tipages_summary |> 
+#  select(family, tip, root_age) |> 
+#  mutate(s=NA)
 
-write.xlsx(tipages_names, here("output/results/tipages_time_prior.xlsx"))
+#write.xlsx(tipages_names, here("output/results/tipages_time_prior.xlsx"))
 
 # Trace logs -------------------------------------------------------------------------------------------------------
 
@@ -60,7 +60,10 @@ tracelog_st <- read_csv(here("output/results/st/st_ctmc-strict-fbd_tracelog.csv"
 tracelog_st_by_sens <- read_csv(here("output/results/st_by_sens/st_ctmc-strict-fbd_by_sens_tracelog.csv")) |>
   mutate(family = "ST_by_sens")
 tracelog_tea <- read_csv(here("output/results/tea/tea_ctmc-strict-fbd-constrained_tracelog.csv")) |>
-  mutate(family = "TEA")
+  mutate(family = "TEA") |>
+  rename(clockRate.c.clock = clockrate.c.clock)
+
+
 
 n_cogids_tea <- here("data/real/tea_ctmc-strict-fbd-constrained/tea.nex") |>
   read_lines() |>
@@ -81,41 +84,6 @@ n_cogids_st_by_sens <- here("data/real/st_ctmc-strict-fbd-by-sens/st.nex") |>
   separate(sets, into = c("start", "end"), sep = "-") |>
   mutate(n_cogsets = as.integer(end) - as.integer(start) + 1) |>
   select(concept, n_cogsets)
-
-
-# Check ESS < 200 
-## Multiple rates
-st_log <- tracelog_st_by_sens |>
-  rowid_to_column() |>
-  mutate(burnin = rowid <= max(rowid) * burnin) |>
-  mutate(data = "st-by-sens") |> 
-  select(-family) 
-
-st_ess <- st_log |>
-  filter(burnin == FALSE) |>
-  select(-rowid, -burnin, -data) |>
-  as.data.frame() |>
-  calc_esses(sample_interval = max(st_log$Sample) / (nrow(st_log) - 1)) |>
-  as_tibble() |>
-  pivot_longer(everything(), names_to = "parameter", values_to = "ESS")|> 
-  filter(ESS<200) |> 
-  select(parameter)
-
-tea_log <- tracelog_tea |>
-  rowid_to_column() |>
-  mutate(burnin = rowid <= max(rowid) * burnin) |>
-  mutate(data = "tea-by-sens") |> 
-  select(-family) 
-
-tea_ess <- tea_log |> 
-  filter(burnin == FALSE) |>
-  select(-rowid, -burnin, -data) |>
-  as.data.frame() |>
-  calc_esses(sample_interval = max(tea_log$Sample) / (nrow(tea_log) - 1)) |>
-  as_tibble() |>
-  pivot_longer(everything(), names_to = "parameter", values_to = "ESS") |> 
-  filter(ESS<200) |> 
-  select(parameter)
 
 
 
@@ -239,6 +207,71 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
 
 write_csv(tracelog_summary, here("output/results/tracelog_summary.csv"))
 
+# Compute all ESS
+
+ess <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_ie, tracelog_st) |>
+  map_df(function(x) {
+    # Extraire la colonne family
+    family_name <- unique(x$family)
+    
+    # Effectuer les calculs sur le data frame sans family
+    x |>
+      add_tally(name = "n_trees") |>
+      select(Sample, starts_with("freqParameter"), clockRate.c.clock, TreeHeight.t.tree, starts_with("mutationRate")) |>
+      filter(Sample > ceiling(max(Sample) * burnin)) |>
+      rowid_to_column() |>
+      mutate(burnin = rowid <= max(rowid) * burnin) |>
+      filter(burnin == FALSE) |>
+      select(-rowid, -burnin) |>
+      as.data.frame() |>
+      calc_esses(sample_interval = max(x$Sample) / (nrow(x) - 1)) |>
+      as_tibble() |>
+      mutate(family = family_name) |>
+      rename(t_R = TreeHeight.t.tree) |>
+      rename(clock_rate = clockRate.c.clock) |>
+      rename_with(~ str_replace(.x, "freqParameter.+(?=\\d$)", "pi")) |>
+      rename_with(~ str_replace(.x, "mutationRate\\.s\\.(.*)", "mu")) |>
+      rename(pi0 = pi1, pi1 = pi2)
+  }) |> 
+  bind_rows() |> 
+  relocate(family, .before = pi0)
+
+
+# Check ESS for rate heterogeneity
+## Multiple rates
+st_log <- tracelog_st_by_sens |>
+  rowid_to_column() |>
+  mutate(burnin = rowid <= max(rowid) * burnin) |>
+  mutate(data = "st-by-sens") |> 
+  select(-family) 
+
+
+st_ess <- st_log |>
+  filter(burnin == FALSE) |>
+  select(-rowid, -burnin, -data) |>
+  as.data.frame() |>
+  calc_esses(sample_interval = max(st_log$Sample) / (nrow(st_log) - 1)) |>
+  as_tibble() |>
+  pivot_longer(everything(), names_to = "parameter", values_to = "ESS")
+
+tea_log <- tracelog_tea |>
+  rowid_to_column() |>
+  mutate(burnin = rowid <= max(rowid) * burnin) |>
+  mutate(data = "tea-by-sens") |> 
+  select(-family) 
+
+tea_ess <- tea_log |> 
+  filter(burnin == FALSE) |>
+  select(-rowid, -burnin, -data) |>
+  as.data.frame() |>
+  calc_esses(sample_interval = max(tea_log$Sample) / (nrow(tea_log) - 1)) |>
+  as_tibble() |>
+  pivot_longer(everything(), names_to = "parameter", values_to = "ESS") 
+
+
+
+  #bind_rows(tracelog_tea_by_sens_summary) |>
+  #bind_rows(tracelog_st_by_sens_summary) |> 
 
 # # Get the number of taxa and traits from a nexus file
 # get_nexus_parameters <- function(file) {
