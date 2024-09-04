@@ -88,6 +88,7 @@ n_cogids_st_by_sens <- here("data/real/st_ctmc-strict-fbd-by-sens/st.nex") |>
 
 
 # Tracelog summaries
+
 tracelog_tea_by_sens_summary <- tracelog_tea |>
   #select(-tea_ess$parameter)|>
   # Ajouter un compteur de lignes si nécessaire
@@ -95,7 +96,7 @@ tracelog_tea_by_sens_summary <- tracelog_tea |>
   # Filtrer les échantillons en fonction de burnin
   filter(Sample > ceiling(max(Sample) * burnin)) |>
   # Sélectionner les colonnes d'intérêt
-  select(family, n_trees, starts_with("freqParameter"), clockrate.c.clock, TreeHeight.t.tree, starts_with("mutationRate")) |>
+  select(family, n_trees, starts_with("freqParameter"), clockRate.c.clock, TreeHeight.t.tree, starts_with("mutationRate")) |>
   # Transformer en format long
   pivot_longer(cols = matches("freqParameter|mutationRate"), names_to = "name", values_to = "value") |>
   mutate(
@@ -116,7 +117,7 @@ tracelog_tea_by_sens_summary <- tracelog_tea |>
   # Transformer en format large
   pivot_wider(names_from = variable, values_from = value)|>
   # Agréger les données sans modifier les colonnes non concernées
-  group_by(family, n_trees, clockrate.c.clock, TreeHeight.t.tree, main_name) |>
+  group_by(family, n_trees, clockRate.c.clock, TreeHeight.t.tree, main_name) |>
   summarise(
     pi1 = sum(pi1, na.rm = TRUE),
     pi2 = sum(pi2, na.rm = TRUE),
@@ -125,10 +126,10 @@ tracelog_tea_by_sens_summary <- tracelog_tea |>
   ) |>
   # Simplifier la colonne 'name'
   mutate(concept = main_name) |>
-  select(family, n_trees, clockrate.c.clock, TreeHeight.t.tree, concept, pi1, pi2, mu) |>
+  select(family, n_trees, clockRate.c.clock, TreeHeight.t.tree, concept, pi1, pi2, mu) |>
   rename(t_R = TreeHeight.t.tree) |>
   rename(pi0 = pi1, pi1 = pi2) |>
-  rename(clock_rate = clockrate.c.clock) |>
+  rename(clock_rate = clockRate.c.clock) |>
   group_by(family, n_trees, concept) |>
   summarise(across(c(t_R, pi0, pi1, mu, clock_rate), ~ median(.x))) |>
   ungroup() |>
@@ -198,8 +199,7 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
     rename(pi0 = pi1, pi1 = pi2)) |> 
   bind_rows(tracelog_tea_by_sens_summary) |>
   bind_rows(tracelog_st_by_sens_summary) |> 
-  #mutate(q = 1 / (pi0^2 + pi1^2)) |>
-  mutate(q = pi0 + pi1)|> 
+  mutate(q = pi0 + pi1) |> 
   relocate(q, .after = pi1) |>
   relocate(mu, .before = q) |> 
   left_join(ntipschars)
@@ -207,8 +207,8 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
 
 write_csv(tracelog_summary, here("output/results/tracelog_summary.csv"))
 
-# Compute all ESS
 
+#  ESS
 ess <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_ie, tracelog_st) |>
   map_df(function(x) {
     # Extraire la colonne family
@@ -237,8 +237,7 @@ ess <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2,
   relocate(family, .before = pi0)
 
 
-# Check ESS for rate heterogeneity
-## Multiple rates
+# Heterogeneity rate 
 st_log <- tracelog_st_by_sens |>
   rowid_to_column() |>
   mutate(burnin = rowid <= max(rowid) * burnin) |>
@@ -252,7 +251,9 @@ st_ess <- st_log |>
   as.data.frame() |>
   calc_esses(sample_interval = max(st_log$Sample) / (nrow(st_log) - 1)) |>
   as_tibble() |>
-  pivot_longer(everything(), names_to = "parameter", values_to = "ESS")
+  pivot_longer(everything(), names_to = "parameter", values_to = "ESS") |> 
+  mutate(family= "ST_by_sens")
+
 
 tea_log <- tracelog_tea |>
   rowid_to_column() |>
@@ -266,13 +267,15 @@ tea_ess <- tea_log |>
   as.data.frame() |>
   calc_esses(sample_interval = max(tea_log$Sample) / (nrow(tea_log) - 1)) |>
   as_tibble() |>
-  pivot_longer(everything(), names_to = "parameter", values_to = "ESS") 
+  pivot_longer(everything(), names_to = "parameter", values_to = "ESS") |>
+  mutate(family= "TEA")
 
+list(tea_ess, st_ess) |>
+  bind_rows() |> 
+  relocate(family, .before= parameter) |> 
+  write_csv(here("output/results/ess_heterogene.csv"))
 
-
-  #bind_rows(tracelog_tea_by_sens_summary) |>
-  #bind_rows(tracelog_st_by_sens_summary) |> 
-
+write_csv(ess,here("output/results/ess.csv")) 
 # # Get the number of taxa and traits from a nexus file
 # get_nexus_parameters <- function(file) {
 #   group_name <- str_extract(basename(file), "^[^.]+")
