@@ -41,7 +41,9 @@ tipages_summary <- read_csv(here("output/results/tipages_summary.csv")) |>
   ungroup()
 
 # Tracelog summary
-tracelog_summary <- read_csv(here("output/results/tracelog_summary.csv"))
+tracelog_summary <- read_csv(here("output/results/tracelog_summary.csv")) 
+  #filter(!(family == "ST_by_sens" & concept == "the_name")) |>
+  #filter(!(family == "ST_by_sens" & concept == "four"))
 
 # Bounds
 bounds_real_tb_by_sens <- tracelog_summary |>
@@ -61,7 +63,8 @@ bounds_real_tb_by_sens <- tracelog_summary |>
   mutate(inf_t_DS = round(inf_t_DS, 3)) |>
   mutate(inf_t_DT = round(inf_t_DT, 3)) |>
   ungroup() |>
-  rename(family = familyx)
+  rename(family = familyx) |> 
+  relocate(inf_t_DS, .after = ub_DT)
 
 write_csv(bounds_real_tb_by_sens, here("output/results/bounds_real_tb_by_sens.csv"))
 
@@ -113,7 +116,9 @@ bounds_real_tb <- bind_rows(TEA_summary, bounds_real_tb_by_sens, ST_bysens_summa
   #  ) |>
   rename(family = familyx) |>
   relocate(inf_t_DT, .after = ub_DT) |>
-  select(-concept) 
+  select(-concept) |> 
+  relocate(ub_DS, .before= ub_DT ) |>
+  relocate(inf_t_DS, .after = ub_DT )
 
 
 write_csv(bounds_real_tb, here("output/results/bounds_real_tb.csv"))
@@ -153,8 +158,9 @@ bounds_real_byt_tb_st <- bounds_real_tb_by_sens |>
          ub_DS = compute_upperbound_DS(pi0, pi1, q*mu, t, filter(tipages_summary, family == familyx)$depth)
   ) |>
   rename(family = familyx)
-write_csv(bounds_real_byt_tb, here("output/results/bounds_real_byt_tb.csv"))
-  write_csv(here("output/results/st_by_sens.csv"))
+
+write_csv(bounds_real_byt_tb_st, here("output/results/bounds_real_byt_tb_st.csv"))
+  
 
 
 

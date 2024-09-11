@@ -37,13 +37,6 @@ tipages_summary <- bind_rows(tipages_bantu, tipages_bantu_subsample, tipages_ban
 
 write_csv(tipages_summary, here("output/results/tipages_summary.csv"))
 
-# Cutting points -------------------------------------------------------------------------------------------------
-
-#tipages_names <- tipages_summary |> 
-#  select(family, tip, root_age) |> 
-#  mutate(s=NA)
-
-#write.xlsx(tipages_names, here("output/results/tipages_time_prior.xlsx"))
 
 # Trace logs -------------------------------------------------------------------------------------------------------
 
@@ -62,7 +55,6 @@ tracelog_st_by_sens <- read_csv(here("output/results/st_by_sens/st_ctmc-strict-f
 tracelog_tea <- read_csv(here("output/results/tea/tea_ctmc-strict-fbd-constrained_tracelog.csv")) |>
   mutate(family = "TEA") |>
   rename(clockRate.c.clock = clockrate.c.clock)
-
 
 
 n_cogids_tea <- here("data/real/tea_ctmc-strict-fbd-constrained/tea.nex") |>
@@ -87,7 +79,7 @@ n_cogids_st_by_sens <- here("data/real/st_ctmc-strict-fbd-by-sens/st.nex") |>
 
 
 
-# Tracelog summaries
+# Tracelog summaries  
 
 tracelog_tea_by_sens_summary <- tracelog_tea |>
   #select(-tea_ess$parameter)|>
@@ -194,7 +186,7 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
     summarise(family = unique(family), across(-family, ~ median(.x))) |>
     rename(t_R = TreeHeight.t.tree) |>
     rename(clock_rate = clockRate.c.clock) |>
-    rename_with(~ str_replace(.x, "freqParameter.+(?=\\d$)", "pi"))|>
+    rename_with(~ str_replace(.x, "freqParameter.+(?=\\d$)", "pi")) |>
     rename_with(~ str_replace(.x, "mutationRate\\.s\\.(.*)", "mu")) |>
     rename(pi0 = pi1, pi1 = pi2)) |> 
   bind_rows(tracelog_tea_by_sens_summary) |>
@@ -208,7 +200,7 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
 write_csv(tracelog_summary, here("output/results/tracelog_summary.csv"))
 
 
-#  ESS
+#  ESS  --------------------------------------------------------------------------- ---------------------------------
 ess <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_ie, tracelog_st) |>
   map_df(function(x) {
     # Extraire la colonne family
@@ -271,8 +263,8 @@ tea_ess <- tea_log |>
   mutate(family= "TEA")
 
 list(tea_ess, st_ess) |>
-  bind_rows() |> 
-  relocate(family, .before= parameter) |> 
+  bind_rows() |>
+  relocate(family, .before= parameter) |>
   write_csv(here("output/results/ess_heterogene.csv"))
 
 write_csv(ess,here("output/results/ess.csv")) 
