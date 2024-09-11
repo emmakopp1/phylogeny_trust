@@ -9,9 +9,23 @@ library(readr)
 
 # Add the missing "End;" line at the end of the beast tree files ---------------
 write_file("End;",
-           here("data/real/st_ctmc-strict-fbd-by-sens/st_ctmc-strict-fbd.trees"),
+           here("data/real/st_ctmc-strict-fbd-by-sens/st_ctmc-strict-fbd-by-sens.trees"),
            append = TRUE
 )
+
+
+write_file("End;",
+           here("data/real/bantu_ctmc-strict-bd-subsample-filtered/bantu_ctmc-strict-bd-subsample-filtered.trees"),
+           append = TRUE
+)
+
+
+write_file("End;",
+           here("data/real/bantu_ctmc-strict-bd-subsample2-filtered/bantu_ctmc-strict-bd-subsample2-filtered.trees"),
+           append = TRUE
+)
+
+
 
 
 # Create directories
@@ -65,7 +79,7 @@ ntipschars_bantu <- get_nexus_parameters(here("data/real/bantu_ctmc-strict-bd/ba
 
 # Bantu subsample -------------------------------------------------------------------------------------------------
 
-phylo_bantu_subset <- read.nexus(here("data/real/bantu_ctmc-strict-bd-subsample/bantu_ctmc-strict-bd-subsample.trees"))
+phylo_bantu_subset <- read.nexus(here("data/real/bantu_ctmc-strict-bd-subsample-filtered/bantu_ctmc-strict-bd-subsample-filtered.trees"))
 
 tree_bantu_subset = phylo_bantu_subset[[length(phylo_bantu_subset)]]
 write.tree(tree_bantu_subset, here("output/results/bantu_subsample/bantu_ctmc-strict-bd-subsample_tree.nex"))
@@ -73,16 +87,16 @@ write.tree(tree_bantu_subset, here("output/results/bantu_subsample/bantu_ctmc-st
 ages_bantu_subset <- get_tip_ages(phylo_bantu_subset)
 write_csv(ages_bantu_subset, here("output/results/bantu_subsample/bantu_ctmc-strict-bd-subsample_tipages.csv"))
 
-trace_bantu_subset <- parse_beast_tracelog_file(here("data/real/bantu_ctmc-strict-bd-subsample/bantu_ctmc-strict-bd-subsample.log"))
+trace_bantu_subset <- parse_beast_tracelog_file(here("data/real/bantu_ctmc-strict-bd-subsample-filtered/bantu_ctmc-strict-bd-subsample-filtered.log"))
 write_csv(trace_bantu_subset, here("output/results/bantu_subsample/bantu_ctmc-strict-bd-subsample_tracelog.csv"))
 
-ntipschars_bantu_subset <- get_nexus_parameters(here("data/real/bantu_ctmc-strict-bd-subsample/bantusubsample.nex")) |>
+ntipschars_bantu_subset <- get_nexus_parameters(here("data/real/bantu_ctmc-strict-bd-subsample-filtered/bantusubsample-filtered.nex")) |>
   mutate(family = "Bantu_subset")
 
 
 # Bantu subsample 2 -----------------------------------------------------------------------------------------------
 
-phylo_bantu_subset2 <- read.nexus(here("data/real/bantu_ctmc-strict-bd-subsample2/bantu_ctmc-strict-bd-subsample2.trees"))
+phylo_bantu_subset2 <- read.nexus(here("data/real/bantu_ctmc-strict-bd-subsample2-filtered/bantu_ctmc-strict-bd-subsample2-filtered.trees"))
 
 tree_bantu_subset2 = phylo_bantu_subset2[[length(phylo_bantu_subset2)]]
 write.tree(tree_bantu_subset2, here("output/results/bantu_subsample2/bantu_ctmc-strict-bd-subsample2_tree.nex"))
@@ -90,10 +104,10 @@ write.tree(tree_bantu_subset2, here("output/results/bantu_subsample2/bantu_ctmc-
 ages_bantu_subset2 <- get_tip_ages(phylo_bantu_subset2)
 write_csv(ages_bantu_subset2, here("output/results/bantu_subsample2/bantu_ctmc-strict-bd-subsample2_tipages.csv"))
 
-trace_bantu_subset2 <- parse_beast_tracelog_file(here("data/real/bantu_ctmc-strict-bd-subsample2/bantu_ctmc-strict-bd-subsample2.log"))
+trace_bantu_subset2 <- parse_beast_tracelog_file(here("data/real/bantu_ctmc-strict-bd-subsample2-filtered/bantu_ctmc-strict-bd-subsample2-filtered.log"))
 write_csv(trace_bantu_subset2, here("output/results/bantu_subsample2/bantu_ctmc-strict-bd-subsample2_tracelog.csv"))
 
-ntipschars_bantu_subset2 <- get_nexus_parameters(here("data/real/bantu_ctmc-strict-bd-subsample2/bantusubsample2.nex")) |>
+ntipschars_bantu_subset2 <- get_nexus_parameters(here("data/real/bantu_ctmc-strict-bd-subsample2-filtered/bantusubsample2-filtered.nex")) |>
   mutate(family = "Bantu_subset2")
 
 
@@ -134,7 +148,7 @@ ntipschars_st <- get_nexus_parameters(here("data/real/st_ctmc-strict-fbd/st.nex"
 
 # Sino-Tibetan by sens -----------------------------------------------------------------------------------------
 
-phylo_st_by_sens <- read.nexus(here("data/real/st_ctmc-strict-fbd-by-sens/st_ctmc-strict-fbd.trees"))
+phylo_st_by_sens <- read.nexus(here("data/real/st_ctmc-strict-fbd-by-sens/st_ctmc-strict-fbd-by-sens.trees"))
 
 tree_st_by_sens = phylo_st_by_sens[[length(phylo_st_by_sens)]]
 write.tree(tree_st_by_sens, here("output/results/st_by_sens/st_ctmc-strict-fbd_by_sens_tree.nex"))
@@ -142,13 +156,11 @@ write.tree(tree_st_by_sens, here("output/results/st_by_sens/st_ctmc-strict-fbd_b
 ages_st_by_sens <- get_tip_ages(phylo_st_by_sens)
 write_csv(ages_st_by_sens, bzfile(here("output/results/st_by_sens/st_ctmc-strict-fbd_by_sens_tipages.csv.bz")))
 
-trace_st_by_sens <- parse_beast_tracelog_file(here("data/real/st_ctmc-strict-fbd-by-sens/st_ctmc-strict-fbd.log"))
+trace_st_by_sens <- parse_beast_tracelog_file(here("data/real/st_ctmc-strict-fbd-by-sens/st_ctmc-strict-fbd-by-sens.log"))
 write_csv(trace_st_by_sens, here("output/results/st_by_sens/st_ctmc-strict-fbd_by_sens_tracelog.csv"))
 
 ntipschars_st_by_sens <- get_nexus_parameters(here("data/real/st_ctmc-strict-fbd-by-sens/st.nex")) |>
   mutate(family = "ST_by_sens")
-
-
 
 
 # Transeurasian ---------------------------------------------------------------------------------------------------

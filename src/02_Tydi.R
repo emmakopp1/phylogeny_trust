@@ -80,7 +80,6 @@ n_cogids_st_by_sens <- here("data/real/st_ctmc-strict-fbd-by-sens/st.nex") |>
 
 
 # Tracelog summaries  
-
 tracelog_tea_by_sens_summary <- tracelog_tea |>
   #select(-tea_ess$parameter)|>
   # Ajouter un compteur de lignes si nécessaire

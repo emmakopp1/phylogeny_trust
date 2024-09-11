@@ -41,9 +41,9 @@ tipages_summary <- read_csv(here("output/results/tipages_summary.csv")) |>
   ungroup()
 
 # Tracelog summary
-tracelog_summary <- read_csv(here("output/results/tracelog_summary.csv")) 
-  #filter(!(family == "ST_by_sens" & concept == "the_name")) |>
-  #filter(!(family == "ST_by_sens" & concept == "four"))
+tracelog_summary <- read_csv(here("output/results/tracelog_summary.csv")) |>
+  filter(!(family == "ST_by_sens" & concept == "the_name")) |>
+  filter(!(family == "ST_by_sens" & concept == "four"))
 
 # Bounds
 bounds_real_tb_by_sens <- tracelog_summary |>
