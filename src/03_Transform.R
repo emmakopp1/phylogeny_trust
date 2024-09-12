@@ -127,6 +127,7 @@ write_csv(bounds_real_tb, here("output/results/bounds_real_tb.csv"))
 # Bounds by millenia 
 t_values <- seq(0, 20, length.out = 101)
 bounds_real_byt_tb <- bounds_real_tb |>
+  filter(!family %in% c("ST_bysens", "TEA")) |>
   select(-inf_t_DS, -inf_t_DT, -n_cogsets)|>
   group_by(family) |>
   mutate(count = length(t_values)) |>
@@ -139,30 +140,35 @@ bounds_real_byt_tb <- bounds_real_tb |>
          ub_DS = compute_upperbound_DS(pi0, pi1, q*mu, t, filter(tipages_summary, family == familyx)$depth)
          ) |>
   rename(family = familyx)
-write_csv(bounds_real_byt_tb, here("output/results/bounds_real_byt_tb.csv"))
 
 
-# Bounds by millenia by sens for sino tibetan
-
-# Sino-tibetan by sens
+# Bounds by millennial for rate heterogeneity
 t_values <- seq(0, 20, length.out = 101)
-bounds_real_byt_tb_st <- bounds_real_tb_by_sens |>
-  filter(family=="ST_by_sens") |>
-  mutate(family = ifelse(family == "ST_bysens", "ST_by_sens", family)) |>
-  select(-inf_t_DS, -inf_t_DT, -n_cogsets, -ub_DS, -ub_DT) |>
+bounds_real_byt_tb_by_sens <- bounds_real_tb_by_sens |>
+  filter(family %in% c("ST_by_sens", "TEA")) |>
+  group_by(concept, family) |>
+  select(-inf_t_DS, -inf_t_DT) |> 
   mutate(count = length(t_values)) |>
   uncount(count) |>
   mutate(t = t_values) |>
+  rename(familyx = family) |>
   rowwise() |>
-  mutate(ub_DT = compute_upperbound_DT(k, q*mu, t, filter(tipages_summary, family == familyx)$depth ,filter(tipages_summary, family == familyx)$s),
-         ub_DS = compute_upperbound_DS(pi0, pi1, q*mu, t, filter(tipages_summary, family == familyx)$depth)
+  mutate(
+    ub_DS = compute_upperbound_DS(pi0, pi1, q*mu, t, 
+                                  filter(tipages_summary, family == familyx)$depth),
+    ub_DT = compute_upperbound_DT(n_cogsets, q*mu, t, 
+                                  filter(tipages_summary, family == familyx)$depth, 
+                                  filter(tipages_summary, family == familyx)$s)
   ) |>
+  ungroup() |>
+  group_by(familyx, t, concept) |>  
+  summarise(across(-ub_DT, mean), ub_DT = sum(ub_DT), .groups = "drop") |>
   rename(family = familyx)
 
-write_csv(bounds_real_byt_tb_st, here("output/results/bounds_real_byt_tb_st.csv"))
-  
 
-
+bounds_real_byt_tb |> 
+  bind_rows(bounds_real_byt_tb_by_sens) |>
+  write_csv(here("output/results/bounds_real_byt_tb.csv"))
 
 
 # dt_real_ages <- list.dirs(here("output/results"), full.names = TRUE, recursive = FALSE) %>%
