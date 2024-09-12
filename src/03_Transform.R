@@ -121,11 +121,11 @@ bounds_real_tb <- bind_rows(TEA_summary, bounds_real_tb_by_sens, ST_bysens_summa
   relocate(inf_t_DS, .after = ub_DT )
 
 
-write_csv(bounds_real_tb, here("output/results/bounds_real_tb.csv"))
+#write_csv(bounds_real_tb, here("output/results/bounds_real_tb.csv"))
 
 
 # Bounds by millenia 
-t_values <- seq(0, 20, length.out = 101)
+t_values <- seq(0, 80, length.out = 401)
 bounds_real_byt_tb <- bounds_real_tb |>
   filter(!family %in% c("ST_bysens", "TEA")) |>
   select(-inf_t_DS, -inf_t_DT, -n_cogsets)|>
@@ -143,7 +143,7 @@ bounds_real_byt_tb <- bounds_real_tb |>
 
 
 # Bounds by millennial for rate heterogeneity
-t_values <- seq(0, 20, length.out = 101)
+t_values <- seq(0, 80, length.out = 401)
 bounds_real_byt_tb_by_sens <- bounds_real_tb_by_sens |>
   filter(family %in% c("ST_by_sens", "TEA")) |>
   group_by(concept, family) |>
@@ -161,8 +161,9 @@ bounds_real_byt_tb_by_sens <- bounds_real_tb_by_sens |>
                                   filter(tipages_summary, family == familyx)$s)
   ) |>
   ungroup() |>
-  group_by(familyx, t, concept) |>  
+  group_by(familyx, t) |>  
   summarise(across(-ub_DT, mean), ub_DT = sum(ub_DT), .groups = "drop") |>
+  select(-concept) |>
   rename(family = familyx)
 
 
@@ -170,7 +171,15 @@ bounds_real_byt_tb |>
   bind_rows(bounds_real_byt_tb_by_sens) |>
   write_csv(here("output/results/bounds_real_byt_tb.csv"))
 
+# On actualise bounds_real_tb ici maintenant qu'on à calculé inf_t_DS et inf_t_DT
+bounds_real_tb = bounds_real_tb |> 
+  mutate(inf_t_DS = if_else(family == 'TEA', 29.6, inf_t_DS)) |>
+  mutate(inf_t_DS = if_else(family == 'ST_bysens', 26.6, inf_t_DS)) |>
+  mutate(inf_t_DT = if_else(family == 'TEA', 62.6, inf_t_DT)) |>
+  mutate(inf_t_DT = if_else(family == 'ST_bysens', 42, inf_t_DT)) 
 
+
+write_csv(bounds_real_tb, here("output/results/bounds_real_tb.csv"))
 # dt_real_ages <- list.dirs(here("output/results"), full.names = TRUE, recursive = FALSE) %>%
 #   map_df(function(x) {
 #     ages <- list.files(list.dirs(here("output/results"), full.names = TRUE, recursive = FALSE), "tipages", full.names = TRUE) %>%
