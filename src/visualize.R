@@ -16,7 +16,7 @@ wdt <- 21 / 10 * 7
 hgt <- wdt * .7
 
 bounds_tb <- read_csv(here("output/results/bounds_real_tb.csv"), show_col_types = FALSE)
-clnms <- c("family", paste0("\\multicolumn{1}{c}{$", c("N", "k", "\\pi_0", "\\pi_1", "\\mu", "c", "n_{cogsets}", "t", "\\Delta^S(t)", "\\Delta^T(t)", "t_{\\text{max}}^S", "t_{\\text{max}}^D"), "$}"))
+clnms <- c("family", paste0("\\multicolumn{1}{c}{$", c("N", "k", "\\pi_0", "\\pi_1", "r", "c", "n_{cogsets}", "t", "\\Delta^S(t)", "\\Delta^T(t)", "t_{\\text{max}}^S", "t_{\\text{max}}^D"), "$}"))
 bounds_tb |> 
   select(-n_trees, -q) |> 
   mutate(ub_DT = ifelse(ub_DT >= 1, "\\geq 1", round(ub_DT, 2))) |>

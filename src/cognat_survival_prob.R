@@ -147,10 +147,6 @@ write_csv(qs_tb, here("output/results/qs_tb.csv"))
 
 
 
-
-
-
-
 qs_tb_min <- qs_tb |>
   pivot_longer(cols = -family, names_to = "millennium", values_to = "value") |>
   mutate(millennium = as.numeric(millennium)) %>%
