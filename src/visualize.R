@@ -1,4 +1,4 @@
-library(here)
+library (here)
 library(tidyverse)
 library(ggthemes)
 library(knitr)
@@ -13,7 +13,7 @@ theme_set(
     )
 )
 wdt <- 21 / 10 * 7
-hgt <- wdt * .7
+hgt <- wdt * .6
 
 bounds_tb <- read_csv(here("output/results/bounds_real_tb.csv"), show_col_types = FALSE)
 clnms <- c("family", paste0("\\multicolumn{1}{c}{$", c("N", "k", "\\pi_0", "\\pi_1", "r", "c", "n_{cogsets}", "t", "\\Delta^S(t)", "\\Delta^T(t)", "t_{\\text{max}}^S", "t_{\\text{max}}^D"), "$}"))
@@ -23,7 +23,7 @@ bounds_tb |>
   mutate(ub_DS = ifelse(ub_DS >= 1, "\\geq 1", round(ub_DS, 2))) |>
   relocate(ub_DT, .after = ub_DS) |> 
   mutate(family = str_replace_all(family, "_", " ")) |> 
-  relocate(inf_t_DS, .after = ub_DT) |>
+  #relocate(inf_t_DS, .after = ub_DT) |>
   relocate(ub_DS, .before = ub_DT) |>
   kbl(format = "latex",
       booktabs = T,
@@ -47,15 +47,21 @@ qs_tb_min |>
       col.names = c("family","$t_{min}$")) |> 
   write_lines(here("output/tabs/tab_qs_upperbound.tex"))
 
-bounds_byt_tb <- read_csv(here("output/results/bounds_real_byt_tb.csv"), show_col_types = FALSE)
+bounds_byt_tb <- read_csv(here("output/results/bounds_real_byt_tb.csv"), show_col_types = FALSE) |>
+  filter(family %in% c("Bantu", "ST", "IE"))
 fig_bounds <- bounds_byt_tb |>
   rowwise() |>
   mutate(ub_DT = min(1, ub_DT)) |>
-  mutate(ub_DS = min(1, ub_DS)) |>
-  select(family, t, ub_DT, ub_DS) |>
+  #mutate(ub_DS = min(1, ub_DS)) |>
+  select(
+    family, 
+    t, 
+    ub_DT, 
+    #ub_DS
+    ) |>
   pivot_longer(-c(family, t)) |>
   mutate(lbl = str_remove(name, "ub_D")) |>
-  mutate(lbl = factor(lbl, levels = c("T", "S"))) |>
+  mutate(lbl = factor(lbl, levels = c("T"))) |>
   #   filter(!str_detect(family, "subset")) |>
   ggplot(aes(x = t, y = value, linetype = family, color = family)) +
   geom_line() +
@@ -68,6 +74,63 @@ plot_crop(here("output/figs/fig_bounds.pdf"))
 
 bounds_st_bysens <- read_csv(here("output/results/st_by_sens.csv")) 
 
+
+
+# Meanings contribution
+df_plot_traits_contribution <- read_csv(here("output/results/meanings_contribution.csv")) |> 
+  ggplot(aes(x = Index, y = Cumsum, color = Family)) +
+  geom_line(size = .5) +
+  scale_color_manual(values = c("Sino-Tibetan" = "darkgreen", "Transeurasian" = "blue")) +
+  labs(title = "",
+       x = "meaning index",
+       y = "cumulative sum",
+       color = "Famille") +
+  theme_minimal() + 
+  theme(panel.grid.major = element_line(color = "gray", linetype = "dashed"),
+        panel.grid.minor = element_line(color = "lightgray", linetype = "dotted"))
+
+ggsave(here("output/figs/meanings_contribution.pdf"), df_plot_traits_contribution, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
+plot_crop(here("output/figs/meanings_contribution.pdf"))
+
+
+# ancestral reconstruction of sino tibetan traits with 1000 trees 
+f = "/Users/kopp/Documents/phylogeny_trust/output/results/ancestral_reconstruction_st_1000/results.txt"
+d = read.table(f, header=T)
+
+result1 = d %>%
+  group_by(sens, tree) %>%
+  summarize(max_st = max(value), .groups="drop")
+
+result2 = result1 %>%
+  group_by(sens) %>%
+  summarize(meanmaxsens = mean(max_st), .groups="drop")
+
+
+result2$y <- runif(nrow(result2), min = 0, max = 1)
+
+result2$test <- cut(
+  result2$meanmaxsens,
+  breaks = seq(0, 10.5, by = 0.5),
+  labels = seq(0, 10, by = 0.5),
+  include.lowest = TRUE,
+  right = FALSE
+)
+
+# Conversion des labels en numérique
+result2$test <- as.numeric(as.character(result2$test))
+
+# plot
+plot_ancr_st <- ggplot(result2, aes(x = test, y = y, label = sens)) +
+  geom_point(size = 1, color = "darkblue", shape = 4) +
+  geom_text(nudge_y = 0.03, size = 1.75) + # display labels above points
+  labs(
+    title = "",
+    x = "depth",
+    y = ""
+  ) +
+  theme_minimal()
+ggsave(here("output/figs/ancr_st_1000.pdf"), plot_ancr_st, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
+plot_crop(here("output/figs/ancr_st_1000.pdf"))
 
 # bounds_tb <- read_csv(here("output/results/bounds_tb.csv"),show_col_types = FALSE)
 # bounds_tb |>
@@ -124,29 +187,29 @@ bounds_st_bysens <- read_csv(here("output/results/st_by_sens.csv"))
 # ggsave(here("output/figs/fig_bounds_bantu.pdf"), fig_bounds_bantu, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
 # plot_crop(here("output/figs/fig_bounds_bantu.pdf"))
 
-qs_tb <- read_csv(here("output/results/qs_tb.csv"), show_col_types = FALSE)
-fig_qs <- qs_tb |>
-  ggplot(aes(x = age, y = q_theo, group = family, color = family, linetype = family)) +
-  geom_line() +
-  xlab("age (ka BP)") +
-  ylab(expression(italic(Q[s]))) +
-  scale_y_continuous(n.breaks = 10) +
-  scale_color_few("Dark")
-ggsave(here("output/figs/fig_qs.pdf"), fig_qs, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
-plot_crop(here("output/figs/fig_qs.pdf"))
+#qs_tb <- read_csv(here("output/results/qs_tb.csv"), show_col_types = FALSE)
+#fig_qs <- qs_tb |>
+#  ggplot(aes(x = age, y = q_theo, group = family, color = family, linetype = family)) +
+#  geom_line() +
+#  xlab("age (ka BP)") +
+#  ylab(expression(italic(Q[s]))) +
+#  scale_y_continuous(n.breaks = 10) +
+#  scale_color_few("Dark")
+#ggsave(here("output/figs/fig_qs.pdf"), fig_qs, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
+#plot_crop(here("output/figs/fig_qs.pdf"))
 
 
-node_probs_tb <- read_csv(here("output/results/node_probs_tb.csv"), show_col_types = FALSE)
-fig_nodeprobs <- node_probs_tb |>
-  ggplot(aes(x = factor(age), y = p, group = factor(age))) +
-  geom_boxplot(fill = "gray90", outliers = FALSE) +
-  geom_point(position = position_jitter(seed = 0, width = .3), size = 1.5, alpha = 1, color = few_pal("Dark")(2)[1], shape = 1) +
-  xlab("age (ka BP)") +
-  ylab("proportion")
-ggsave(here("output/figs/fig_nodeprobs.pdf"), fig_nodeprobs, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
-plot_crop(here("output/figs/fig_nodeprobs.pdf"))
+#node_probs_tb <- read_csv(here("output/results/node_probs_tb.csv"), show_col_types = FALSE)
+#fig_nodeprobs <- node_probs_tb |>
+#  ggplot(aes(x = factor(age), y = p, group = factor(age))) +
+#  geom_boxplot(fill = "gray90", outliers = FALSE) +
+#  geom_point(position = position_jitter(seed = 0, width = .3), size = 1.5, alpha = 1, color = few_pal("Dark")(2)[1], shape = 1) +
+#  xlab("age (ka BP)") +
+#  ylab("proportion")
+#ggsave(here("output/figs/fig_nodeprobs.pdf"), fig_nodeprobs, device = cairo_pdf, width = wdt, height = hgt, units = "cm")
+#plot_crop(here("output/figs/fig_nodeprobs.pdf"))
 
-font <- "Noto Sans Condensed"
+#font <- "Noto Sans Condensed"
 
 library(phangorn)
 library(treeio)
