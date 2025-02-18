@@ -67,7 +67,7 @@ n_cogids_tea <- here("data/real/tea_ctmc-strict-fbd-constrained/tea.nex") |>
   mutate(n_cogsets = as.integer(end) - as.integer(start) + 1) |>
   select(concept, n_cogsets)
 
-n_cogids_st_by_sens <- here("data/real/st_ctmc-strict-fbd-by-sens/st.nex") |>
+n_cogids_st_by_sens <- here("data/real/st_ctmc-strict-fbd-heterogene/st.nex") |>
   read_lines() |>
   str_subset("charset") |>
   str_remove_all("    charset |;|\\?") |>
@@ -81,52 +81,46 @@ n_cogids_st_by_sens <- here("data/real/st_ctmc-strict-fbd-by-sens/st.nex") |>
 
 # Tracelog summaries  
 tracelog_tea_by_sens_summary <- tracelog_tea |>
-  #select(-tea_ess$parameter)|>
-  # Ajouter un compteur de lignes si nécessaire
+  # Count rows
   add_tally(name = "n_trees") |>
-  # Filtrer les échantillons en fonction de burnin
+  # Delete burn-in
   filter(Sample > ceiling(max(Sample) * burnin)) |>
-  # Sélectionner les colonnes d'intérêt
-  select(family, n_trees, starts_with("freqParameter"), clockRate.c.clock, TreeHeight.t.tree, starts_with("mutationRate")) |>
-  # Transformer en format long
+  select(Sample, family, n_trees, starts_with("freqParameter"), clockRate.c.clock, TreeHeight.t.tree, starts_with("mutationRate")) |>
   pivot_longer(cols = matches("freqParameter|mutationRate"), names_to = "name", values_to = "value") |>
   mutate(
     name = str_replace(name, "^freqParameter.s.", "pi@"),
     name = str_replace(name, "^mutationRate.s.", "mu@"),
     name = str_replace(name, "\\.(\\d+)$", "@\\1")
   ) |>
-  # Séparer la colonne 'name' en 'prefix', 'main_name', 'suffix' en utilisant '@' comme séparateur
+  # Split the name column into three new columns: prefix, main_name, and suffix, using @ as the delimiter
   separate(name, into = c("prefix", "main_name", "suffix"), sep = "@", fill = "right")|>
-  # Remplacer NA dans 'suffix' par une chaîne vide
   mutate(suffix = ifelse(is.na(suffix), "", suffix)) |>
-  # Créer les noms de variables pour pivot_wider
   mutate(variable = case_when(
     prefix == "pi" & suffix != "" ~ paste0(prefix, suffix),
     prefix == "mu" ~ prefix,
     TRUE ~ prefix
   )) |>
-  # Transformer en format large
-  pivot_wider(names_from = variable, values_from = value)|>
+  pivot_wider(names_from = variable, values_from = value) |>
   # Agréger les données sans modifier les colonnes non concernées
-  group_by(family, n_trees, clockRate.c.clock, TreeHeight.t.tree, main_name) |>
+  group_by(Sample, family, clockRate.c.clock, TreeHeight.t.tree, main_name) |>
   summarise(
     pi1 = sum(pi1, na.rm = TRUE),
     pi2 = sum(pi2, na.rm = TRUE),
     mu = sum(mu, na.rm = TRUE),
     .groups = 'drop'
   ) |>
-  # Simplifier la colonne 'name'
   mutate(concept = main_name) |>
   select(family, n_trees, clockRate.c.clock, TreeHeight.t.tree, concept, pi1, pi2, mu) |>
   rename(t_R = TreeHeight.t.tree) |>
   rename(pi0 = pi1, pi1 = pi2) |>
   rename(clock_rate = clockRate.c.clock) |>
-  group_by(family, n_trees, concept) |>
+  group_by(family, concept) |>
   summarise(across(c(t_R, pi0, pi1, mu, clock_rate), ~ median(.x))) |>
   ungroup() |>
   left_join(n_cogids_tea, by = "concept") |>
   relocate(n_cogsets, .after = concept) |> 
   mutate(t_R = 0.1 * t_R)
+
 
 
 # Sino-Tibetan family
@@ -190,7 +184,7 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
     rename(pi0 = pi1, pi1 = pi2)) |> 
   bind_rows(tracelog_tea_by_sens_summary) |>
   bind_rows(tracelog_st_by_sens_summary) |> 
-  mutate(q = pi0 + pi1) |> 
+  mutate(q = (pi0 + pi1)/(2 * pi0 * pi1)) |> 
   relocate(q, .after = pi1) |>
   relocate(mu, .before = q) |> 
   left_join(ntipschars)

@@ -3,6 +3,11 @@ library(tidyverse)
 library(ggthemes)
 library(knitr)
 library(kableExtra)
+library(ggplot2)
+library(ggtree)
+library(ape)
+library(phytools)
+
 
 font <- "Noto Sans SemiCondensed"
 theme_set(
@@ -255,9 +260,45 @@ fig_t5consensus <- t5_consensus |>
   theme(plot.margin = margin(.5, 0.5, .5, 1, unit = "line"), legend.position = "none")
 fig_t5consensus
 
-ggsave(here("output/figs/fig_t5trueconsensus.pdf"), fig_t5true + fig_t5consensus, device = cairo_pdf, width = wdt, height = hgt * 1.7, units = "cm")
-plot_crop(here("output/figs/fig_t5trueconsensus.pdf"))
 
+# miror plot 
+# true tree
+left <- rep("black",length(t5_true$tip.label))
+right <- rep("black",length(t5_consensus$tip.label))
+
+nodes1 <- Descendants(t5_true, 52, type = "tips")[[1]]
+nodes2 <- Descendants(t5_true, 71, type = "tips")[[1]]
+nodes3 <- Descendants(t5_true, 95, type = "tips")[[1]]
+
+nodes_labels1 <- t5_true$tip.label[nodes1]
+nodes_labels2 <- t5_true$tip.label[nodes2]
+nodes_labels3 <- t5_true$tip.label[nodes3]
+
+color_tip <- function(tree, nodes_labels1, nodes_labels2, nodes_labels3){
+  
+  tip_colors <- rep("black", length(tree$tip.label))
+  
+  # Colorier en fonction des ensembles
+  tip_colors[tree$tip.label %in% nodes_labels1] <- "darkblue"
+  tip_colors[tree$tip.label %in% nodes_labels2] <- "darkred"
+  tip_colors[tree$tip.label %in% nodes_labels3] <- "darkgreen"
+  
+  return(tip_colors)
+}
+
+t5_consensus_tip_colors <- color_tip(t5_consensus, nodes_labels1, nodes_labels2, nodes_labels3)
+t5_true_tip_colors <- color_tip(t5_true, nodes_labels1, nodes_labels2, nodes_labels3)
+
+# miror plot of the true tree and the consensus tree
+pdf(here("output/figs/fig_t5trueconsensus.pdf"), width = wdt, height = hgt * 1.7)
+par(mfrow=c(1,2))
+plot(t5_true, tip.color = t5_true_tip_colors, direction="rightwards")
+nodelabels(bg="black", cex= 0.2, frame= 'circle')
+plot(t5_consensus, tip.color = t5_consensus_tip_colors, direction="leftwards")
+nodelabels(bg="black", cex= 0.2, frame= 'circle')
+dev.off()
+
+# consensus tree for 9 millenia
 t9_consensus <- read.newick(here("data/simulated/beast-data-sim-9/consensus-9.tree"))
 t9_consensus$root.edge.length <- 0
 
@@ -278,9 +319,19 @@ fig_t9consensus <- t9_consensus |>
   theme(plot.margin = margin(.5, 1.5, .5, 1, unit = "line"), legend.position = "none")
 fig_t9consensus
 
-ggsave(here("output/figs/fig_t9trueconsensus.pdf"), fig_t5true + fig_t9consensus, device = cairo_pdf, width = wdt, height = hgt * 1.7, units = "cm")
-plot_crop(here("output/figs/fig_t9trueconsensus.pdf"))
 
+t9_consensus_tip_colors <- color_tip(t9_consensus, nodes_labels1, nodes_labels2, nodes_labels3)
+
+# miror plot of the true tree and the consensus tree
+pdf(here("output/figs/fig_t9trueconsensus.pdf"), width = wdt, height = hgt * 1.7)
+par(mfrow=c(1,2))
+plot(t5_true, tip.color = t5_true_tip_colors, direction="rightwards")
+nodelabels(bg="black", cex= 0.2, frame= 'circle')
+plot(t9_consensus, tip.color = t9_consensus_tip_colors, direction="leftwards")
+nodelabels(bg="black", cex= 0.2, frame= 'circle')
+dev.off()
+
+# consensus tree for sino-tibetain 
 st_consensus <- read.newick(here("data/real/st_ctmc-strict-bd-fossilsRemoved/st_ctmc-strict-bd-fossilRemoved-consensus.tree"))
 st_consensus$root.edge.length <- 0
 fig_stconsensus <- ggtree(st_consensus) +
@@ -291,6 +342,7 @@ fig_stconsensus <- ggtree(st_consensus) +
 ggsave(here("output/figs/fig_stconsensus.pdf"), fig_stconsensus, device = cairo_pdf, width = wdt, height = hgt * 2, units = "cm")
 plot_crop(here("output/figs/fig_stconsensus.pdf"))
 
+# consensus tree for indo-european
 ie_consensus <- read.newick(here("data/real/IECoR-ctmc-strict-fbd/IECoR2-chr_consensus.tree"))
 ie_consensus$root.edge.length <- 0
 fig_ieconsensus <- ggtree(ie_consensus) +
