@@ -185,33 +185,6 @@ tracelog_st_by_sens_summary = tracelog_st_by_sens |>
   relocate(n_cogsets, .after = concept)
 
 
-# KD 
-tracelog_kd_summary <- tracelog_kd |>
-  # Count rows
-  add_tally(name = "n_trees") |>
-  # Delete burn-in
-  filter(Sample > ceiling(max(Sample) * burnin)) |>
-  select(Sample, family, n_trees, starts_with("freqParameter"), clockRate.c.clock, TreeHeight.t.tree, starts_with("mutationRate")) |>
-  rename_with(~ str_replace(.x, "^freqParameter.*\\.(\\d+)$", "pi\\1"), starts_with("freqParameter")) |> 
-  rename_with(~ str_replace(.x, "^mutationRate.*", "mu"), starts_with("mutationRate")) |> 
-  group_by(Sample, family, clockRate.c.clock, TreeHeight.t.tree) |>
-  summarise(
-    pi1 = sum(pi1, na.rm = TRUE),
-    pi2 = sum(pi2, na.rm = TRUE),
-    mu = sum(mu, na.rm = TRUE),
-    .groups = 'drop'
-  ) |>
-  select(family, n_trees, clockRate.c.clock, TreeHeight.t.tree, pi1, pi2, mu) |>
-  rename(t_R = TreeHeight.t.tree) |>
-  rename(pi0 = pi1, pi1 = pi2) |>
-  rename(clock_rate = clockRate.c.clock) |>
-  group_by(family, concept) |>
-  summarise(across(c(t_R, pi0, pi1, mu, clock_rate), ~ median(.x))) |>
-  ungroup() |>
-  left_join(n_cogids_tea, by = "concept") |>
-  relocate(n_cogsets, .after = concept) |> 
-  mutate(t_R = 0.1 * t_R)
-
 
 tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_ie, tracelog_st, tracelog_kd) |>
   purrr::map(~ .x |>
@@ -229,7 +202,7 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
   mutate(q = (pi0 + pi1)/(2 * pi0 * pi1)) |> 
   relocate(q, .after = pi1) |>
   relocate(mu, .before = q) |> 
-  mutate(t_R = ifelse(family == "KD", 1e-3 * t_R, t_R))
+  mutate(t_R = ifelse(family == "KD", 1e-3 * t_R, t_R)) |>
   left_join(ntipschars)
 
 
