@@ -26,8 +26,10 @@ tipages_tea <- read_csv(here("output/results/tea/tea_ctmc-strict-fbd-constrained
   mutate(family = "TEA") |> 
   mutate(age = 0.1 * age) |> 
   mutate(depth = 0.1 * depth)
+tipages_kd <- read_csv(here("output/results/kd/kd_ctmc-strict-bd_tipages.csv.bz")) |>
+  mutate(family = "KD")
 
-tipages_summary <- bind_rows(tipages_bantu, tipages_bantu_subsample, tipages_bantu_subsample2, tipages_ie, tipages_st, tipages_st_by_sens, tipages_tea) |>
+tipages_summary <- bind_rows(tipages_bantu, tipages_bantu_subsample, tipages_bantu_subsample2, tipages_ie, tipages_st, tipages_st_by_sens, tipages_tea, tipages_kd) |>
   group_by(family) |>
   filter(tree > ceiling(max(tree) * burnin)) |>
   group_by(family, tip) |>
@@ -55,6 +57,8 @@ tracelog_st_by_sens <- read_csv(here("output/results/st_by_sens/st_ctmc-strict-f
 tracelog_tea <- read_csv(here("output/results/tea/tea_ctmc-strict-fbd-constrained_tracelog.csv")) |>
   mutate(family = "TEA") |>
   rename(clockRate.c.clock = clockrate.c.clock)
+tracelog_kd <- read_csv(here("output/results/kd/kd_ctmc-strict-bd_tracelog.csv")) |>
+  mutate(family = "KD")
 
 
 n_cogids_tea <- here("data/real/tea_ctmc-strict-fbd-constrained/tea.nex") |>
@@ -67,7 +71,7 @@ n_cogids_tea <- here("data/real/tea_ctmc-strict-fbd-constrained/tea.nex") |>
   mutate(n_cogsets = as.integer(end) - as.integer(start) + 1) |>
   select(concept, n_cogsets)
 
-n_cogids_st_by_sens <- here("data/real/st_ctmc-strict-fbd-heterogene/st.nex") |>
+n_cogids_st_by_sens <- here("data/real/st_ctmc-strict-fbd-ht/st.nex") |>
   read_lines() |>
   str_subset("charset") |>
   str_remove_all("    charset |;|\\?") |>
@@ -77,9 +81,19 @@ n_cogids_st_by_sens <- here("data/real/st_ctmc-strict-fbd-heterogene/st.nex") |>
   mutate(n_cogsets = as.integer(end) - as.integer(start) + 1) |>
   select(concept, n_cogsets)
 
-
+n_cogids_kd <- here("data/real/kd_ctmc-strict-bd-ht/kd.nex") |>
+  read_lines() |>
+  str_subset("charset") |>
+  str_remove_all("    charset |;|\\?") |>
+  enframe(name = NULL, value = "concept") |>
+  separate(concept, into = c("concept", "sets"), sep = " = ") |>
+  separate(sets, into = c("start", "end"), sep = "-") |>
+  mutate(n_cogsets = as.integer(end) - as.integer(start) + 1) |>
+  select(concept, n_cogsets) |> 
+  mutate(concept = str_remove(concept, "^charset "))
 
 # Tracelog summaries  
+# TEA 
 tracelog_tea_by_sens_summary <- tracelog_tea |>
   # Count rows
   add_tally(name = "n_trees") |>
@@ -102,7 +116,7 @@ tracelog_tea_by_sens_summary <- tracelog_tea |>
   )) |>
   pivot_wider(names_from = variable, values_from = value) |>
   # Agréger les données sans modifier les colonnes non concernées
-  group_by(Sample, family, clockRate.c.clock, TreeHeight.t.tree, main_name) |>
+  group_by(Sample, n_trees, family, clockRate.c.clock, TreeHeight.t.tree, main_name) |>
   summarise(
     pi1 = sum(pi1, na.rm = TRUE),
     pi2 = sum(pi2, na.rm = TRUE),
@@ -123,7 +137,7 @@ tracelog_tea_by_sens_summary <- tracelog_tea |>
 
 
 
-# Sino-Tibetan family
+# ST_by_sens
 tracelog_st_by_sens_summary = tracelog_st_by_sens |>
   #select(-st_ess$parameter)|>
   # Ajouter un compteur de lignes si nécessaire
@@ -171,9 +185,37 @@ tracelog_st_by_sens_summary = tracelog_st_by_sens |>
   relocate(n_cogsets, .after = concept)
 
 
-tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_ie, tracelog_st) |>
-  map(~ .x |>
-    add_tally(name = "n_trees") |>
+# KD 
+tracelog_kd_summary <- tracelog_kd |>
+  # Count rows
+  add_tally(name = "n_trees") |>
+  # Delete burn-in
+  filter(Sample > ceiling(max(Sample) * burnin)) |>
+  select(Sample, family, n_trees, starts_with("freqParameter"), clockRate.c.clock, TreeHeight.t.tree, starts_with("mutationRate")) |>
+  rename_with(~ str_replace(.x, "^freqParameter.*\\.(\\d+)$", "pi\\1"), starts_with("freqParameter")) |> 
+  rename_with(~ str_replace(.x, "^mutationRate.*", "mu"), starts_with("mutationRate")) |> 
+  group_by(Sample, family, clockRate.c.clock, TreeHeight.t.tree) |>
+  summarise(
+    pi1 = sum(pi1, na.rm = TRUE),
+    pi2 = sum(pi2, na.rm = TRUE),
+    mu = sum(mu, na.rm = TRUE),
+    .groups = 'drop'
+  ) |>
+  select(family, n_trees, clockRate.c.clock, TreeHeight.t.tree, pi1, pi2, mu) |>
+  rename(t_R = TreeHeight.t.tree) |>
+  rename(pi0 = pi1, pi1 = pi2) |>
+  rename(clock_rate = clockRate.c.clock) |>
+  group_by(family, concept) |>
+  summarise(across(c(t_R, pi0, pi1, mu, clock_rate), ~ median(.x))) |>
+  ungroup() |>
+  left_join(n_cogids_tea, by = "concept") |>
+  relocate(n_cogsets, .after = concept) |> 
+  mutate(t_R = 0.1 * t_R)
+
+
+tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_ie, tracelog_st, tracelog_kd) |>
+  purrr::map(~ .x |>
+    add_tally(name = "n_trees")|>
     filter(Sample > ceiling(max(Sample) * burnin)) |>
     select(family, n_trees, starts_with("freqParameter"), clockRate.c.clock, TreeHeight.t.tree, starts_with("mutationRate")) |>
     summarise(family = unique(family), across(-family, ~ median(.x))) |>
@@ -187,6 +229,7 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
   mutate(q = (pi0 + pi1)/(2 * pi0 * pi1)) |> 
   relocate(q, .after = pi1) |>
   relocate(mu, .before = q) |> 
+  mutate(t_R = ifelse(family == "KD", 1e-3 * t_R, t_R))
   left_join(ntipschars)
 
 
@@ -194,7 +237,7 @@ write_csv(tracelog_summary, here("output/results/tracelog_summary.csv"))
 
 
 #  ESS  --------------------------------------------------------------------------- ---------------------------------
-ess <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_ie, tracelog_st) |>
+ess <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_ie, tracelog_st, tracelog_kd) |>
   map_df(function(x) {
     # Extraire la colonne family
     family_name <- unique(x$family)
