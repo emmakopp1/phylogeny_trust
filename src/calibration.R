@@ -1043,7 +1043,6 @@ tea_group_tungusic = c("Hezhe",
                        "Oroqen")
 
 # Comppute age of mrca's 
-
 remove_burnin = function(trees,burnin_rate){
   n = as.numeric(length(trees))
   return(trees[as.integer(n*burnin_rate):n])
@@ -1085,13 +1084,27 @@ tea_group_turkic <- tibble(family = "TEA", calibration = "turkic", tip = tea_gro
 tea_group_mongolian <- tibble(family = "TEA", calibration = "mongolian", tip = tea_group_mongolian, s=age_mrca_mongolian)
 tea_group_tungusic <- tibble(family = "TEA", calibration = "tungusic", tip = tea_group_tungusic, s= age_mrca_tungusic)
 
+# Kra-Dai ---------------------------------------------------------------------------------------------
 
+kd_phylo <- read.nexus(here("data/real/kd_ctmc-strict-bd-ht/kd_ctmc-strict-bd-ht.trees"))
+kd_tree <- kd_phylo[[length(kd_phylo)]]
+
+
+kd_tree$tip.label[grep("^Tsw", kd_tree$tip.label)]
+
+kd_tsw_group <- c("TswNgheAn", "TswSongkhla", "TswTaunggyi", "TswThaiTrang", "TswWuding", "TswYuanyang", "TswYuanjiang")
+
+kd_group_tsw <- tibble(family = "KD", calibration = "tsw", tip = kd_tsw_group, s=1.1)
+
+
+# Bind
 calibration <- bind_rows(
   bantu_group_a, bantu_group_b, bantu_group_c, bantu_group_d,
   bantusubsample_group_a,bantusubsample_group_b,bantusubsample_group_c,bantusubsample_group_d,
   bantusubsample2_group_a,bantusubsample2_group_b,bantusubsample2_group_c,bantusubsample2_group_d,
   st_group_sinitic,st_by_sens_group_sinitic,
-  tea_group_japonic,tea_group_koreanic,tea_group_mongolian,tea_group_tungusic,tea_group_turkic)
+  tea_group_japonic,tea_group_koreanic,tea_group_mongolian,tea_group_tungusic,tea_group_turkic,
+  kd_group_tsw)
 
 
 write.csv(calibration, here("output/results/calibration.csv"))
