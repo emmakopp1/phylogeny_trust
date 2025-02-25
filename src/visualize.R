@@ -7,6 +7,8 @@ library(ggplot2)
 library(ggtree)
 library(ape)
 library(phytools)
+library(phangorn)
+library(treeio)
 
 
 font <- "Noto Sans SemiCondensed"
@@ -216,9 +218,7 @@ plot_crop(here("output/figs/ancr_st_1000.pdf"))
 
 #font <- "Noto Sans Condensed"
 
-library(phangorn)
-library(treeio)
-library(ggtree)
+
 plt_dark <- few_pal("Dark")(8)
 
 t5_true <- read.newick(here("data/simulated/beast-data-sim-5/tree-sim-5.tree"))
@@ -290,13 +290,23 @@ t5_consensus_tip_colors <- color_tip(t5_consensus, nodes_labels1, nodes_labels2,
 t5_true_tip_colors <- color_tip(t5_true, nodes_labels1, nodes_labels2, nodes_labels3)
 
 # miror plot of the true tree and the consensus tree
-pdf(here("output/figs/fig_t5trueconsensus.pdf"), width = wdt, height = hgt * 1.7)
+pdf(here("output/figs/fig_t5trueconsensus.pdf"))
 par(mfrow=c(1,2))
 plot(t5_true, tip.color = t5_true_tip_colors, direction="rightwards")
 nodelabels(bg="black", cex= 0.2, frame= 'circle')
 plot(t5_consensus, tip.color = t5_consensus_tip_colors, direction="leftwards")
 nodelabels(bg="black", cex= 0.2, frame= 'circle')
 dev.off()
+
+
+# cophylogeny object 
+pdf(here("output/figs/t5_cophylo.pdf"))
+cophylo_tree <- cophylo(t5_true, t5_consensus)
+#t5_true_cophylo <- cophylo_tree$trees[[1]]
+#t5_consensus_cophylo <- cophylo_tree$trees[[2]]
+plot(cophylo_tree)
+dev.off()
+
 
 # consensus tree for 9 millenia
 t9_consensus <- read.newick(here("data/simulated/beast-data-sim-9/consensus-9.tree"))
@@ -319,16 +329,23 @@ fig_t9consensus <- t9_consensus |>
   theme(plot.margin = margin(.5, 1.5, .5, 1, unit = "line"), legend.position = "none")
 fig_t9consensus
 
-
 t9_consensus_tip_colors <- color_tip(t9_consensus, nodes_labels1, nodes_labels2, nodes_labels3)
 
 # miror plot of the true tree and the consensus tree
-pdf(here("output/figs/fig_t9trueconsensus.pdf"), width = wdt, height = hgt * 1.7)
+pdf(here("output/figs/fig_t9trueconsensus.pdf"))
 par(mfrow=c(1,2))
 plot(t5_true, tip.color = t5_true_tip_colors, direction="rightwards")
 nodelabels(bg="black", cex= 0.2, frame= 'circle')
 plot(t9_consensus, tip.color = t9_consensus_tip_colors, direction="leftwards")
 nodelabels(bg="black", cex= 0.2, frame= 'circle')
+dev.off()
+
+# cophylogeny object 
+pdf(here("output/figs/t9_cophylo.pdf"))
+cophylo_tree <- cophylo(t5_true, t9_consensus)
+#t5_true_cophylo <- cophylo_tree$trees[[1]]
+#t5_consensus_cophylo <- cophylo_tree$trees[[2]]
+plot(cophylo_tree)
 dev.off()
 
 # consensus tree for sino-tibetain 
