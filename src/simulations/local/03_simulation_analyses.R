@@ -1,0 +1,226 @@
+# ------------------------------------------------------------------------------
+# Script Name: 03_simulation_analyses.R
+# Description: This script consolidates and tidies all the data required for 
+#              plotting and analysis of phylogenetic reconstruction accuracy. 
+#              It performs the following tasks:
+#                - Loads and merges summary statistics from previous simulations
+#                - Computes aggregated node reconstruction counts and proportions
+#                - Saves cleaned datasets in .csv and .rds formats for plotting
+#                - Computes summary statistics on marginal posterior probabilities
+#                - Prepares datasets for modeling and runs logistic regressions
+#              Data covers comparisons between true trees and both consensus 
+#              and MCC summary trees across varying simulation ages.
+# ------------------------------------------------------------------------------
+library(here)
+library(tidyverse)
+N_sim <- 50
+
+# load data --------------------------------------------------------------------
+# marginal probability of the first split with IC 
+marginal_probability_first_split_ic <- bind_rows(
+  read.csv(here("output/results/marginal_prob_first_split_ic_1_300.csv")),
+  read.csv(here("output/results/marginal_prob_first_split_ic_301_600.csv")),
+  read.csv(here("output/results/marginal_prob_first_split_ic_601_850.csv"))
+) 
+# frequency of good reconstruction of the first split in of the mcc
+mcc_posterior_prob <- rbind(
+  read.csv(here("output/results/mcc_posterior_prob2_1_300.csv")),
+  read.csv(here("output/results/mcc_posterior_prob2_301_600.csv")),
+  read.csv(here("output/results/mcc_posterior_prob2_601_850.csv"))
+)
+
+# frequency of good reconstruction of all the nodes in of the mcc
+mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF_1_850.csv")) |> 
+  filter(type == 'mcc')
+
+# frequency of good reconstruction of all the nodes in consensus tree (true -> summary)
+true_false_uncertain <- read.csv(
+  file = here("output/results/true_false_uncertain_nodes_1_850.csv"),
+  sep = ",",
+  header = T) |> 
+  rename(age = tree_age, simulation = tree_simulation_number) |>
+  # add 0/1/2 for false/true/uncertain nodes for the consensus tree
+  mutate(
+    value = case_when(
+      T_F_U == FALSE ~ 0,
+      T_F_U == TRUE & state == "rateau" ~ 2,
+      T_F_U == TRUE & state == "regular" ~ 1
+    )
+  )
+
+# number of node in the consensus and mcc tree
+df_number_of_nodes <- read.csv(
+  file = here("output/results/number_nodes_mcc_cs.csv"),
+  sep = ",",
+  header = T
+)
+
+# marginal probability of the first split in the mcc and consensus tree
+prob_first_split_summary = read.csv(
+  here("output/results/marginal_prob_first_split_mcc_consensus_1_850.csv")
+  )
+
+# process data -----------------------------------------------------------------
+
+# marginal probability of the first split in the mcc 
+prob_first_split_mcc = prob_first_split_summary |> 
+  select(- cs_prob, - node_cs, - node_mcc) |> 
+  group_by(age) |> 
+  summarise(mean_mcc_prob = mean(mcc_prob, na.rm=T), .groups='drop') |> 
+  ungroup() |> 
+  write.csv(file = here("output/results/prob_first_split_mcc.csv"), row.names = FALSE)
+
+# number of node in the summary tree
+df_number_of_nodes_avg <- df_number_of_nodes |>
+  group_by(age) |>
+  summarise(
+    n_mcc = mean(n_mcc, na.rm = TRUE),
+    n_consensus = mean(n_consensus, na.rm = TRUE)
+  ) |>
+  write.csv(file = here("output/results/number_of_nodes_summary.csv"), row.names = FALSE)
+
+# posterior of the first split with IC
+# group by age 
+marginal_probability_first_split_ic = marginal_probability_first_split_ic|>
+  rename(age = tree_age, simulation = tree_simulation_number) |>
+  group_by(age) |>
+  summarise(
+    prob = mean(prob_mean, na.rm = TRUE),
+    inf = mean(prob_inf, na.rm = TRUE),
+    sup = mean(prob_sup, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+write_csv(
+  marginal_probability_first_split_ic, 
+  here("output/results/marginal_probability_first_split_ic.csv"))
+
+# for the consensus trees, count the number of true, false and uncertain nodes
+# with special labels for the plot
+count_true_to_cs <- true_false_uncertain |>
+  count(age, simulation, value) |>
+  group_by(age, value) |>
+  summarise(mean_n = sum(n)/N_sim, .groups = "drop") |>
+  mutate(value = factor(value, levels = c("0", "2", "1"))) |>
+  arrange(age, value) 
+
+saveRDS(count_true_to_cs, here("output/results/count_true_to_cs.rds"))
+
+# for the mcc tree count the number of true, false
+
+# for each summary tree, age, simulation this dataframe indicates the proprtions 
+# of true and false nodes
+resume_to_true_grouped <- read_csv(here("output/results/resume_to_true_TF_1_850.csv"), col_names = T)|> 
+  rename(N_node = exist, exist = N_nodes) |>
+  mutate(exist = as.numeric(exist)) |>  # TRUE -> 1, FALSE -> 0
+  group_by(type, age, simulation, exist, N_node) |> 
+  summarise(n = n(), .groups = "drop") |> 
+  group_by(type, age, simulation) |>
+  mutate(proportion = n / N_node) |>
+  ungroup() |>
+  mutate(exist = factor(exist, levels = c("0", "1")))
+
+# number of well reconstructed node in the mcc tree
+count_true_to_mcc <- resume_to_true_grouped |>
+  filter(type == "mcc") |>
+  group_by(age, exist) |>
+  summarise(n_mean = sum(n)/N_sim, .groups = "drop") |>
+  tidyr::pivot_wider(names_from = exist, values_from = n_mean, names_prefix = "exist_") |>
+  mutate(
+    total = exist_0 + exist_1
+  ) |>
+  pivot_longer(cols = starts_with("exist_"), names_prefix = "exist_", names_to = "exist", values_to = "n_mean") |>
+  mutate(
+    exist = factor(exist, levels = c("0", "1")),
+    y_label = ifelse(exist == "1", 0, total) # alignement manuel
+  ) 
+
+saveRDS(count_true_to_mcc,here("output/results/count_true_to_mcc.csv"))
+
+
+# count the numer of true node from de consensus tree to the true tree
+count_cs_to_true <- resume_to_true_grouped |>
+  filter(type == "consensus") |>
+  group_by(age, exist) |>
+  summarise(n_mean = mean(n), .groups = "drop") |>
+  tidyr::pivot_wider(names_from = exist, values_from = n_mean, names_prefix = "exist_") |>
+  mutate(
+    total = exist_0 + exist_1
+  ) |>
+  pivot_longer(cols = starts_with("exist_"), names_prefix = "exist_", names_to = "exist", values_to = "n_mean") |>
+  mutate(
+    exist = factor(exist, levels = c("0", "1")),
+    y_label = ifelse(exist == "1", 0, total) 
+  )
+
+write_csv(count_cs_to_true, here("output/results/count_cs_to_true.csv"))
+
+# proportion of true,false and uncertain nodes in the consensus tree (true -> consensus)
+prop_true_to_cs <- true_false_uncertain |>
+  count(age, simulation, value) |>
+  group_by(age, value) |>
+  summarise(mean_n = sum(n)/N_sim, .groups = "drop") |>
+  mutate(value = factor(value, levels = c("0", "2", "1"))) |>
+  arrange(age, value) 
+
+write_csv(prop_true_to_cs, here("output/results/prop_true_to_cs.csv"))
+
+# proportion of true, false node from the mcc to the true tree
+prop_mcc_to_true <- resume_to_true_grouped |>
+  filter(type == "mcc") |>
+  group_by(age, exist) |>
+  summarise(n_mean = sum(n)/N_sim, .groups = "drop") 
+
+write_csv(prop_mcc_to_true, here("output/results/prop_mcc_to_true.csv"))
+
+# proportion of true, false node from the consensus to the true tree
+prop_cs_to_true <- resume_to_true_grouped |>
+  filter(type == "consensus") |>
+  group_by(age, exist) |>
+  summarise(n_mean = mean(n), .groups = "drop") |> 
+  ungroup()
+
+write_csv(prop_cs_to_true, here("output/results/prop_cs_to_true.csv"))
+
+# number of true nodes in the summary tree
+prop_mcc_to_true <- resume_to_true_grouped |>
+  filter(type == "mcc") |>
+  group_by(age, exist) |>
+  summarise(n_mean = mean(n), .groups = "drop") |> 
+  ungroup()
+
+write_csv(prop_mcc_to_true, here("output/results/prop_mcc_to_true.csv"))
+
+# regression -------------------------------------------------------------------
+# regression mcc
+df_reg_mcc <- mcc_to_true_TF |>
+  inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
+  filter(node_mcc == node) |>
+  select(-type, -exist, -node_cs, -cs_prob)|>
+  rename(y = N_nodes) |> 
+  mutate(
+    age = scale(age)[, 1],
+    mcc_prob = (mcc_prob - mean(mcc_prob, na.rm = T)) / sd(mcc_prob, na.rm = T)
+  )
+
+# model regression
+model_mcc <- glm(y ~ age + mcc_prob, data = df_reg_mcc, family = 'binomial')
+summary(model_mcc)
+
+# regression cs 
+resume_to_true_TF_cs <- read.csv(here("output/results/resume_to_true_TF_1_850.csv")) |> 
+  filter(type == 'consensus')
+
+df_reg_cs <- mcc_to_true_TF |>
+  inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
+  filter(node == node_cs) |>
+  select(-type, -exist, -node_mcc, -mcc_prob)|>
+  rename(y = N_nodes) |> 
+  mutate(
+    age = scale(age)[, 1],
+    cs_prob = (cs_prob - mean(cs_prob, na.rm = T)) / sd(cs_prob, na.rm = T)
+  )
+
+# model regression
+model_cs <- glm(y ~ age + cs_prob, data = df_reg_cs, family = 'binomial')
+summary(model_cs)

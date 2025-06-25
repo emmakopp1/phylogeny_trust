@@ -1,0 +1,38 @@
+# ------------------------------------------------------------------------------
+# Script Name: compute_mcc.R
+# Description: compute the Maximum-Clade-Credibility (MCC) for all ages, simulations.
+# -----------------------------------------------------------------------------------------
+library(here)
+library(ape)
+library(phangorn)
+library(purrr)
+library(stringr)
+
+# functions --------------------------------------------------------------------
+# function which take a path to a posterior phylogeny and write the mcc tree
+compute_mcc_phylo <- function(path) {
+    burnin = 0.1
+    phylogeny <- read.nexus(path)
+  
+    # burnin and thin-in
+    M <- length(phylogeny)
+    phylogeny <- phylogeny[seq(burnin * M, M, length = 200)] 
+
+    # compute mcc 
+    tree_mcc <- maxCladeCred(phylogeny)
+
+    # identification of the age of the tree
+    tree_age <- as.numeric(str_extract(path, "(\\d+)(?=\\.tree)"))
+    path_mcc <- str_replace(path, "ctmc-strict-bd-(\\d+)\\.trees", paste0("mcc-", tree_age, ".tree"))
+
+    # write the tree
+    write.tree(tree_mcc, path_mcc)
+    return(invisible(NULL))
+}
+
+# --- PRÉPARATION DES DONNÉES ---
+path_phylo <- list.files(getwd(), full.names = TRUE, recursive = TRUE)
+path_phylo <- path_phylo[grepl("\\.trees$", path_phylo)]
+
+purrr::map(path_phylo, compute_mcc_phylo)
+
