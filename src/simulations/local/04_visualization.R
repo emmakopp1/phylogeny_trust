@@ -12,6 +12,7 @@
 library(here)
 library(patchwork)
 library(tidyverse)
+library(ape)
 
 # load data --------------------------------------------------------------------
 df_number_of_nodes_avg =  read_csv(here("output/results/number_of_nodes_summary.csv"))
@@ -294,3 +295,47 @@ plot_prop_cs_to_true + plot_prop_mcc_to_true
 
 ggsave(here("output/figs/barplot_prop_resume_to_true.pdf"))
 
+# 6. plot of one plausible rake node and one not plausible rake node in the consensus
+# import one consensus and one true tree of age 10 simulation 1 
+tree_cs <- read.tree(here('data/simulated-2025-05-13/beast-data-sim-1/beast-data-sim-1-10/consensus-10.tree'))
+tree_true <- read.tree(here('data/simulated-2025-05-13/beast-data-sim-1/beast-data-sim-1-10/tree-sim-1-10.tree'))
+
+# analyse a plausible rake node
+node <- 62
+descendant <- Descendants(tree_true, node)[[1]]
+tip <- tree_true$tip.label[descendant]
+mrca <- getMRCA(tree_cs, tip)
+
+# analyse a not plausible rake node
+node_67 <- 67
+descendant_67 <- Descendants(tree_true, node_67)[[1]]
+tip_67 <- tree_true$tip.label[descendant_67]
+mrca_67 <- getMRCA(tree_cs, tip_67)
+
+# tip colors
+tip_colors_tt <- rep("black", length(tree_true$tip.label))
+# node 62 in blue
+tip_colors_tt[descendant] <- "blue"        
+# node 67 in red
+tip_colors_tt[descendant_67] <- "red"       
+tip_colors_cs <- rep("black", length(tree_cs$tip.label))
+
+# identify tip position in the consensus tree
+tip_positions_cs <- match(tip, tree_cs$tip.label)
+tip_colors_cs[tip_positions_cs] <- "blue"   
+
+tip_positions_cs_67 <- match(tip_67, tree_cs$tip.label)
+tip_colors_cs[tip_positions_cs_67] <- "red"
+
+par(mfrow=c(1,2))
+# true tree
+plot(tree_true, tip.color = tip_colors_tt, cex = 0.7)
+nodelabels(node = node, frame = 'circle', cex = 0.5)
+nodelabels(node = node_67, frame = 'circle', cex = 0.5)
+
+# consensus tree
+plot(tree_cs, direction = "leftwards", tip.color = tip_colors_cs, cex=0.7)
+nodelabels(node = mrca, frame = 'circle', cex = 0.5)
+nodelabels(node = mrca_67, frame = 'circle', cex = 0.5)
+
+ggsave(here("output/figs/plausible_node.pdf"))
