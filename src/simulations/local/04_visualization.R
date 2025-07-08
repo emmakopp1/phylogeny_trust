@@ -12,6 +12,10 @@
 library(here)
 library(patchwork)
 library(tidyverse)
+library(broom)
+library(dplyr)
+library(dotwhisker)
+library(ggplot2)
 library(ape)
 
 # load data --------------------------------------------------------------------
@@ -339,3 +343,34 @@ nodelabels(node = mrca, frame = 'circle', cex = 0.5)
 nodelabels(node = mrca_67, frame = 'circle', cex = 0.5)
 
 ggsave(here("output/figs/plausible_node.pdf"))
+
+# 6. regression 
+combined_models = read_csv(here("output/results/regression.csv"))
+
+# 4. Nettoyer les noms des termes pour un affichage plus clair
+combined_models <- combined_models %>%
+  mutate(term = recode(term,
+                       `(Intercept)` = "Interception",
+                       `age` = "Âge du noeud",
+                       `first_split_prob` = "probabiliy of the first split",
+                       `root_split_age` = "Âge du premier split racine"
+  ))
+
+# 5. Créer le graphique de comparaison
+dwplot(combined_models,
+       dot_args = list(aes(color = model), size = 3),
+       whisker_args = list(aes(color = model), size = 0.8),
+       vline = aes(xintercept = 0)
+) +
+  
+  # Améliorer la légende et les labels
+  scale_color_brewer(palette = "Set1", name = "Modèle") +
+  labs(
+    x = "coeficient estimation (Log-odds)",
+    y = "variables"
+  ) +
+  theme_minimal() 
+
+
+
+

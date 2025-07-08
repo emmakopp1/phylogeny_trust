@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# Script Name: 03_simulation_analyses.R
+# Script Name: 03_simulation_analyses_main.R
 # Description: This script consolidates and tidies all the data required for 
 #              plotting and analysis of phylogenetic reconstruction accuracy. 
 #              It performs the following tasks:
@@ -22,18 +22,19 @@ marginal_probability_first_split_ic <- bind_rows(
   read.csv(here("output/results/marginal_prob_first_split_ic_301_600.csv")),
   read.csv(here("output/results/marginal_prob_first_split_ic_601_850.csv"))
 ) 
-# frequency of good reconstruction of the first split in of the mcc
-mcc_posterior_prob <- rbind(
-  read.csv(here("output/results/mcc_posterior_prob2_1_300.csv")),
-  read.csv(here("output/results/mcc_posterior_prob2_301_600.csv")),
-  read.csv(here("output/results/mcc_posterior_prob2_601_850.csv"))
-)
 
 # frequency of good reconstruction of all the nodes in of the mcc
 mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF_1_850.csv")) |> 
   filter(type == 'mcc')
 
+mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF_1_850.csv")) |> 
+  filter(type == 'mcc')
+
+# for each tree simulation, age between the root and the first split
+first_split_age <- read.csv(here("output/results/first_split_age.csv"))
+
 # frequency of good reconstruction of all the nodes in consensus tree (true -> summary)
+# the value of node represent the node in the true tree
 true_false_uncertain <- read.csv(
   file = here("output/results/true_false_uncertain_nodes_1_850.csv"),
   sep = ",",
@@ -195,32 +196,52 @@ write_csv(prop_mcc_to_true, here("output/results/prop_mcc_to_true.csv"))
 # regression mcc
 df_reg_mcc <- mcc_to_true_TF |>
   inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
+  inner_join(first_split_age, by = c("simulation")) |>
   filter(node_mcc == node) |>
-  select(-type, -exist, -node_cs, -cs_prob)|>
-  rename(y = N_nodes) |> 
+  select(-type, -exist, -node_cs, -cs_prob, -age.y)|>
+  rename(y = N_nodes, age = age.x) |> 
+  mutate(root_split_age = as.numeric(root_split_age)) |>
   mutate(
     age = scale(age)[, 1],
-    mcc_prob = (mcc_prob - mean(mcc_prob, na.rm = T)) / sd(mcc_prob, na.rm = T)
-  )
+    mcc_prob = (mcc_prob - mean(mcc_prob, na.rm = T)) / sd(mcc_prob, na.rm = T),
+    root_split_age = (root_split_age - mean(root_split_age, na.rm = T)) / sd(root_split_age, na.rm = T)
+  ) |> 
+  rename(first_split_prob = mcc_prob)
 
-# model regression
-model_mcc <- glm(y ~ age + mcc_prob, data = df_reg_mcc, family = 'binomial')
-summary(model_mcc)
+
+# model mcc regression 
+model_mcc <- glm(y ~ age + first_split_prob + root_split_age, data = df_reg_mcc, family = 'binomial')
+
 
 # regression cs 
 resume_to_true_TF_cs <- read.csv(here("output/results/resume_to_true_TF_1_850.csv")) |> 
   filter(type == 'consensus')
 
-df_reg_cs <- mcc_to_true_TF |>
+df_reg_cs <- resume_to_true_TF_cs |>
   inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
+  inner_join(first_split_age, by = c("simulation")) |>
   filter(node == node_cs) |>
-  select(-type, -exist, -node_mcc, -mcc_prob)|>
-  rename(y = N_nodes) |> 
+  select(-type, -exist, -node_mcc, -mcc_prob, -age.y)|>
+  rename(y = N_nodes, age = age.x) |> 
   mutate(
     age = scale(age)[, 1],
-    cs_prob = (cs_prob - mean(cs_prob, na.rm = T)) / sd(cs_prob, na.rm = T)
-  )
+    cs_prob = (cs_prob - mean(cs_prob, na.rm = T)) / sd(cs_prob, na.rm = T),
+    root_split_age = (root_split_age - mean(root_split_age, na.rm = T)) / sd(root_split_age, na.rm = T)
+  ) |> 
+  rename(first_split_prob = cs_prob)
 
-# model regression
-model_cs <- glm(y ~ age + cs_prob, data = df_reg_cs, family = 'binomial')
-summary(model_cs)
+# model consensus regression
+model_cs <- glm(y ~ age + first_split_prob + root_split_age, data = df_reg_cs, family = 'binomial')
+
+# clean regressions
+tidy_mcc <- tidy(model_mcc)
+tidy_cs <- tidy(model_cs)
+tidy_mcc$model <- "Modèle MCC"
+tidy_cs$model <- "Modèle CS"
+combined_models <- bind_rows(tidy_mcc, tidy_cs)
+
+# save regression mcc, consensus and comparison between coeficiants
+write_csv(tidy_mcc, here("output/results/regression_mcc.csv"))
+write_csv(tidy_cs, here("output/results/regression_cs.csv"))
+write_csv(combined_models, here("output/results/regression.csv"))
+

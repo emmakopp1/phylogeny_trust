@@ -22,10 +22,7 @@ first_split <- function(tree){
   # children of the root
   children = tree$edge[which(tree$edge[,1]==root),2]
   # fisr split : children with the maximum distance to the tips
-  #first_split = children[which.max(tree$edge.length[children])]
-  
   t = max(node.depth.edgelength(tree)) - node.depth.edgelength(tree)[children]
-  #children[which.max(t)]
   
   return(children[which.max(t)])
 }
@@ -35,19 +32,29 @@ start <- 1
 end <- 850
 cat("Traitement des fichiers de", start, "à", end, "\n")
 
+# choose the paths adapted to the simulation -----------------------------------
+#path_repository <- here("data/simulated-2025-05-13")
+#path_repository <- here("data/simulated-2025-07-02-6000")
+path_repository <- here("data/simulated-2025-07-04-12000")
+
+
+# compute the path for the csv output
+#output_path <- here(sprintf("output/results/marginal_prob_first_split_mcc_consensus_%d_%d.csv", 1, 850))
+#output_path <- here("output/results/marginal_prob_first_split_mcc_consensus_6000.csv")
+output_path <- here("output/results/marginal_prob_first_split_mcc_consensus_12000.csv")
 
 # load variables ---------------------------------------------------------------
-# general path
-cluster_directory <- getwd()
+
+#cluster_directory <- getwd()
 path_phylo <- list.files(
-  paste0(cluster_directory,"/data/simulated-2025-05-13"), 
+  path_repository, 
   full.names = TRUE, 
   recursive = TRUE
 )
 
 # paths to true topologies, posterior and mcc  
-path_trees_mcc <- path_phylo[grepl("mcc", path_phylo)][start:end] 
-path_trees_cs <- path_phylo[grepl("consensus", path_phylo)][start:end] 
+path_trees_mcc <- path_phylo[grepl("mcc-", path_phylo)]
+path_trees_cs <- path_phylo[grepl("consensus-", path_phylo)]
 
 # load the data
 trees_cs <- lapply(path_trees_cs, read.tree)
@@ -62,16 +69,12 @@ colnames(df) <- c('age', 'simulation', 'node_cs','node_mcc', 'cs_prob', 'mcc_pro
 # initialization of the file
 write.csv(
   df, 
-  paste0(cluster_directory,
-         sprintf("/output/results/marginal_prob_first_split_mcc_consensus_%d_%d.csv", start, end)),
+  output_path,
   row.names = FALSE,
 )
 
 # main function taking as input an increment from 1 to length(path_trees_phylo)
 process_file <- function(i){
-  
-  output_file <- paste0(cluster_directory,
-                        sprintf("/output/results/marginal_prob_first_split_mcc_consensus_%d_%d.csv", start, end))
   
   tryCatch({
     
@@ -93,11 +96,6 @@ process_file <- function(i){
     prob_cs <- cs$node.label[match(node_cs,internal_nodes_cs)]
     prob_mcc <- mcc$node.label[match(node_mcc,internal_nodes_mcc)]
     
-    #plot(cs, show.node.label = T)
-    #nodelabels(cex=0.6, frame='circle',  adj = c(0.5, 0.5))
-    #plot(mcc, show.node.label = T)
-    #nodelabels(cex=0.6, frame='circle',  adj = c(0.5, 0.5))
-    
     # report age, simulation, the first split, and the clade frequencies of the first split 
     row <- data.frame(
       age = tree_age,
@@ -107,14 +105,15 @@ process_file <- function(i){
       cs_prob = round(as.numeric(prob_cs), 3),
       mcc_prob = round(as.numeric(prob_mcc), 3)
     )
+    print(row)
     
     # write the results
     write.table(
       row,
-      file = output_file,
+      file = output_path,
       sep = ",",
       row.names = FALSE,
-      col.names = !file.exists(output_file),
+      col.names = !file.exists(output_path),
       append = TRUE,
       quote = FALSE
     )
@@ -129,6 +128,7 @@ cl <- makeCluster(ncl, type="FORK")
 clusterSetRNGStream(cl)
 
 
-# Traitement en parallèle
-res_list <- parLapply(cl, 1:length(path_trees_cs), process_file)
+# treatment by parallelisation
+res_list <- parLapply(cl, seq_along(path_trees_cs), process_file)
 stopCluster(cl)
+

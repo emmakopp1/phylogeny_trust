@@ -1,9 +1,8 @@
 # ------------------------------------------------------------------------------
-# Script Name: 01_tree_simulation.R
+# Script Name: 01_bis_tree_simulation.R
 # Description: This script simulates phylogenetic trees and generates input XML 
 #              files for BEAST analyses. It performs the following steps:
-#                - Simulates birth-death trees with calibrations
-#                - Scales branch lengths to represent different ages
+#                - Simulates 50 topologies of age 8k years with 12k traits
 #                - Prepares BEAST XML files for sequence simulation
 #                - Runs BEAST to simulate sequences
 #                - Embeds simulated sequences into BEAST analysis XML files
@@ -19,29 +18,33 @@ library(xml2)
 library(readr)
 library(magrittr)
 library(dplyr)
+library(phytools)
+library(phangorn)
 library(beastier)
 
-# simulation of the initial tree --------------------------------------------
-path <- here(sprintf("data/simulated_temp/beast-data-sim-%s", Sys.Date()))
-dir_path <-sprintf("data/simulated-%s", Sys.Date())
-unlink(dir_path, recursive = TRUE, force = T)
-dir.create(here(dir_path))
 
 # parameter initialization
 N <- 50
 div <- 0.245
 r <- 0.293
-#s <- 0.226
 
 lambda <- div / (1 - r)
 mu <- (r * div) / (1 - r)
-#psi <- (s / (1 - s)) * (r * div / (1 - r))
-t <- 1
+t <- 1 # age of the simulation
 
 # number of simulation per age
 N_sim <- 50
-N_rep <- 17
-N_trait <- 3000
+# number of of different ages
+N_rep <- 8
+# number of trait/sites
+N_trait <- 12000
+
+# simulation of the initial tree --------------------------------------------
+path <- here(sprintf("data/simulated_temp/beast-data-sim-%s-%d", Sys.Date(), N_trait))
+dir_path <-sprintf("data/simulated-%s-%d", Sys.Date(), N_trait)
+unlink(dir_path, recursive = TRUE, force = T)
+dir.create(here(dir_path))
+
 
 # create N_sim folders 
 for (n_sim in 1:N_sim){
@@ -72,7 +75,7 @@ for (n_sim in 1:N_sim){
 
 
 # scaling ----------------------------------------------------------------------
-l <- seq(1, N_rep, 1)
+l <- seq(N_rep, N_rep, 1)
 
 for (i in 1:N_sim){
   tree_i <- tree[[i]]
@@ -87,7 +90,7 @@ for (i in 1:N_sim){
         sprintf("/beast-data-sim-%d/beast-data-sim-%d-%d/tree-sim-%d-%d.tree", i, i, k, i, k))
     )
   }
-  }
+}
 
 # generate sequences -----------------------------------------------------------
 files <- list.files(dir_path, full.names = TRUE, recursive = TRUE)
@@ -102,7 +105,7 @@ check_trait_in_template <- function(path_simulation_template, N_trait){
   
   # modify the value
   if (N_traits_in_file != N_trait) {
-    print("Number of traits changed in the template")
+    cat("Number of traits changed in the template with", N_trait)
     xml_set_attr(run_node, "sequencelength", as.character(N_trait))
   }
   
@@ -133,7 +136,7 @@ updated_texts <- files |>
 
 # generate sequence with beast -------------------------------------------------
 for(n_sim in 1:N_sim){
-  for (i in 1:N_rep) {
+  for (i in  l) {
     # run beast to generate sequence
     system(paste0("../../../../Applications/BEAST2.6.7/bin/beast -overwrite ", 
                   dir_path, sprintf("/beast-data-sim-%d/beast-data-sim-%d-%d/beast-data-sim-%d-%d.xml", n_sim, n_sim, i, n_sim, i)))
@@ -143,7 +146,7 @@ for(n_sim in 1:N_sim){
              "/Users/kopp/Documents/phylogeny_trust/", 
              dir_path, 
              sprintf("/beast-data-sim-%d/beast-data-sim-%d-%d/beast-simulated-seq-%d-%d.xml", n_sim, n_sim, i, n_sim, i))
-      )
+    )
   }
 }
 
@@ -165,14 +168,13 @@ for (i in 1:N_sim){
   calib_inf = max(0, t - 0.01)
   calib_sup = min(t_R, t + 0.01)
   
-  # in the first folder : beast-data-sim-1
+  # in the first folder : beast-data-sim-1 
   # change the taxas of the calibration 
   calib_node <- beauti_template |> xml_find_all("//distribution[contains(@id, 'a.prior')]")
-  #print(calib_node[[1]] |> xml_child(1))
+  
   taxon_set = calib_node[[1]] |> xml_child(1) 
   
   for (node_calib in calib[[i]]) {
-    #cat(node_calib, '\n')
     new_taxon <- xml_add_child(taxon_set, "taxon")
     xml_set_attr(new_taxon, "id", node_calib)
     xml_set_attr(new_taxon, "spec", "Taxon")
@@ -187,8 +189,8 @@ for (i in 1:N_sim){
   write_xml(beauti_template, 
             here(paste0(
               dir_path, 
-              sprintf("/beast-data-sim-%d/beast-data-sim-%d-1/ctmc-strict-bd-%d-1.xml", i, i, i)
-              )), 
+              sprintf("/beast-data-sim-%d/beast-data-sim-%d-%d/ctmc-strict-bd-%d-%d.xml", i, i, N_rep, i, N_rep)
+            )), 
             options = "format")
 }
 
@@ -202,7 +204,7 @@ sequences <- list.files(dir_path, full.names = TRUE, recursive = TRUE) |>
 beast_files <- lapply(1:N_sim, function(i) {
   file_path <- here(paste0(
     dir_path, 
-    sprintf("/beast-data-sim-%d/beast-data-sim-%d-1/ctmc-strict-bd-%d-1.xml", i, i, i)))
+    sprintf("/beast-data-sim-%d/beast-data-sim-%d-%d/ctmc-strict-bd-%d-%d.xml", i, i, N_rep, i, N_rep)))
   read_xml(file_path)
 })
 
@@ -226,7 +228,7 @@ replace_value <- function(xml_file, df, path_out) {
 
 # apply function replace_value
 for (file in sequences) {
-    
+  
   # extract sequences
   taxons <- read_xml(file) |>
     xml_find_all("//sequence") |>
@@ -237,7 +239,7 @@ for (file in sequences) {
         taxon = taxon, value = value
       )
     })
-    
+  
   # output path of the xml file
   path_out <- str_replace(
     file,
@@ -297,7 +299,8 @@ modify_filenames <- function(file_path) {
 # Apply functions
 walk(beast_inputs, modify_uniform_attributes)
 walk(beast_inputs, modify_filenames)
- 
+
+
 
 
 

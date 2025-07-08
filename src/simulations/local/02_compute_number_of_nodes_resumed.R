@@ -16,16 +16,33 @@ library(tibble)
 library(dplyr)
 library(purrr)
 library(ape)
+library(adephylo)
 
 source(".Rprofile")
 
+# select the path repository of your analysis 
+#path_repository <- here("data/simulated-2025-05-13")
+#path_repository <- here("data/simulated-2025-07-02-6000")
+path_repository <- here("data/simulated-2025-07-04-12000")
+
+
+# compute the age of the initial simulation 
+#age_init_sim <- 1
+age_init_sim <- 8
+
+# compute the path for the csv output
+#output_path <- paste0(getwd(),"/output/results/number_nodes_mcc_cs.csv")
+#output_path <- paste0(getwd(),"/output/results/number_nodes_mcc_cs_6000.csv")
+output_path <- paste0(getwd(),"/output/results/number_nodes_mcc_cs_12000.csv")
+
+
 # load the true trees
-true_trees <- list.files(here("data/simulated-2025-05-13"), full.names = TRUE, recursive = F) |>
+true_trees <- list.files(path_repository, full.names = TRUE, recursive = F) |>
   keep(~ str_detect(.x, "beast-data-sim")) |>
   tibble(final = _) |>
   mutate(
     num = as.numeric(str_extract(final, "(\\d+)$")),
-    path = str_glue("{final}/beast-data-sim-{num}-1/tree-sim-{num}-1.tree")
+    path = str_glue("{final}/beast-data-sim-{num}-{age_init_sim}/tree-sim-{num}-{age_init_sim}.tree")
   ) |>
   pull(path)
 
@@ -36,11 +53,10 @@ true_topologies <- lapply(true_trees, function(path) read.tree(path))
 deepest_nodes <- lapply(true_topologies, function(tree) getNodesByDepth(tree)[2:11])
 
 # paths of the mcc and the consensus trees
-dir_path <- here("data/simulated-2025-05-13")
-paths_consensus <- list.files(dir_path, full.names = T, recursive = T) |>
+paths_consensus <- list.files(path_repository, full.names = T, recursive = T) |>
   keep(~ str_detect(.x, "consensus-"))
 
-paths_mcc <- list.files(dir_path, full.names = T, recursive = T) |>
+paths_mcc <- list.files(path_repository, full.names = T, recursive = T) |>
   keep(~ str_detect(.x, "mcc-"))
 
 # compute the number of nodes as a function of the age of the tree -------------
@@ -51,7 +67,7 @@ df_number_of_nodes <- tibble(
   n_consensus = numeric()
 )
 
-for (i in 1:length(paths_consensus)) {
+for (i in seq_along(paths_consensus)) {
   # read paths
   path_consensus <- paths_consensus[i]
   path_mcc <- paths_mcc[i]
@@ -79,7 +95,7 @@ for (i in 1:length(paths_consensus)) {
 # save the dataframe
 write.csv(
   df_number_of_nodes, 
-  paste0(getwd(),"/output/results/number_nodes_mcc_cs.csv"),
+  output_path,
   row.names = F,
 )
 
