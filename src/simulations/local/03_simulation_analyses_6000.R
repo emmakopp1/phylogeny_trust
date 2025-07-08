@@ -21,40 +21,18 @@ marginal_probability_first_split_ic_6000 <- read.csv(
   here("output/results/marginal_prob_first_split_ic_1_50_6000.csv")
   )
 
-# ACTUALISER 
-marginal_probability_first_split_ic_12000 <- read.csv(
-  here("output/results/marginal_prob_first_split_ic_1_50_12000.csv")
-)
 
 # frequency of good reconstruction of all the nodes in of the mcc
 mcc_to_true_TF_6000 <- read.csv(here("output/results/resume_to_true_TF_1_50_6000.csv")) |> 
   filter(type == 'mcc')
 
-mcc_to_true_TF_12000 <- read.csv(here("output/results/resume_to_true_TF_1_50_12000.csv")) |> 
-  filter(type == 'mcc')
-
 # for each tree simulation, age between the root and the first split
 first_split_age_6000 <- read.csv(here("output/results/first_split_age_6000.csv"))
-first_split_age_12000 <- read.csv(here("output/results/first_split_age_12000.csv"))
 
 # frequency of good reconstruction of all the nodes in consensus tree (true -> summary)
 # the value of node represent the node in the true tree
 true_false_uncertain_6000 <- read.csv(
   file = here("output/results/true_false_uncertain_nodes_1_50_6000.csv"),
-  sep = ",",
-  header = T) |> 
-  rename(age = tree_age, simulation = tree_simulation_number) |>
-  # add 0/1/2 for false/true/uncertain nodes for the consensus tree
-  mutate(
-    value = case_when(
-      T_F_U == FALSE ~ 0,
-      T_F_U == TRUE & state == "rateau" ~ 2,
-      T_F_U == TRUE & state == "regular" ~ 1
-    )
-  )
-
-true_false_uncertain_12000 <- read.csv(
-  file = here("output/results/true_false_uncertain_nodes_1_50_12000.csv"),
   sep = ",",
   header = T) |> 
   rename(age = tree_age, simulation = tree_simulation_number) |>
@@ -74,20 +52,10 @@ df_number_of_nodes_6000 <- read.csv(
   header = T
 )
 
-df_number_of_nodes_12000 <- read.csv(
-  file = here("output/results/number_nodes_mcc_cs_12000.csv"),
-  sep = ",",
-  header = T
-)
-
 # marginal probability of the first split in the mcc and consensus tree
 prob_first_split_summary_6000 = read.csv(
   here("output/results/marginal_prob_first_split_mcc_consensus_6000.csv")
   )
-
-prob_first_split_summary_12000 = read.csv(
-  here("output/results/marginal_prob_first_split_mcc_consensus_12000.csv")
-)
 
 # process data 6000 -------------------------------------------------------------
 
@@ -99,6 +67,9 @@ prob_first_split_mcc_6000 = prob_first_split_summary_6000 |>
   summarise(mean_mcc_prob = mean(mcc_prob, na.rm=T), .groups='drop') |> 
   ungroup() 
 
+write.csv(prob_first_split_mcc_6000,
+          here("output/results/prob_first_split_mcc_6000.csv"), row.names = FALSE)
+
 # number of node in the summary tree
 # obtain one point as age = 8
 df_number_of_nodes_avg_6000 <- df_number_of_nodes_6000 |>
@@ -107,6 +78,10 @@ df_number_of_nodes_avg_6000 <- df_number_of_nodes_6000 |>
     n_mcc = mean(n_mcc, na.rm = TRUE),
     n_consensus = mean(n_consensus, na.rm = TRUE)
   ) 
+
+write.csv(
+  df_number_of_nodes_avg_6000,
+  here("output/results/number_of_nodes_summary_6000.csv"), row.names = FALSE)
 
 # posterior of the first split with IC
 # obtain one point as age = 8
@@ -120,6 +95,9 @@ marginal_probability_first_split_ic_6000 = marginal_probability_first_split_ic_6
     .groups = "drop"
   )
 
+write_csv(
+  marginal_probability_first_split_ic_6000, 
+  here("output/results/marginal_probability_first_split_ic_6000.csv"))
 
 # for the consensus trees, count the number of true, false and uncertain nodes
 # with special labels for the plot
@@ -131,9 +109,9 @@ count_true_to_cs_6000 <- true_false_uncertain_6000 |>
   mutate(value = factor(value, levels = c("0", "2", "1"))) |>
   arrange(age, value) 
 
+saveRDS(count_true_to_cs_6000, here("output/results/count_true_to_cs_6000.rds"))
 
 # for the mcc tree count the number of true, false
-
 # for each summary tree, age, simulation this dataframe indicates the proprtions 
 # of true and false nodes
 resume_to_true_grouped_6000 <- read_csv(here("output/results/resume_to_true_TF_1_50_6000.csv"), col_names = T)|> 
@@ -216,4 +194,91 @@ prop_mcc_to_true_6000 <- resume_to_true_grouped_6000 |>
   ungroup()
 
 write_csv(prop_mcc_to_true_6000, here("output/results/prop_mcc_to_true_6000.csv"))
+
+# analysys and comparison between number of traits 
+# probability first split mcc 
+prob_first_split_mcc_6000 = read.csv(here("output/results/prob_first_split_mcc_6000.csv"))|> 
+  mutate(n_trait = 6000) 
+
+prob_first_split_mcc_main = read.csv(here("output/results/prob_first_split_mcc.csv")) |> 
+  filter(age==8) |> 
+  mutate(n_trait=3000)
+
+bind_rows(prob_first_split_mcc_6000, prob_first_split_mcc_main)
+
+# number of nodes
+number_of_nodes_summary_6000 = read.csv(here("output/results/number_of_nodes_summary_6000.csv")) |> 
+  mutate(n_trait = 6000) 
+
+number_of_nodes_summary_main = read.csv(here("output/results/number_of_nodes_summary.csv")) |> 
+  filter(age==8) |> 
+  mutate(n_trait = 3000) 
+
+bind_rows(number_of_nodes_summary_6000, number_of_nodes_summary_main)
+
+# marginal probability of the first split 
+marginal_probability_first_split_ic_6000 = read_csv(
+  here("output/results/marginal_probability_first_split_ic_6000.csv")
+  ) |> 
+  mutate(n_trait = 6000) 
+
+marginal_probability_first_split_ic_main = read_csv(
+  here("output/results/marginal_probability_first_split_ic.csv")) |> 
+  filter(age==8) |> 
+  mutate(n_trait = 3000) 
+
+bind_rows(marginal_probability_first_split_ic_6000, marginal_probability_first_split_ic_main)
+
+# from the true to the consensus tree 
+count_true_to_cs_6000 = readRDS(here("output/results/count_true_to_cs_6000.rds")) |> 
+  mutate(n_trait = 6000) 
+  
+count_true_to_cs_main = readRDS(here("output/results/count_true_to_cs.rds")) |> 
+  filter(age==8) |> 
+  mutate(n_trait = 3000) 
+
+bind_rows(count_true_to_cs_6000, count_true_to_cs_main) |>
+  pivot_wider(
+    names_from = n_trait,      
+    values_from = mean_n,     
+    names_prefix = "mean_n_" 
+  ) |>
+  select(age, value, mean_n_3000, mean_n_6000) |>
+  arrange(value)
+
+# from the true to the mcc tree 
+count_true_to_mcc_6000 = readRDS(here("output/results/count_true_to_mcc_6000.csv"))|>
+  mutate(n_trait = 6000) 
+
+count_true_to_mcc_main= readRDS(here("output/results/count_true_to_mcc.csv"))|> 
+  filter(age==8) |> 
+  mutate(n_trait = 3000) 
+
+bind_rows(count_true_to_mcc_6000, count_true_to_mcc_main) |>
+  pivot_wider(
+    names_from = n_trait,      
+    values_from = n_mean,     
+    names_prefix = "n_mean" 
+  ) |>
+  select(age, exist, n_mean3000, n_mean6000) |>
+  arrange(exist)
+
+# number of true nodes from the consensus to the true tree
+count_cs_to_true_6000 = read_csv(here("output/results/count_cs_to_true_6000.csv"))|> 
+  mutate(n_trait = 6000) 
+
+count_cs_to_true_main = read_csv(here("output/results/count_cs_to_true.csv"))|> 
+  filter(age==8) |> 
+  mutate(n_trait = 3000) 
+
+bind_rows(count_cs_to_true_6000, count_cs_to_true_main) |>
+  pivot_wider(
+    id_cols = c(age, exist), # Keep these columns as identifiers
+    names_from = n_trait,       # 'n_trait' values become new column names
+    values_from = n_mean,       # 'n_mean' values fill the new columns
+    names_prefix = "n_mean_"    # Prefix for clarity: e.g., n_mean_3000, n_mean_6000
+  ) |>
+  arrange(age, exist)
+
+
 
