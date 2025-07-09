@@ -13,6 +13,7 @@
 # ------------------------------------------------------------------------------
 library(here)
 library(tidyverse)
+library(broom)
 N_sim <- 50
 
 # load data --------------------------------------------------------------------
@@ -200,7 +201,7 @@ df_reg_mcc <- mcc_to_true_TF |>
   filter(node_mcc == node) |>
   select(-type, -exist, -node_cs, -cs_prob, -age.y)|>
   rename(y = N_nodes, age = age.x) |> 
-  mutate(root_split_age = as.numeric(root_split_age)) |>
+  mutate(root_split_age = as.numeric(root_split_age)/age) |>
   mutate(
     age = scale(age)[, 1],
     mcc_prob = (mcc_prob - mean(mcc_prob, na.rm = T)) / sd(mcc_prob, na.rm = T),
@@ -223,6 +224,7 @@ df_reg_cs <- resume_to_true_TF_cs |>
   filter(node == node_cs) |>
   select(-type, -exist, -node_mcc, -mcc_prob, -age.y)|>
   rename(y = N_nodes, age = age.x) |> 
+  mutate(root_split_age = root_split_age/age)|>
   mutate(
     age = scale(age)[, 1],
     cs_prob = (cs_prob - mean(cs_prob, na.rm = T)) / sd(cs_prob, na.rm = T),

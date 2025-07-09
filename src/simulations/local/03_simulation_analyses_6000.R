@@ -13,6 +13,9 @@
 # ------------------------------------------------------------------------------
 library(here)
 library(tidyverse)
+library(dplyr)
+library(patchwork)
+library(tidyr)
 N_sim <- 50
 
 # load data --------------------------------------------------------------------
@@ -195,90 +198,168 @@ prop_mcc_to_true_6000 <- resume_to_true_grouped_6000 |>
 
 write_csv(prop_mcc_to_true_6000, here("output/results/prop_mcc_to_true_6000.csv"))
 
-# analysys and comparison between number of traits 
-# probability first split mcc 
-prob_first_split_mcc_6000 = read.csv(here("output/results/prob_first_split_mcc_6000.csv"))|> 
-  mutate(n_trait = 6000) 
+# analysis and comparison between number of traits -----------------------------
 
-prob_first_split_mcc_main = read.csv(here("output/results/prob_first_split_mcc.csv")) |> 
-  filter(age==8) |> 
-  mutate(n_trait=3000)
-
-bind_rows(prob_first_split_mcc_6000, prob_first_split_mcc_main)
-
-# number of nodes
-number_of_nodes_summary_6000 = read.csv(here("output/results/number_of_nodes_summary_6000.csv")) |> 
-  mutate(n_trait = 6000) 
-
-number_of_nodes_summary_main = read.csv(here("output/results/number_of_nodes_summary.csv")) |> 
-  filter(age==8) |> 
-  mutate(n_trait = 3000) 
-
-bind_rows(number_of_nodes_summary_6000, number_of_nodes_summary_main)
-
-# marginal probability of the first split 
-marginal_probability_first_split_ic_6000 = read_csv(
-  here("output/results/marginal_probability_first_split_ic_6000.csv")
-  ) |> 
-  mutate(n_trait = 6000) 
-
-marginal_probability_first_split_ic_main = read_csv(
-  here("output/results/marginal_probability_first_split_ic.csv")) |> 
-  filter(age==8) |> 
-  mutate(n_trait = 3000) 
-
-bind_rows(marginal_probability_first_split_ic_6000, marginal_probability_first_split_ic_main)
-
-# from the true to the consensus tree 
-count_true_to_cs_6000 = readRDS(here("output/results/count_true_to_cs_6000.rds")) |> 
-  mutate(n_trait = 6000) 
-  
-count_true_to_cs_main = readRDS(here("output/results/count_true_to_cs.rds")) |> 
-  filter(age==8) |> 
-  mutate(n_trait = 3000) 
-
-bind_rows(count_true_to_cs_6000, count_true_to_cs_main) |>
+# --- Données prob_first_split_mcc ---
+prob_first_split_mcc_data <- bind_rows(
+  read.csv(here("output/results/prob_first_split_mcc_6000.csv")) |> mutate(n_trait = 6000),
+  read.csv(here("output/results/prob_first_split_mcc.csv")) |> filter(age==8) |> mutate(n_trait = 3000)
+) |>
   pivot_wider(
-    names_from = n_trait,      
-    values_from = mean_n,     
-    names_prefix = "mean_n_" 
+    names_from = n_trait,
+    values_from = mean_mcc_prob,
+    names_prefix = "prob_mcc_"
+  ) |>
+  select(age, prob_mcc_3000, prob_mcc_6000)
+
+
+# --- Données number_of_nodes_summary ---
+number_of_nodes_summary_data <- bind_rows(
+  read.csv(here("output/results/number_of_nodes_summary_6000.csv")) |> mutate(n_trait = 6000),
+  read.csv(here("output/results/number_of_nodes_summary.csv")) |> filter(age==8) |> mutate(n_trait = 3000)
+) |>
+  pivot_wider(
+    names_from = n_trait,
+    values_from = c(n_mcc, n_consensus), # Pivoter les deux colonnes n_mcc et n_consensus
+    names_prefix = "" # Pas de préfixe global, car les noms des valeurs sont déjà clairs (n_mcc_, n_consensus_)
+  ) |>
+  # Renommer spécifiquement pour la clarté (ex: n_mcc_3000, n_consensus_3000)
+  rename(
+    n_mcc_3000 = `n_mcc_3000`,
+    n_mcc_6000 = `n_mcc_6000`,
+    n_consensus_3000 = `n_consensus_3000`,
+    n_consensus_6000 = `n_consensus_6000`
+  ) |>
+  select(age, n_mcc_3000, n_mcc_6000, n_consensus_3000, n_consensus_6000)
+
+
+# --- Données marginal_probability_first_split_ic ---
+marginal_prob_ic_data <- bind_rows(
+  read_csv(here("output/results/marginal_probability_first_split_ic_6000.csv")) |> mutate(n_trait = 6000),
+  read_csv(here("output/results/marginal_probability_first_split_ic.csv")) |> filter(age==8) |> mutate(n_trait = 3000)
+) |>
+  pivot_wider(
+    names_from = n_trait,
+    values_from = c(prob, inf, sup), # Pivoter prob, inf, sup
+    names_prefix = ""
+  ) |>
+  rename(
+    prob_3000 = 'prob_3000', prob_6000 = 'prob_6000',
+    inf_3000 = 'inf_3000', inf_6000 = 'inf_6000',
+    sup_3000 = 'sup_3000', sup_6000 = 'sup_6000'
+  ) |>
+  select(age, prob_3000, prob_6000, inf_3000, inf_6000, sup_3000, sup_6000)
+
+
+# --- Données count_true_to_cs ---
+count_true_to_cs_data <- bind_rows(
+  readRDS(here("output/results/count_true_to_cs_6000.rds")) |> mutate(n_trait = 6000),
+  readRDS(here("output/results/count_true_to_cs.rds")) |> filter(age==8) |> mutate(n_trait = 3000)
+) |>
+  pivot_wider(
+    names_from = n_trait,
+    values_from = mean_n,
+    names_prefix = "mean_n_"
   ) |>
   select(age, value, mean_n_3000, mean_n_6000) |>
   arrange(value)
 
-# from the true to the mcc tree 
-count_true_to_mcc_6000 = readRDS(here("output/results/count_true_to_mcc_6000.csv"))|>
-  mutate(n_trait = 6000) 
 
-count_true_to_mcc_main= readRDS(here("output/results/count_true_to_mcc.csv"))|> 
-  filter(age==8) |> 
-  mutate(n_trait = 3000) 
-
-bind_rows(count_true_to_mcc_6000, count_true_to_mcc_main) |>
+# --- Données count_true_to_mcc ---
+count_true_to_mcc_data <- bind_rows(
+  readRDS(here("output/results/count_true_to_mcc_6000.csv")) |> mutate(n_trait = 6000),
+  readRDS(here("output/results/count_true_to_mcc.csv")) |> filter(age==8) |> mutate(n_trait = 3000)
+) |>
   pivot_wider(
-    names_from = n_trait,      
-    values_from = n_mean,     
-    names_prefix = "n_mean" 
+    names_from = n_trait,
+    values_from = n_mean,
+    names_prefix = "n_mean_"
   ) |>
-  select(age, exist, n_mean3000, n_mean6000) |>
+  select(age, exist, n_mean_3000, n_mean_6000) |>
   arrange(exist)
 
-# number of true nodes from the consensus to the true tree
-count_cs_to_true_6000 = read_csv(here("output/results/count_cs_to_true_6000.csv"))|> 
-  mutate(n_trait = 6000) 
 
-count_cs_to_true_main = read_csv(here("output/results/count_cs_to_true.csv"))|> 
-  filter(age==8) |> 
-  mutate(n_trait = 3000) 
-
-bind_rows(count_cs_to_true_6000, count_cs_to_true_main) |>
+# --- Données count_cs_to_true ---
+count_cs_to_true_data <- bind_rows(
+  read_csv(here("output/results/count_cs_to_true_6000.csv")) |> mutate(n_trait = 6000),
+  read_csv(here("output/results/count_cs_to_true.csv")) |> filter(age==8) |> mutate(n_trait = 3000)
+) |>
   pivot_wider(
-    id_cols = c(age, exist), # Keep these columns as identifiers
-    names_from = n_trait,       # 'n_trait' values become new column names
-    values_from = n_mean,       # 'n_mean' values fill the new columns
-    names_prefix = "n_mean_"    # Prefix for clarity: e.g., n_mean_3000, n_mean_6000
+    id_cols = c(age, exist),
+    names_from = n_trait,
+    values_from = c(n_mean, total), # Pivot both n_mean and total
+    names_prefix = ""
   ) |>
+  rename(
+    n_mean_3000 = "n_mean_3000", n_mean_6000 = "n_mean_6000",
+    total_3000 = "total_3000", total_6000 = "total_6000"
+  ) |>
+  select(age, exist, n_mean_3000, n_mean_6000, total_3000, total_6000) |>
   arrange(age, exist)
+
+# visualization ----------------------------------------------------------------
+# currently here because 12000 analysis coming 
+
+# from true to cs 
+count_true_to_cs_data_long <- count_true_to_cs_data |>
+  pivot_longer(
+    cols = starts_with("mean_n_"),
+    names_to = "n_trait_col",
+    values_to = "mean_n"
+  ) |>
+  mutate(
+    n_trait = as.numeric(gsub("mean_n_", "", n_trait_col)), # Extraire le nombre de traits
+    value = as.factor(value) # Assurez-vous que 'value' est un facteur pour l'esthétique de remplissage
+  )
+
+# from true to mcc
+count_true_to_mcc_data_long <- count_true_to_mcc_data |>
+  pivot_longer(
+    cols = starts_with("n_mean_"),
+    names_to = "n_trait_col",
+    values_to = "mean_n"
+  ) |>
+  mutate(
+    n_trait = parse_number(n_trait_col),  
+    exist = as.factor(exist),
+    n_trait_col = str_replace(n_trait_col, "n_mean_", "mean_n_") 
+  )
+
+
+p1<- ggplot(count_true_to_cs_data_long, aes(x = as.factor(n_trait), y = mean_n, fill = value)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.7) +
+  labs(
+    title = "",
+    x = "number of traits",
+    y = "average number of nodes",
+    fill = "node category"
+  ) +
+  scale_fill_manual(
+    values = c("0" = "darkred", "1" = "darkblue", "2" = "darkorange"),
+    breaks = c("0", "2", "1"),
+    labels = c("false", "plausible", "true")
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+
+
+p2<- ggplot(count_true_to_mcc_data_long, aes(x = as.factor(n_trait), y = mean_n, fill = exist)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.7) +
+  labs(
+    title = "",
+    x = "number of traits",
+    y = "average number of nodes",
+    fill = "node category"
+  ) +
+  scale_fill_manual(
+    values = c("0" = "darkred", "1" = "darkblue"),
+    labels = c("false", "true")
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+
+p1+p2
+
 
 
 
