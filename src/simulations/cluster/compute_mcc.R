@@ -31,8 +31,12 @@ compute_mcc_phylo <- function(path) {
 }
 
 # --- PRÉPARATION DES DONNÉES ---
-path_phylo <- list.files(getwd(), full.names = TRUE, recursive = TRUE)
+path_phylo <- here("data/simulated-2025-07-02-6000/")
+# prepare data
+path_phylo <- list.files(path_phylo, full.names = TRUE, recursive = TRUE)
 path_phylo <- path_phylo[grepl("\\.trees$", path_phylo)]
+
+
 
 purrr::map(path_phylo, compute_mcc_phylo)
 

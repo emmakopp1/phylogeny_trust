@@ -53,7 +53,7 @@ is_plausible <- function(node, tree_true, tree_cs) {
     
     # condition1 : are the descendants in the consensus and the true tree the same ?
     condition1 <- length(intersect(desc_desc, x)) == length(desc_desc)
-    # condition2 : is the desncendant set empty ? 
+    # condition2 : is the descendant set empty ? 
     condition2 <- is_empty(intersect(desc_desc, x))
 
     # if condition1 or condition2 is true the naude is plausible
@@ -126,7 +126,7 @@ for (t in seq_along(trees_true)){
             sep = ",",
             row.names = FALSE,
             col.names = FALSE,
-            append = TRUE       # Ajouter après la première fois
+            append = TRUE       
         )
     }
 }

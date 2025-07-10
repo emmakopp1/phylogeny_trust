@@ -3,9 +3,17 @@
 # Description: # This file calculate the marginale probabiliity that the inferred reconstructed
 #               correctly the outgroup with the credibility interval
 # -----------------------------------------------------------------------------------------
+library(here)
 library(ape)
+library(phangorn)
+library(Matrix)
 library(castor)
+library(gridExtra)
+library(purrr)
+library(phytools)
 library(parallel)
+library(adephylo)
+library(reshape2)
 library(stringr)
 library(stats)
 
@@ -35,6 +43,7 @@ getNodesByDepth <- function(tree) {
   return(nodes[order(-nodes$depth, decreasing = T), 1])
 }
 
+
 # arguments 
 args <- commandArgs(trailingOnly = TRUE)
 start <- as.numeric(args[1])
@@ -43,12 +52,12 @@ cat("Traitement des fichiers de", start, "à", end, "\n")
 
 
 # Fichiers
-cluster_directory <- getwd()
+cluster_directory <-"/Users/kopp/Documents/phylogeny_trust/data/simulated-2025-07-04-12000"
 path_phylo <- list.files(cluster_directory, full.names = TRUE, recursive = TRUE)
 
+
 path_trees_true <- path_phylo[grepl("tree-sim", path_phylo)][start:end]
-#path_trees_phylo <- path_phylo[grepl("trees$", path_phylo)][(start + 24):(end + 24)] # pas sur le cluster
-path_trees_phylo <- path_phylo[grepl("trees$", path_phylo)][start:end] # sur le cluster
+path_trees_phylo <-  path_phylo[grepl("trees$", path_phylo)][(start):(end)]
 
 
 # passer en mode parLapply(cl, path_trees_true, read.tree)
@@ -63,71 +72,72 @@ burnin <- 0.1
 df <- data.frame(matrix(ncol = 6, nrow = 0))
 colnames(df) <- c("node", "tree_age", "tree_simulation_number", "prob_mean", "prob_inf", "prob_sup")
 
-header_written <- FALSE
-
 
 write.table(
   df,
-  file = paste0(getwd(), sprintf("/marginal_prob_first_split_ic_%d_%d.csv", start, end)),
+  file = paste0(cluster_directory, sprintf("/marginal_prob_first_split_ic_%d_%d.csv", start, end)),
   sep = ",",
   row.names = FALSE,
   col.names = TRUE
 )
 
 
-
-
 # Fonction de traitement parallèle
 process_file <- function(i) {
-
-    # true tree, its deepest node and posterior
-    tree_true <- trees_true[[i]]
-    phylo <- phylogenies[[i]]
-    deepest_node <- deepest_nodes[[i]]
-
-    # identify the files
-    path <- path_trees_phylo[[i]]
-    tree_simulation_number <- as.numeric(
-      str_match(path, "beast-data-sim-(\\d+)-\\d+")[, 2]
-    )
-    tree_age <- as.numeric(str_extract(path, "(\\d+)(?=\\.tree)"))
-
-    # find the outgroup of the true tree
-    A <-  tree_true$tip.label[Descendants(tree_true, deepest_node, type = "tips")[[1]]] 
-    B <- setdiff(tree_true$tip.label, A)
-    outgroup <- if (length(A) <= length(B)) A else B
-
-    # posterior thin-in
-    M <- length(phylo)
-    phylo <- phylo[seq(burnin * M, M, length = 200)]
-
-
-    res <- sapply(phylo,function(t) is.monophyletic(t, outgroup))
-    ic <- prop.test(sum(res), length(res), conf.level = 0.95)$conf.int
-    ic_inf <- ic[1]
-    ic_sup <- ic[2]
-
-    row <- data.frame(
-        node = deepest_node,
-        tree_age = tree_age,
-        tree_simulation_number = tree_simulation_number,
-        prob = mean(res),
-        prob_inf = round(ic_inf,3),
-        prob_sup = round(ic_sup,3)
-    )
-        
-
-    write.table(
-        row, 
-        paste0(getwd(), sprintf("/marginal_prob_first_split_ic_%d_%d.csv", start, end)), 
-        sep = ",",
-        row.names = FALSE,
-        col.names = FALSE,
-        append = TRUE     
-    )
-
-  return()
+  # true tree, its deepest node and posterior
+  tree_true <- trees_true[[i]]
+  phylo <- phylogenies[[i]]
+  deepest_node <- deepest_nodes[[i]]
+  
+  plot(tree_true)
+  nodelabels(cex=0.7, frame='circle')
+  
+  # identify the files
+  path <- path_trees_phylo[[i]]
+  tree_simulation_number <- as.numeric(
+    str_match(path, "beast-data-sim-(\\d+)-\\d+")[, 2]
+  )
+  tree_age <- as.numeric(str_extract(path, "(\\d+)(?=\\.tree)"))
+  
+  # find the smallest group of the first split of the true tree
+  A <-  tree_true$tip.label[Descendants(tree_true, deepest_node, type = "tips")[[1]]] 
+  B <- setdiff(tree_true$tip.label, A)
+  outgroup <- if (length(A) <= length(B)) A else B
+  
+  # posterior thin-in
+  M <- length(phylo)
+  phylo <- phylo[seq(burnin * M, M, length = 200)]
+  
+  
+  res <- sapply(phylo, function(t) is.monophyletic(t, outgroup))
+  ic <- prop.test(sum(res), length(res), conf.level = 0.95)$conf.int
+  ic_inf <- ic[1]
+  ic_sup <- ic[2]
+  
+  row <- data.frame(
+    node = deepest_node,
+    tree_age = tree_age,
+    tree_simulation_number = tree_simulation_number,
+    prob = mean(res),
+    prob_inf = round(ic_inf, 3),
+    prob_sup = round(ic_sup, 3)
+  )
+  
+  
+  write.table(
+    row, 
+    paste0(cluster_directory, sprintf("/marginal_prob_first_split_ic_%d_%d.csv", start, end)), 
+    sep = ",",
+    row.names = FALSE,
+    col.names = FALSE,
+    append = TRUE     
+  )
+  
+  return(row)
 }
+
+
+
 
 # cluster initialisation
 ncl <- 20
@@ -136,9 +146,8 @@ clusterSetRNGStream(cl)
 
 
 # Traitement en parallèle
-res_list <- parLapply(cl, 1:length(path_trees_phylo), process_file)
+res_list <- parLapply(cl, seq_along(path_trees_phylo), process_file)
 stopCluster(cl)
-#res_list <- lapply(1:length(path_trees_phylo), function(i) process_file(i))
 
 # results as a dataframe
 res_df <- do.call(rbind, res_list) 
@@ -148,6 +157,6 @@ colnames(res_df) <- c("node", "tree_age", "tree_simulation_number", "prob")
 
 write.csv2(
   res_df,
-  paste0(getwd(), sprintf("/marginal_prob_first_split_%d_%d.csv", start, end)),
+  paste0(cluster_directory, sprintf("/marginal_prob_first_split_%d_%d.csv", start, end)),
   row.names = FALSE
 )

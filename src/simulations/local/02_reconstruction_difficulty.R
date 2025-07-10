@@ -23,7 +23,7 @@ library(phangorn)
 # select the path repository of your analysis 
 #path_repository <-here("data/simulated-2025-05-13")
 #path_repository <- here("data/simulated-2025-07-02-6000")
-path_repository <- here("data/simulated-2025-07-04-12000")
+path_repository <- here("data/simulated-2025-07-08-12000")
 
 
 # number of different ages per simulation
