@@ -11,47 +11,50 @@ library(patchwork)
 summary_data_st <- read_csv(here("output/results/ancestral_reconstruction_summary_st.csv"))
 summary_data_ie <- read_csv(here("output/results/ancestral_reconstruction_summary_ie.csv"))
 
+
 # sino-tibetan
 plot_st <- ggplot(summary_data_st, aes(x = mean_max_depth, y = mean_sinitic, label = sens)) +
-  geom_text(size = 2, 
+  geom_text(size = 4, 
             position = position_jitter(width = 0.1, height = 0.05, seed = 123)) +
   labs(
     title = "Sino-Tibetan",
     x = "depth",
-    y = ""
+    y=""
   ) +
   theme_minimal() + 
   theme(
     axis.text.y = element_blank(),
-    axis.ticks.y = element_blank()
+    axis.ticks.y = element_blank(),
+    plot.title = element_text(hjust = 0.5)
   ) +
   xlim(0, 10)
 
 # indo-european
 plot_ie <- ggplot(summary_data_ie, aes(x = mean_max_depth, y = mean_outgroup, label = sens)) +
-  geom_text(size = 2, 
+  geom_text(size = 4, 
             position = position_jitter(width = 0.1, height = 0.05, seed = 123)) +
   labs(
     title = "Indo-European",
     x = "depth",
-    y = ""
+    y = "proportion of outgroup presence"
   ) +
   theme_minimal() + 
   theme(
     axis.text.y = element_blank(),
-    axis.ticks.y = element_blank()
+    axis.ticks.y = element_blank(),
+    plot.title = element_text(hjust = 0.5)
   ) +
   xlim(0, 10)
 
 
 # Combine and save plots ------------------------------------------------------
 combined_plot <- plot_ie + plot_st
-
+combined_plot
 # Save the combined plot
 ggsave(
   filename = here("output/figs/ancestral_reconstruction_by_semantic_meaning.pdf"),
   plot = combined_plot,
-  width = 20,
+  width = 30,
   height = 10,
   units = "in"
 )
