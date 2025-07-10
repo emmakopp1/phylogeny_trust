@@ -202,13 +202,18 @@ df_reg_mcc <- mcc_to_true_TF |>
   select(-type, -exist, -node_cs, -cs_prob, -age.y)|>
   rename(y = N_nodes, age = age.x) |> 
   mutate(root_split_age = as.numeric(root_split_age)/age) |>
-  mutate(
-    age = scale(age)[, 1],
-    mcc_prob = (mcc_prob - mean(mcc_prob, na.rm = T)) / sd(mcc_prob, na.rm = T),
-    root_split_age = (root_split_age - mean(root_split_age, na.rm = T)) / sd(root_split_age, na.rm = T)
-  ) |> 
+  #mutate(
+  #  age = scale(age)[, 1],
+  #  mcc_prob = (mcc_prob - mean(mcc_prob, na.rm = T)) / sd(mcc_prob, na.rm = T),
+  #  root_split_age = (root_split_age - mean(root_split_age, na.rm = T)) / sd(root_split_age, na.rm = T)
+  #) |> 
   rename(first_split_prob = mcc_prob)
 
+# créer une nvl colonne root_split_age_prop 
+df_reg_mcc[681,]
+
+mcc = read.tree('/Users/kopp/Documents/phylogeny_trust/data/simulated-2025-05-13/beast-data-sim-46/beast-data-sim-46-1/mcc-1.tree')
+plot(mcc)
 
 # model mcc regression 
 model_mcc <- glm(y ~ age + first_split_prob + root_split_age, data = df_reg_mcc, family = 'binomial')
