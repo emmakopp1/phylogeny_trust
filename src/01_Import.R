@@ -26,10 +26,14 @@ write_file("End;",
 )
 
 write_file("End;",
-           here("data/real/kd_ctmc-strict-bd-ht/kd_ctmc-strict-bd-ht.trees"),
+           here("data/real/bantu_ctmc-strict-bd/bantu_ctmc-strict-bd.trees"),
            append = TRUE
 )
 
+write_file("End;",
+           here("data/real/kd_ctmc-strict-bd-ht/kd_ctmc-strict-bd-ht.trees"),
+           append = TRUE
+)
 
 
 # Create directories
@@ -135,7 +139,7 @@ ntipschars_ie <- get_nexus_parameters(here("data/real/iecor_ctmc-strict-M1/iecor
 
 # Sino-Tibetan ----------------------------------------------------------------------------------------------------
 
-phylo_st <- read.nexus(here("data/real/st_ctmc-strict-fbd/st_ctmc-strict-fbd.trees"))
+phylo_st <- read.nexus(here("data/real/st_ctmc-strict-fbd-uni/st_ctmc-strict-fbd-uniform.trees"))
 
 tree_st= phylo_st[[length(phylo_st)]]
 write.tree(tree_st, here("output/results/st/st_ctmc-strict-fbd_tree.nex"))

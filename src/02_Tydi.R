@@ -31,7 +31,7 @@ tipages_kd <- read_csv(here("output/results/kd/kd_ctmc-strict-bd_tipages.csv.bz"
 
 tipages_summary <- bind_rows(tipages_bantu, tipages_bantu_subsample, tipages_bantu_subsample2, tipages_ie, tipages_st, tipages_st_by_sens, tipages_tea, tipages_kd) |>
   group_by(family) |>
-  filter(tree > ceiling(max(tree) * burnin)) |>
+  filter(if_else(family == 'Bantu', tree > ceiling(max(tree) * 0.5), tree > ceiling(max(tree) * burnin))) |> 
   group_by(family, tip) |>
   summarise(age = median(age), depth = median(depth)) |>
   mutate(root_age = round(depth + age,2)) |>
@@ -189,7 +189,7 @@ tracelog_st_by_sens_summary = tracelog_st_by_sens |>
 tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bantu_subsample2, tracelog_ie, tracelog_st, tracelog_kd) |>
   purrr::map(~ .x |>
     add_tally(name = "n_trees")|>
-    filter(Sample > ceiling(max(Sample) * burnin)) |>
+    filter(if_else(family == 'Bantu', Sample > ceiling(max(Sample) * 0.5), Sample > ceiling(max(Sample) * burnin))) |>
     select(family, n_trees, starts_with("freqParameter"), clockRate.c.clock, TreeHeight.t.tree, starts_with("mutationRate")) |>
     summarise(family = unique(family), across(-family, ~ median(.x))) |>
     rename(t_R = TreeHeight.t.tree) |>
@@ -199,7 +199,8 @@ tracelog_summary <- list(tracelog_bantu, tracelog_bantu_subsample, tracelog_bant
     rename(pi0 = pi1, pi1 = pi2)) |> 
   bind_rows(tracelog_tea_by_sens_summary) |>
   bind_rows(tracelog_st_by_sens_summary) |> 
-  mutate(q = (pi0 + pi1)/(2 * pi0 * pi1)) |> 
+  mutate(q = (pi0 + pi1))|> 
+  #mutate(q = (pi0 + pi1)/(2 * pi0 * pi1)) |> 
   relocate(q, .after = pi1) |>
   relocate(mu, .before = q) |> 
   mutate(t_R = ifelse(family == "KD", 1e-3 * t_R, t_R)) |>
