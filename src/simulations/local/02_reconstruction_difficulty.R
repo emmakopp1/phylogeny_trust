@@ -21,19 +21,11 @@ library(phangorn)
 
 # functions --------------------------------------------------------------------
 # select the path repository of your analysis 
-#path_repository <-here("data/simulated-2025-05-13")
-#path_repository <- here("data/simulated-2025-07-02-6000")
-path_repository <- here("data/simulated-2025-07-08-12000")
-
-
-# number of different ages per simulation
-#N_ages <- 17
-N_ages <- 1
+path_repository <-here("data/simulated-2025-05-13")
 
 # compute the path for the csv output
-#output_path <- here("output/results/first_split_age.csv")
-#output_path <- here("output/results/first_split_age_6000.csv")
-output_path <- here("output/results/first_split_age_12000.csv")
+output_path_mcc <- here("output/results/first_split_age_mcc.csv")
+output_path_cs <- here("output/results/first_split_age_cs.csv")
 
 
 # function to get the outgroup of the tree 
@@ -50,7 +42,7 @@ first_split <- function(path){
   
   t = max(node.depth.edgelength(tree)) - node.depth.edgelength(tree)[children]
   
-  return(list(
+  return(data.frame(
     age = tree_age,
     simulation = tree_simulation_number,
     root = root,
@@ -70,12 +62,21 @@ path_phylo <- list.files(
 )
 
 # paths to true topologies, posterior and mcc  
-path_trees_true <- path_phylo[grepl("tree-sim", path_phylo)]
-path_trees_true <- path_trees_true[seq(1, length(path_trees_true), by = N_ages)]
+path_mcc <- path_phylo[grepl("mcc-", path_phylo)]
+path_cs <- path_phylo[grepl("consensus-", path_phylo)]
 
 # compute for each age, simulation the root and first split ages
-deepest_nodes_mcc <- lapply(path_trees_true, function(path) first_split(path))
+# for the mcc trees
+deepest_nodes_mcc <- lapply(path_mcc, function(path) first_split(path))
 deepest_nodes_mcc <- do.call(rbind, deepest_nodes_mcc)
 
+# for the consensus trees
+deepest_nodes_cs <- lapply(path_cs, function(path) first_split(path))
+deepest_nodes_cs <- do.call(rbind, deepest_nodes_cs)
+
 # write the file 
-write.csv(deepest_nodes_mcc, output_path)
+write.csv(deepest_nodes_mcc, output_path_mcc)
+write.csv(deepest_nodes_cs, output_path_cs)
+
+
+

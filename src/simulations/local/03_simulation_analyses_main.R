@@ -31,8 +31,9 @@ mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF_1_850.csv")) |
 mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF_1_850.csv")) |> 
   filter(type == 'mcc')
 
-# for each tree simulation, age between the root and the first split
-first_split_age <- read.csv(here("output/results/first_split_age.csv"))
+# for each mcc tree, age between the root and the first split of the true tree
+first_split_age_mcc <- read.csv(here("output/results/first_split_age_mcc.csv"))
+first_split_age_cs <- read.csv(here("output/results/first_split_age_cs.csv"))
 
 # frequency of good reconstruction of all the nodes in consensus tree (true -> summary)
 # the value of node represent the node in the true tree
@@ -197,26 +198,21 @@ write_csv(prop_mcc_to_true, here("output/results/prop_mcc_to_true.csv"))
 # regression mcc
 df_reg_mcc <- mcc_to_true_TF |>
   inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
-  inner_join(first_split_age, by = c("simulation")) |>
-  filter(node_mcc == node) |>
-  select(-type, -exist, -node_cs, -cs_prob, -age.y)|>
-  rename(y = N_nodes, age = age.x) |> 
-  mutate(root_split_age = as.numeric(root_split_age)/age) |>
-  #mutate(
-  #  age = scale(age)[, 1],
-  #  mcc_prob = (mcc_prob - mean(mcc_prob, na.rm = T)) / sd(mcc_prob, na.rm = T),
-  #  root_split_age = (root_split_age - mean(root_split_age, na.rm = T)) / sd(root_split_age, na.rm = T)
-  #) |> 
+  filter(node == node_mcc ) |>
+  full_join(first_split_age_mcc, by = c("age","simulation")) |>
+  select(-type, -exist, -node_cs,-node_mcc, -cs_prob, -X)|>
+  rename(y = N_nodes) |> 
+  mutate(root_split_age_prob = as.numeric(root_split_age)/root_age) |>
+  mutate(
+    age = scale(age)[, 1],
+    mcc_prob = (mcc_prob - mean(mcc_prob, na.rm = T)) / sd(mcc_prob, na.rm = T),
+    root_split_age = (root_split_age - mean(root_split_age, na.rm = T)) / sd(root_split_age, na.rm = T),
+    root_split_age_prob = (root_split_age_prob - mean(root_split_age_prob, na.rm = T)) / sd(root_split_age_prob, na.rm = T)
+  ) |> 
   rename(first_split_prob = mcc_prob)
 
-# créer une nvl colonne root_split_age_prop 
-df_reg_mcc[681,]
-
-mcc = read.tree('/Users/kopp/Documents/phylogeny_trust/data/simulated-2025-05-13/beast-data-sim-46/beast-data-sim-46-1/mcc-1.tree')
-plot(mcc)
-
 # model mcc regression 
-model_mcc <- glm(y ~ age + first_split_prob + root_split_age, data = df_reg_mcc, family = 'binomial')
+model_mcc <- glm(y ~ age + first_split_prob + root_split_age_prob, data = df_reg_mcc, family = 'binomial')
 
 
 # regression cs 
@@ -225,20 +221,22 @@ resume_to_true_TF_cs <- read.csv(here("output/results/resume_to_true_TF_1_850.cs
 
 df_reg_cs <- resume_to_true_TF_cs |>
   inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
-  inner_join(first_split_age, by = c("simulation")) |>
-  filter(node == node_cs) |>
-  select(-type, -exist, -node_mcc, -mcc_prob, -age.y)|>
-  rename(y = N_nodes, age = age.x) |> 
-  mutate(root_split_age = root_split_age/age)|>
+  filter(node == node_cs ) |>
+  full_join(first_split_age_cs, by = c("age","simulation")) |>
+  select(-type, -exist, -node_cs,-node_mcc, -mcc_prob, -X)|>
+  rename(y = N_nodes) |> 
+  mutate(root_split_age_prob = as.numeric(root_split_age)/root_age) |>
   mutate(
     age = scale(age)[, 1],
     cs_prob = (cs_prob - mean(cs_prob, na.rm = T)) / sd(cs_prob, na.rm = T),
-    root_split_age = (root_split_age - mean(root_split_age, na.rm = T)) / sd(root_split_age, na.rm = T)
+    root_split_age = (root_split_age - mean(root_split_age, na.rm = T)) / sd(root_split_age, na.rm = T),
+    root_split_age_prob = (root_split_age_prob - mean(root_split_age_prob, na.rm = T)) / sd(root_split_age_prob, na.rm = T)
   ) |> 
   rename(first_split_prob = cs_prob)
 
+
 # model consensus regression
-model_cs <- glm(y ~ age + first_split_prob + root_split_age, data = df_reg_cs, family = 'binomial')
+model_cs <- glm(y ~ age + first_split_prob + root_split_age_prob, data = df_reg_cs, family = 'binomial')
 
 # clean regressions
 tidy_mcc <- tidy(model_mcc)
