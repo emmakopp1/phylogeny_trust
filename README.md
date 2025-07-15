@@ -44,7 +44,7 @@ The simulation study evaluates phylogenetic reconstruction accuracy using birth-
 ### Real Data Analysis
 
 Phylogenetic reconstruction of multiple language families using:
-- **Families**: Indo-European, Sino-Tibetan
+- **Families**: Indo-European (data outputs files taken from CITE ARTICLE), Sino-Tibetan (input data taken from CITE ARTICLE and but we did the inference)
 - **Methods**: BEAST with strict clock and birth-death/fossilized birth-death models
 - **Ancestral Reconstruction**: Semantic meaning evolution analysis
 

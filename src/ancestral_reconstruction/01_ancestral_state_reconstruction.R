@@ -112,7 +112,7 @@ Y_ie <- as.data.frame(Y_ie)
 
 # Load meaning boundaries and filter parameters
 meanings_sets_ie <- read.csv(here("output/results/meanings_sets_ie.csv"))
-bounds_real_tb_by_sens_ie <- read.csv(here("output/results/bounds_real_tb_by_sens.csv"))
+bounds_real_tb_by_sens_ie <- read.csv(here("output/results/tracelog_summary.csv"))
 bounds_real_tb_ie <- bounds_real_tb_by_sens_ie[bounds_real_tb_by_sens_ie$family == "IE", ]
 
 # Define constants and substitution model 
@@ -164,7 +164,7 @@ Y_st <- as.data.frame(Y_st)
 
 # Load meaning boundaries and filter parameters
 meanings_sets_st <- read.csv(here("output/results/meanings_sets_st.csv"))
-bounds_real_tb_by_sens <- read.csv(here("output/results/bounds_real_tb_by_sens.csv"))
+bounds_real_tb_by_sens <- read.csv(here("output/results/tracelog_summary.csv"))
 bounds_real_tb_st <- bounds_real_tb_by_sens[bounds_real_tb_by_sens$family == "ST", ]
 
 # Define constants and substitution model 
