@@ -18,62 +18,155 @@ library(patchwork)
 library(tidyr)
 N_sim <- 50
 
+# load the data ---------
+# frequency of good reconstruction of all the nodes in consensus tree (true -> summary)
+# the value of node represent the node in the true tree
+true_false_uncertain_6000 <- read.csv(
+  file = here("output/results/true_false_uncertain_nodes_1_50_6000.csv"),
+  sep = ",",
+  header = T) |> 
+  rename(age = tree_age, simulation = tree_simulation_number) |>
+  # add 0/1/2 for false/true/uncertain nodes for the consensus tree
+  mutate(
+    value = case_when(
+      T_F_U == FALSE ~ 0,
+      T_F_U == TRUE & state == "rateau" ~ 2,
+      T_F_U == TRUE & state == "regular" ~ 1
+    )
+  )
 
-# analysis and comparison between number of traits -----------------------------
+true_false_uncertain_12000 <- read.csv(
+  file = here("output/results/true_false_uncertain_nodes_12000.csv"),
+  sep = ",",
+  header = T) |> 
+  rename(age = tree_age, simulation = tree_simulation_number) |>
+  # add 0/1/2 for false/true/uncertain nodes for the consensus tree
+  mutate(
+    value = case_when(
+      T_F_U == FALSE ~ 0,
+      T_F_U == TRUE & state == "rateau" ~ 2,
+      T_F_U == TRUE & state == "regular" ~ 1
+    )
+  )
 
-# --- Données prob_first_split_mcc ---
-#prob_first_split_mcc_data <- bind_rows(
-#  read.csv(here("output/results/prob_first_split_mcc_12000.csv")) |> mutate(n_trait = 12000),
-#  read.csv(here("output/results/prob_first_split_mcc_6000.csv")) |> mutate(n_trait = 6000),
-#  read.csv(here("output/results/prob_first_split_mcc.csv")) |> filter(age==8) |> mutate(n_trait = 3000)
-#) |>
-#  pivot_wider(
-#    names_from = n_trait,
-#    values_from = mean_mcc_prob,
-#    names_prefix = "prob_mcc_"
-#  ) |>
-#  select(age, prob_mcc_3000, prob_mcc_6000, prob_mcc_12000)
+# process the data ---------
+# for the consensus trees, count the number of true, false and uncertain nodes
+# with special labels for the plot
+# obtain 3 points as age = 8
+# for 6000 traits
+count_true_to_cs_6000 <- true_false_uncertain_6000 |>
+  count(age, simulation, value) |>
+  group_by(age, value) |>
+  summarise(mean_n = sum(n)/N_sim, .groups = "drop") |>
+  mutate(value = factor(value, levels = c("0", "2", "1"))) |>
+  arrange(age, value) 
+
+saveRDS(count_true_to_cs_6000, here("output/results/count_true_to_cs_6000.rds"))
+
+# for 12000 traits
+count_true_to_cs_12000 <- true_false_uncertain_12000 |>
+  count(age, simulation, value) |>
+  group_by(age, value) |>
+  summarise(mean_n = sum(n)/N_sim, .groups = "drop") |>
+  mutate(value = factor(value, levels = c("0", "2", "1"))) |>
+  arrange(age, value) 
+
+saveRDS(count_true_to_cs_12000, here("output/results/count_true_to_cs_12000.rds"))
+
+# for the mcc tree count the number of true, false
+# for each summary tree, age, simulation this dataframe indicates the proprtions 
+# of true and false nodes
+# for 6000 traits
+resume_to_true_grouped_6000 <- read_csv(here("output/results/resume_to_true_TF_1_50_6000.csv"), col_names = T)|> 
+  rename(N_node = exist, exist = N_nodes) |>
+  mutate(exist = as.numeric(exist)) |>  # TRUE -> 1, FALSE -> 0
+  group_by(type, age, simulation, exist, N_node) |> 
+  summarise(n = n(), .groups = "drop") |> 
+  group_by(type, age, simulation) |>
+  mutate(proportion = n / N_node) |>
+  ungroup() |>
+  mutate(exist = factor(exist, levels = c("0", "1")))
+
+# number of well reconstructed node in the mcc tree
+count_true_to_mcc_6000 <- resume_to_true_grouped_6000 |>
+  filter(type == "mcc") |>
+  group_by(age, exist) |>
+  summarise(n_mean = sum(n)/N_sim, .groups = "drop") |>
+  tidyr::pivot_wider(names_from = exist, values_from = n_mean, names_prefix = "exist_") |>
+  mutate(
+    total = exist_0 + exist_1
+  ) |>
+  pivot_longer(cols = starts_with("exist_"), names_prefix = "exist_", names_to = "exist", values_to = "n_mean") |>
+  mutate(
+    exist = factor(exist, levels = c("0", "1")),
+    y_label = ifelse(exist == "1", 0, total) # alignement manuel
+  ) 
+
+saveRDS(count_true_to_mcc_6000,here("output/results/count_true_to_mcc_6000.csv"))
+
+# for 12000 traits
+resume_to_true_grouped_12000 <- read_csv(here("output/results/resume_to_true_TF_12000.csv"), col_names = T)|> 
+  rename(N_node = exist, exist = N_nodes) |>
+  mutate(exist = as.numeric(exist)) |>  # TRUE -> 1, FALSE -> 0
+  group_by(type, age, simulation, exist, N_node) |> 
+  summarise(n = n(), .groups = "drop") |> 
+  group_by(type, age, simulation) |>
+  mutate(proportion = n / N_node) |>
+  ungroup() |>
+  mutate(exist = factor(exist, levels = c("0", "1")))
+
+# number of well reconstructed node in the mcc tree
+count_true_to_mcc_12000 <- resume_to_true_grouped_12000 |>
+  filter(type == "mcc") |>
+  group_by(age, exist) |>
+  summarise(n_mean = sum(n)/N_sim, .groups = "drop") |>
+  tidyr::pivot_wider(names_from = exist, values_from = n_mean, names_prefix = "exist_") |>
+  mutate(
+    total = exist_0 + exist_1
+  ) |>
+  pivot_longer(cols = starts_with("exist_"), names_prefix = "exist_", names_to = "exist", values_to = "n_mean") |>
+  mutate(
+    exist = factor(exist, levels = c("0", "1")),
+    y_label = ifelse(exist == "1", 0, total) # alignement manuel
+  ) 
+
+saveRDS(count_true_to_mcc_12000, here("output/results/count_true_to_mcc_12000.csv"))
 
 
-# --- Données number_of_nodes_summary ---
-#number_of_nodes_summary_data <- bind_rows(
-#  read.csv(here("output/results/number_of_nodes_summary_12000.csv")) |> mutate(n_trait = 12000),
-#  read.csv(here("output/results/number_of_nodes_summary_6000.csv")) |> mutate(n_trait = 6000),
-#  read.csv(here("output/results/number_of_nodes_summary.csv")) |> filter(age==8) |> mutate(n_trait = 3000)
-#) |>
-#  pivot_wider(
-#    names_from = n_trait,
-#    values_from = c(n_mcc, n_consensus), # Pivoter les deux colonnes n_mcc et n_consensus
-#    names_prefix = "" 
-#  ) |>
-#  rename(
-#    n_mcc_3000 = 'n_mcc_3000',
-#    n_mcc_6000 = 'n_mcc_6000',
-#    n_mcc_12000 = 'n_mcc_12000',
-#    n_consensus_3000 = 'n_consensus_3000',
-#    n_consensus_6000 = 'n_consensus_6000',
-#    n_consensus_12000 = 'n_consensus_12000'
-#  ) |>
-#  select(age, n_mcc_3000, n_mcc_6000,n_mcc_12000, n_consensus_3000, n_consensus_6000,n_consensus_12000)
+# count the numer of true node from de consensus tree to the true tree
+# for 6000 traits
+count_cs_to_true_6000 <- resume_to_true_grouped_6000 |>
+  filter(type == "consensus") |>
+  group_by(age, exist) |>
+  summarise(n_mean = mean(n), .groups = "drop") |>
+  tidyr::pivot_wider(names_from = exist, values_from = n_mean, names_prefix = "exist_") |>
+  mutate(
+    total = exist_0 + exist_1
+  ) |>
+  pivot_longer(cols = starts_with("exist_"), names_prefix = "exist_", names_to = "exist", values_to = "n_mean") |>
+  mutate(
+    exist = factor(exist, levels = c("0", "1")),
+    y_label = ifelse(exist == "1", 0, total) 
+  )
 
+write_csv(count_cs_to_true_6000, here("output/results/count_cs_to_true_6000.csv"))
 
-# --- Données marginal_probability_first_split_ic ---
-#marginal_prob_ic_data <- bind_rows(
-#  read_csv(here("output/results/marginal_probability_first_split_ic_12000.csv")) |> mutate(n_trait = 12000),
-#  read_csv(here("output/results/marginal_probability_first_split_ic_6000.csv")) |> mutate(n_trait = 6000),
-#  read_csv(here("output/results/marginal_probability_first_split_ic.csv")) |> filter(age==8) |> mutate(n_trait = 3000)
-#) |>
-#  pivot_wider(
-#    names_from = n_trait,
-#    values_from = c(prob, inf, sup), # Pivoter prob, inf, sup
-#    names_prefix = ""
-#  ) |>
-#  rename(
-#    prob_3000 = 'prob_3000', prob_6000 = 'prob_6000', prob_12000 = 'prob_12000',
-#    inf_3000 = 'inf_3000', inf_6000 = 'inf_6000', inf_12000 = 'inf_12000',
-#    sup_3000 = 'sup_3000', sup_6000 = 'sup_6000', sup_12000 = 'sup_12000'
-#  ) |>
-#  select(age, prob_3000, prob_6000, prob_12000, inf_3000, inf_6000, inf_12000, sup_3000, sup_6000, sup_12000)
+# for 12000 traits
+count_cs_to_true_12000 <- resume_to_true_grouped_12000 |>
+  filter(type == "consensus") |>
+  group_by(age, exist) |>
+  summarise(n_mean = mean(n), .groups = "drop") |>
+  tidyr::pivot_wider(names_from = exist, values_from = n_mean, names_prefix = "exist_") |>
+  mutate(
+    total = exist_0 + exist_1
+  ) |>
+  pivot_longer(cols = starts_with("exist_"), names_prefix = "exist_", names_to = "exist", values_to = "n_mean") |>
+  mutate(
+    exist = factor(exist, levels = c("0", "1")),
+    y_label = ifelse(exist == "1", 0, total) 
+  )
+
+write_csv(count_cs_to_true_12000, here("output/results/count_cs_to_true_12000.csv"))
 
 
 # --- Données count_true_to_cs ---
