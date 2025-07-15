@@ -207,7 +207,8 @@ Phylogenetic reconstruction of multiple language families using:
 ## Citation
 
 
-```@article{sagart2019dated,
+``````bibtex
+@article{sagart2019dated,
   title={Dated language phylogenies shed light on the ancestry of Sino-Tibetan},
   author={Sagart, Laurent and Jacques, Guillaume and Lai, Yunfan and Ryder, Robin J and Thouzeau, Valentin and Greenhill, Simon J and List, Johann-Mattis},
   journal={Proceedings of the National Academy of Sciences},
