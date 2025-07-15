@@ -18,61 +18,62 @@ library(patchwork)
 library(tidyr)
 N_sim <- 50
 
+
 # analysis and comparison between number of traits -----------------------------
 
 # --- Données prob_first_split_mcc ---
-prob_first_split_mcc_data <- bind_rows(
-  read.csv(here("output/results/prob_first_split_mcc_12000.csv")) |> mutate(n_trait = 12000),
-  read.csv(here("output/results/prob_first_split_mcc_6000.csv")) |> mutate(n_trait = 6000),
-  read.csv(here("output/results/prob_first_split_mcc.csv")) |> filter(age==8) |> mutate(n_trait = 3000)
-) |>
-  pivot_wider(
-    names_from = n_trait,
-    values_from = mean_mcc_prob,
-    names_prefix = "prob_mcc_"
-  ) |>
-  select(age, prob_mcc_3000, prob_mcc_6000, prob_mcc_12000)
+#prob_first_split_mcc_data <- bind_rows(
+#  read.csv(here("output/results/prob_first_split_mcc_12000.csv")) |> mutate(n_trait = 12000),
+#  read.csv(here("output/results/prob_first_split_mcc_6000.csv")) |> mutate(n_trait = 6000),
+#  read.csv(here("output/results/prob_first_split_mcc.csv")) |> filter(age==8) |> mutate(n_trait = 3000)
+#) |>
+#  pivot_wider(
+#    names_from = n_trait,
+#    values_from = mean_mcc_prob,
+#    names_prefix = "prob_mcc_"
+#  ) |>
+#  select(age, prob_mcc_3000, prob_mcc_6000, prob_mcc_12000)
 
 
 # --- Données number_of_nodes_summary ---
-number_of_nodes_summary_data <- bind_rows(
-  read.csv(here("output/results/number_of_nodes_summary_12000.csv")) |> mutate(n_trait = 12000),
-  read.csv(here("output/results/number_of_nodes_summary_6000.csv")) |> mutate(n_trait = 6000),
-  read.csv(here("output/results/number_of_nodes_summary.csv")) |> filter(age==8) |> mutate(n_trait = 3000)
-) |>
-  pivot_wider(
-    names_from = n_trait,
-    values_from = c(n_mcc, n_consensus), # Pivoter les deux colonnes n_mcc et n_consensus
-    names_prefix = "" 
-  ) |>
-  rename(
-    n_mcc_3000 = 'n_mcc_3000',
-    n_mcc_6000 = 'n_mcc_6000',
-    n_mcc_12000 = 'n_mcc_12000',
-    n_consensus_3000 = 'n_consensus_3000',
-    n_consensus_6000 = 'n_consensus_6000',
-    n_consensus_12000 = 'n_consensus_12000'
-  ) |>
-  select(age, n_mcc_3000, n_mcc_6000,n_mcc_12000, n_consensus_3000, n_consensus_6000,n_consensus_12000)
+#number_of_nodes_summary_data <- bind_rows(
+#  read.csv(here("output/results/number_of_nodes_summary_12000.csv")) |> mutate(n_trait = 12000),
+#  read.csv(here("output/results/number_of_nodes_summary_6000.csv")) |> mutate(n_trait = 6000),
+#  read.csv(here("output/results/number_of_nodes_summary.csv")) |> filter(age==8) |> mutate(n_trait = 3000)
+#) |>
+#  pivot_wider(
+#    names_from = n_trait,
+#    values_from = c(n_mcc, n_consensus), # Pivoter les deux colonnes n_mcc et n_consensus
+#    names_prefix = "" 
+#  ) |>
+#  rename(
+#    n_mcc_3000 = 'n_mcc_3000',
+#    n_mcc_6000 = 'n_mcc_6000',
+#    n_mcc_12000 = 'n_mcc_12000',
+#    n_consensus_3000 = 'n_consensus_3000',
+#    n_consensus_6000 = 'n_consensus_6000',
+#    n_consensus_12000 = 'n_consensus_12000'
+#  ) |>
+#  select(age, n_mcc_3000, n_mcc_6000,n_mcc_12000, n_consensus_3000, n_consensus_6000,n_consensus_12000)
 
 
 # --- Données marginal_probability_first_split_ic ---
-marginal_prob_ic_data <- bind_rows(
-  read_csv(here("output/results/marginal_probability_first_split_ic_12000.csv")) |> mutate(n_trait = 12000),
-  read_csv(here("output/results/marginal_probability_first_split_ic_6000.csv")) |> mutate(n_trait = 6000),
-  read_csv(here("output/results/marginal_probability_first_split_ic.csv")) |> filter(age==8) |> mutate(n_trait = 3000)
-) |>
-  pivot_wider(
-    names_from = n_trait,
-    values_from = c(prob, inf, sup), # Pivoter prob, inf, sup
-    names_prefix = ""
-  ) |>
-  rename(
-    prob_3000 = 'prob_3000', prob_6000 = 'prob_6000', prob_12000 = 'prob_12000',
-    inf_3000 = 'inf_3000', inf_6000 = 'inf_6000', inf_12000 = 'inf_12000',
-    sup_3000 = 'sup_3000', sup_6000 = 'sup_6000', sup_12000 = 'sup_12000'
-  ) |>
-  select(age, prob_3000, prob_6000, prob_12000, inf_3000, inf_6000, inf_12000, sup_3000, sup_6000, sup_12000)
+#marginal_prob_ic_data <- bind_rows(
+#  read_csv(here("output/results/marginal_probability_first_split_ic_12000.csv")) |> mutate(n_trait = 12000),
+#  read_csv(here("output/results/marginal_probability_first_split_ic_6000.csv")) |> mutate(n_trait = 6000),
+#  read_csv(here("output/results/marginal_probability_first_split_ic.csv")) |> filter(age==8) |> mutate(n_trait = 3000)
+#) |>
+#  pivot_wider(
+#    names_from = n_trait,
+#    values_from = c(prob, inf, sup), # Pivoter prob, inf, sup
+#    names_prefix = ""
+#  ) |>
+#  rename(
+#    prob_3000 = 'prob_3000', prob_6000 = 'prob_6000', prob_12000 = 'prob_12000',
+#    inf_3000 = 'inf_3000', inf_6000 = 'inf_6000', inf_12000 = 'inf_12000',
+#    sup_3000 = 'sup_3000', sup_6000 = 'sup_6000', sup_12000 = 'sup_12000'
+#  ) |>
+#  select(age, prob_3000, prob_6000, prob_12000, inf_3000, inf_6000, inf_12000, sup_3000, sup_6000, sup_12000)
 
 
 # --- Données count_true_to_cs ---
