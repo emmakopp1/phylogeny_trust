@@ -25,10 +25,10 @@ marginal_probability_first_split_ic <- bind_rows(
 ) 
 
 # frequency of good reconstruction of all the nodes in of the mcc
-mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF_1_850.csv")) |> 
+mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
   filter(type == 'mcc')
 
-mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF_1_850.csv")) |> 
+mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
   filter(type == 'mcc')
 
 # for each mcc tree, age between the root and the first split of the true tree
@@ -38,7 +38,7 @@ first_split_age_cs <- read.csv(here("output/results/first_split_age_cs.csv"))
 # frequency of good reconstruction of all the nodes in consensus tree (true -> summary)
 # the value of node represent the node in the true tree
 true_false_uncertain <- read.csv(
-  file = here("output/results/true_false_uncertain_nodes_1_850.csv"),
+  file = here("output/results/true_false_uncertain_nodes.csv"),
   sep = ",",
   header = T) |> 
   rename(age = tree_age, simulation = tree_simulation_number) |>
@@ -113,7 +113,7 @@ saveRDS(count_true_to_cs, here("output/results/count_true_to_cs.rds"))
 
 # for each summary tree, age, simulation this dataframe indicates the proprtions 
 # of true and false nodes
-resume_to_true_grouped <- read_csv(here("output/results/resume_to_true_TF_1_850.csv"), col_names = T)|> 
+resume_to_true_grouped <- read_csv(here("output/results/resume_to_true_TF.csv"), col_names = T)|> 
   rename(N_node = exist, exist = N_nodes) |>
   mutate(exist = as.numeric(exist)) |>  # TRUE -> 1, FALSE -> 0
   group_by(type, age, simulation, exist, N_node) |> 
@@ -216,7 +216,7 @@ model_mcc <- glm(y ~ age + first_split_prob + root_split_age_prob, data = df_reg
 
 
 # regression cs 
-resume_to_true_TF_cs <- read.csv(here("output/results/resume_to_true_TF_1_850.csv")) |> 
+resume_to_true_TF_cs <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
   filter(type == 'consensus')
 
 df_reg_cs <- resume_to_true_TF_cs |>

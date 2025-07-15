@@ -137,8 +137,6 @@ process_file <- function(i) {
 }
 
 
-
-
 # cluster initialisation
 ncl <- 20
 cl <- makeCluster(ncl, type="FORK")
@@ -160,3 +158,4 @@ write.csv2(
   paste0(cluster_directory, sprintf("/marginal_prob_first_split_%d_%d.csv", start, end)),
   row.names = FALSE
 )
+
