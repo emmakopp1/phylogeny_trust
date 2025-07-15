@@ -207,14 +207,6 @@ Phylogenetic reconstruction of multiple language families using:
 ## Citation
 
 
-``````bibtex
-@article{sagart2019dated,
-  title={Dated language phylogenies shed light on the ancestry of Sino-Tibetan},
-  author={Sagart, Laurent and Jacques, Guillaume and Lai, Yunfan and Ryder, Robin J and Thouzeau, Valentin and Greenhill, Simon J and List, Johann-Mattis},
-  journal={Proceedings of the National Academy of Sciences},
-  volume={116},
-  number={21},
-  pages={10317--10322},
-  year={2019},
-  publisher={National Academy of Sciences}
-}
+Sagart, L., Jacques, G., Lai, Y., Ryder, R. J., Thouzeau, V., Greenhill, S. J., & List, J. M. (2019). Dated language phylogenies shed light on the ancestry of Sino-Tibetan. *Proceedings of the National Academy of Sciences*, 116(21), 10317-10322.
+
+Heggarty, P., Anderson, C., Scarborough, M., King, B., Bouckaert, R., Jocz, L., Kümmel, M. J., Jügel, T., Irslinger, B., Pooth, R., & others. (2023). Language trees with sampled ancestors support a hybrid model for the origin of Indo-European languages. *Science*, 381(6656), eabg0818.
