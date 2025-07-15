@@ -22,7 +22,6 @@ phylogeny_trust/
 │   ├── ancestral_reconstruction/   # Ancestral state reconstruction
 │   ├── 01_Import.R                 # Data import and processing
 │   ├── 02_Tydi.R                   # Data tidying and summarization
-│   └── 03_Transform.R              # Theoretical bounds computation
 ├── output/                         # Generated results and figures
 │   ├── results/                    # Processed datasets and statistics
 │   └── figs/                       # Publication-ready figures
@@ -69,13 +68,6 @@ Phylogenetic reconstruction of multiple language families using:
   - `output/results/tipages_summary.csv` - Summarized tip ages
   - `output/results/tracelog_summary.csv` - MCMC parameter summaries
   - `output/results/ess.csv` - Effective sample size calculations
-
-**`03_Transform.R`**
-- **Purpose**: Computes theoretical bounds for phylogenetic reconstruction
-- **Input**: `output/results/tipages_summary.csv`, `output/results/tracelog_summary.csv`
-- **Output**:
-  - `output/results/bounds_real_tb.csv` - Theoretical reconstruction bounds
-  - `output/results/bounds_real_tb_by_sens.csv` - Bounds by semantic category
 
 #### 2. Simulation Analysis (`src/simulations/`)
 
@@ -205,11 +197,6 @@ Phylogenetic reconstruction of multiple language families using:
 
 ## Usage
 
-1. **Data Processing**: Run `src/01_Import.R`, `src/02_Tydi.R`, `src/03_Transform.R`
-2. **Simulation**: Execute `src/simulations/local/01_tree_simulation_main.R`
-3. **Cluster Analysis**: Submit cluster scripts in `src/simulations/cluster/`
-4. **Statistical Analysis**: Run `src/simulations/local/03_simulation_analyses_main.R`
-5. **Visualization**: Execute `src/simulations/local/04_visualization.R`
 
 ## Data Availability
 
@@ -219,8 +206,14 @@ Phylogenetic reconstruction of multiple language families using:
 
 ## Citation
 
-[Citation information to be added upon publication]
 
-## License
-
-[License information to be added]
+```@article{sagart2019dated,
+  title={Dated language phylogenies shed light on the ancestry of Sino-Tibetan},
+  author={Sagart, Laurent and Jacques, Guillaume and Lai, Yunfan and Ryder, Robin J and Thouzeau, Valentin and Greenhill, Simon J and List, Johann-Mattis},
+  journal={Proceedings of the National Academy of Sciences},
+  volume={116},
+  number={21},
+  pages={10317--10322},
+  year={2019},
+  publisher={National Academy of Sciences}
+}
