@@ -12,8 +12,8 @@
 #              and MCC summary trees across varying simulation ages.
 # ------------------------------------------------------------------------------
 library(here)
-library(tidyverse)
 library(broom)
+library(tidyverse)
 N_sim <- 50
 
 # load data --------------------------------------------------------------------
@@ -224,13 +224,15 @@ df_reg_cs <- resume_to_true_TF_cs |>
   filter(node == node_cs ) |>
   full_join(first_split_age_cs, by = c("age","simulation")) |>
   select(-type, -exist, -node_cs,-node_mcc, -mcc_prob, -X)|>
-  rename(y = N_nodes) |> 
+  rename(y = N_nodes) |>
+  # delete the tree for which the first split is a leaf
+  filter(!is.na(y)) |> 
   mutate(root_split_age_prob = as.numeric(root_split_age)/root_age) |>
   mutate(
     age = scale(age)[, 1],
     cs_prob = (cs_prob - mean(cs_prob, na.rm = T)) / sd(cs_prob, na.rm = T),
     root_split_age = (root_split_age - mean(root_split_age, na.rm = T)) / sd(root_split_age, na.rm = T),
-    root_split_age_prob = (root_split_age_prob - mean(root_split_age_prob, na.rm = T)) / sd(root_split_age_prob, na.rm = T)
+    root_split_age_prob = scale(root_split_age_prob)[,1]
   ) |> 
   rename(first_split_prob = cs_prob)
 

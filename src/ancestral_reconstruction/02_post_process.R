@@ -2,6 +2,7 @@ library(ape)
 library(here)
 library(dplyr)
 library(ggplot2)
+library(tidyverse)
 library(stringr)
 
 # sino-tibetan -----------------------------------------------------------------
@@ -9,8 +10,9 @@ library(stringr)
 path_st <- here("output/results/ancestral_reconstruction_st.csv")
 data_st <- read.csv2(path_st, header = TRUE, sep = ',')
 
+
 # Load and clean linguistic data 
-Y_chinese <- read.nexus.data(here("src/ancestral_reconstruction/st.nex"))
+Y_chinese <- read.nexus.data(here("data/real/st_ctmc-strict-fbd-uni/st.nex"))
 Y_chinese <- lapply(Y_chinese, function(col) replace(col, col == "?", NA))
 Y_chinese <- lapply(Y_chinese, as.numeric)
 Y_chinese <- as.data.frame(Y_chinese)
@@ -68,11 +70,11 @@ write_csv(summary_data_st, here("output/results/ancestral_reconstruction_summary
 
 # indo-european ---------------------------------------------------------------
 # Load dataframe
-path_ie <- here("output/results/res_ie.csv")
+path_ie <- here("output/results/ancestral_reconstruction_ie.csv")
 data_ie <- read.csv2(path_ie, header = TRUE, sep = ',')
 
 # Load and clean linguistic data 
-Y_ie <- read.nexus.data(here("src/ancestral_reconstruction/iecor.nex"))
+Y_ie <- read.nexus.data(here("data/real/iecor_ctmc-strict-M1/iecor.nex"))
 Y_ie <- lapply(Y_ie, function(col) replace(col, col == "?", NA))
 Y_ie <- lapply(Y_ie, as.numeric)
 Y_ie <- as.data.frame(Y_ie)

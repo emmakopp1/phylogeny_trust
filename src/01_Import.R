@@ -20,21 +20,6 @@ write_file("End;",
 )
 
 
-write_file("End;",
-           here("data/real/bantu_ctmc-strict-bd-subsample2-filtered/bantu_ctmc-strict-bd-subsample2-filtered.trees"),
-           append = TRUE
-)
-
-write_file("End;",
-           here("data/real/bantu_ctmc-strict-bd/bantu_ctmc-strict-bd.trees"),
-           append = TRUE
-)
-
-write_file("End;",
-           here("data/real/kd_ctmc-strict-bd-ht/kd_ctmc-strict-bd-ht.trees"),
-           append = TRUE
-)
-
 
 # Create directories
 dir.create(here("output/results/bantu"))
