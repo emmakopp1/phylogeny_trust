@@ -37,14 +37,14 @@ The simulation study evaluates phylogenetic reconstruction accuracy using birth-
 
 - **Tree Simulation**: 50 taxa birth-death trees scaled to 8 ages (1-8 time units)
 - **Trait Evolution**: Binary trait evolution under CTMC models
-- **Data Sizes**: 850, 6000, and 12000 traits
+- **Data Sizes**: 3000, 6000, and 12000 traits
 - **Reconstruction Methods**: MCC and 50% majority-rule consensus trees
 - **Evaluation Metrics**: Node accuracy, first split identification, marginal probabilities
 
 ### Real Data Analysis
 
 Phylogenetic reconstruction of multiple language families using:
-- **Families**: Indo-European, Sino-Tibetan, Bantu, and others
+- **Families**: Indo-European, Sino-Tibetan
 - **Methods**: BEAST with strict clock and birth-death/fossilized birth-death models
 - **Ancestral Reconstruction**: Semantic meaning evolution analysis
 
@@ -82,7 +82,7 @@ Phylogenetic reconstruction of multiple language families using:
 ##### Local Scripts (`src/simulations/local/`)
 
 **`01_tree_simulation_main.R`**
-- **Purpose**: Master simulation script generating phylogenetic trees and BEAST analyses
+- **Purpose**: Main simulation script generating phylogenetic trees and BEAST analyses
 - **Input**: `data/beast-data-sim.xml`, `data/ctmc-strict-bd-template.xml`
 - **Output**: `data/simulated-{date}/` containing:
   - `tree-sim-{sim}-{age}.tree` - True phylogenetic trees
@@ -202,7 +202,6 @@ Phylogenetic reconstruction of multiple language families using:
 
 - **External Software**:
   - **BEAST 2** - Bayesian phylogenetic analysis
-  - **TreeAnnotator** - Tree summarization
 
 ## Usage
 
@@ -215,7 +214,7 @@ Phylogenetic reconstruction of multiple language families using:
 ## Data Availability
 
 - **Real Data**: Phylogenetic analyses of Indo-European and Sino-Tibetan language families
-- **Simulated Data**: Birth-death trees with varying trait counts (850, 6000, 12000)
+- **Simulated Data**: Birth-death trees with varying trait counts (3000, 6000, 12000)
 - **Results**: Processed datasets and statistical summaries
 
 ## Citation
