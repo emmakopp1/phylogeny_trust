@@ -18,8 +18,7 @@ phylogeny_trust/
 ├── src/                            # Source code organized by analysis type
 │   ├── simulations/                # Phylogenetic simulation analyses
 │   ├── ancestral_reconstruction/   # Ancestral state reconstruction
-│   ├── 01_Import.R                 # Data import and processing
-│   ├── 02_Tydi.R                   # Data tidying and summarization
+│   │   ├── 00_tracelogs.R          # Data import and processing
 ├── output/                         # Generated results and figures
 │   ├── results/                    # Processed datasets and statistics
 │   └── figs/                       # Publication-ready figures
@@ -51,21 +50,12 @@ Phylogenetic reconstruction of multiple language families using:
 
 #### 1. Data Import and Processing (`src/`)
 
-**`01_Import.R`**
-- **Purpose**: Imports and processes real phylogenetic data from multiple language families
+**`ancestral_reconstruction/00_tracelogs.R`**
+- **Purpose**: Processes BEAST output files for ancestral reconstruction analyses of language families
 - **Input**: BEAST tree files, log files, NEXUS alignments from `data/real/`
 - **Output**: 
-  - `output/results/*/`*`_tipages.csv.bz` - Tip age distributions
-  - `output/results/*/`*`_tracelog.csv` - MCMC trace summaries
   - `output/results/ntipschars.csv` - Taxa and character counts
-
-**`02_Tydi.R`**
-- **Purpose**: Tidies imported data and computes effective sample sizes
-- **Input**: All CSV files from `output/results/*/`
-- **Output**:
-  - `output/results/tipages_summary.csv` - Summarized tip ages
-  - `output/results/tracelog_summary.csv` - MCMC parameter summaries
-  - `output/results/ess.csv` - Effective sample size calculations
+  - `output/results/tracelog_summary.csv` - MCMC parameter summaries with median values for frequency parameters, mutation rates, and tree heights
 
 #### 2. Simulation Analysis (`src/simulations/`)
 
