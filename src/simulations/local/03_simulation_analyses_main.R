@@ -233,8 +233,8 @@ model_cs2 <- glm(y ~ age + first_split_prob, data = df_reg_cs, family = 'binomia
 
 
 # Sauvegarde des modèles dans des fichiers .rds
-saveRDS(model_mcc2, here("output/model_mcc.rds"))
-saveRDS(model_cs2, here("output/model_cs.rds"))
+saveRDS(model_mcc2, here("output/results/model_mcc.rds"))
+saveRDS(model_cs2, here("output/results/model_cs.rds"))
 
 
 
