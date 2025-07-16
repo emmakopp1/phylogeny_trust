@@ -17,8 +17,6 @@ phylogeny_trust/
 │   └── simulated-2025-07-08-12000/ # Simulation dataset (12000 traits)
 ├── src/                            # Source code organized by analysis type
 │   ├── simulations/                # Phylogenetic simulation analyses
-│   │   ├── cluster/                # High-performance cluster scripts
-│   │   └── local/                  # Local analysis scripts
 │   ├── ancestral_reconstruction/   # Ancestral state reconstruction
 │   ├── 01_Import.R                 # Data import and processing
 │   ├── 02_Tydi.R                   # Data tidying and summarization
@@ -71,27 +69,32 @@ Phylogenetic reconstruction of multiple language families using:
 
 #### 2. Simulation Analysis (`src/simulations/`)
 
-##### Local Scripts (`src/simulations/local/`)
+##### Main Scripts (`src/simulations/`)
 
-**`01_tree_simulation_main.R`**
-- **Purpose**: Main simulation script generating phylogenetic trees and BEAST analyses
+**`01_tree_simulation_main.R`, `01_tree_simulation_6000.R`, `01_tree_simulation_12000.R`**
+- **Purpose**: Simulation scripts generating phylogenetic trees and BEAST analyses
 - **Input**: `data/beast-data-sim.xml`, `data/ctmc-strict-bd-template.xml`
 - **Output**: `data/simulated-{date}/` containing:
   - `tree-sim-{sim}-{age}.tree` - True phylogenetic trees
   - `beast-*.xml` - BEAST configuration files
   - `ctmc-strict-bd-*.trees` - Posterior tree distributions
 
-**`02_compute_number_of_nodes_resumed.R`**
+**`03_compute_number_of_nodes_resumed.R`**
 - **Purpose**: Counts internal nodes in MCC and consensus trees
 - **Input**: `data/simulated-*/consensus-*.tree`, `data/simulated-*/mcc-*.tree`
 - **Output**: `output/results/number_nodes_mcc_cs_{N_traits}.csv`
 
-**`02_marginal_prob_first_split_resumed.R`**
+**`03_marginal_prob_first_split_resumed.R`**
 - **Purpose**: Extracts posterior support for first splits in summary trees
 - **Input**: `data/simulated-*/mcc-*.tree`, `data/simulated-*/consensus-*.tree`
 - **Output**: `output/results/marginal_prob_first_split_mcc_consensus_{N_traits}.csv`
 
-**`03_simulation_analyses_main.R`**
+**`03_reconstruction_difficulty.R`**
+- **Purpose**: Analyzes reconstruction difficulty across different conditions
+- **Input**: Simulation results from various analyses
+- **Output**: Reconstruction difficulty metrics
+
+**`04_simulation_analyses_main.R`**
 - **Purpose**: Consolidates simulation results and performs statistical modeling
 - **Input**: Multiple CSV files from `output/results/`
 - **Output**:
@@ -100,7 +103,12 @@ Phylogenetic reconstruction of multiple language families using:
   - `output/results/regression_*.csv` - Logistic regression results
   - `output/results/prop_*.csv` - Reconstruction accuracy proportions
 
-**`04_visualization.R`**
+**`04_simulation_analyses_trait_influence.R`**
+- **Purpose**: Analyzes the influence of trait number on reconstruction accuracy
+- **Input**: Simulation results across different trait counts
+- **Output**: Trait influence analysis results
+
+**`05_visualization.R`**
 - **Purpose**: Generates publication-ready figures
 - **Input**: All processed results from `output/results/`
 - **Output**: Multiple PDF figures in `output/figs/`
@@ -108,29 +116,29 @@ Phylogenetic reconstruction of multiple language families using:
   - `barplot_prop_resume_to_true.pdf`
   - `plausible_node.pdf`
 
-##### Cluster Scripts (`src/simulations/cluster/`)
+##### Additional Scripts (`src/simulations/`)
 
-**`compute_mcc.R`**
+**`02_compute_mcc.R`**
 - **Purpose**: Computes Maximum Clade Credibility trees from posterior distributions
 - **Input**: `*.trees` files from simulation directories
 - **Output**: `mcc-{age}.tree` files in same directories
 
-**`compute_consensus.R`**
+**`02_compute_consensus.R`**
 - **Purpose**: Computes 50% majority-rule consensus trees
 - **Input**: `*.trees` files from simulation directories
 - **Output**: `consensus-{age}.tree` files in same directories
 
-**`marginal_prob_first_split_ic.R`**
+**`03_marginal_prob_first_split_ic.R`**
 - **Purpose**: Calculates marginal probabilities for first split identification with confidence intervals
 - **Input**: `tree-sim-*.tree` and `*.trees` from simulation directories
 - **Output**: `marginal_prob_first_split_ic_{start}_{end}.csv`
 
-**`resume_to_true_TF.R`**
+**`03_resume_to_true_TF.R`**
 - **Purpose**: Determines if nodes in summary trees exist in true trees
 - **Input**: True trees, consensus trees, MCC trees
 - **Output**: `resume_to_true_TF_{N_traits}.csv`
 
-**`true_false_uncertain.R`**
+**`03_true_false_uncertain.R`**
 - **Purpose**: Classifies true tree nodes as true, false, or uncertain in consensus trees
 - **Input**: True trees, consensus trees
 - **Output**: `true_false_uncertain_nodes_{N_traits}.csv`
@@ -205,9 +213,9 @@ To reproduce simulate new trees and data, follow these steps:
 1. **Generate phylogenetic trees**:
 
 ```bash
-Rscript src/simulations/local/01_tree_simulation_6000.R
-Rscript src/simulations/local/01_tree_simulation_12000.R
-Rscript src/simulations/local/01_tree_simulation_main.R
+Rscript src/simulations/01_tree_simulation_6000.R
+Rscript src/simulations/01_tree_simulation_12000.R
+Rscript src/simulations/01_tree_simulation_main.R
 ```
 
 2. **Run manually inferences using BEAST**
@@ -215,8 +223,8 @@ Rscript src/simulations/local/01_tree_simulation_main.R
 3. **Compute summary trees**:
 
 ```bash
-Rscript src/simulations/cluster/compute_consensus.R
-Rscript src/simulations/cluster/compute_mcc.R
+Rscript src/simulations/02_compute_consensus.R
+Rscript src/simulations/02_compute_mcc.R
 ```
 
 #### Analysis
@@ -224,33 +232,39 @@ To reproduce the simulation analyses, follow these steps:
 
 1. **Analyze results**:
 
-For each study, select the corresponding output file:
+In the files `03_compute_number_of_nodes_resumed` and `03_marginal_prob_first_split_resumed.R` select the corresponding output file:
 
    - `data/simulated-2025-05-13` → `output_path <- here("output/results/number_nodes_mcc_cs.csv")`
    - `data/simulated-2025-07-02-6000` → `output_path <- here("output/results/number_nodes_mcc_cs_6000.csv")`
    - `data/simulated-2025-07-08-12000` → `output_path <- here("output/results/number_nodes_mcc_cs_12000.csv")`
 
-   **Important**: Also update the `age_init_sim` variable:
+In the file `03_compute_number_of_nodes_resumed` you should set the `age_init_sim` variable:
    - Set to `1` for `data/simulated-2025-05-13`
    - Set to `8` for the other two studies
 
+Run the analysis files in this order:
 
    ```bash
-   Rscript src/simulations/local/02_compute_number_of_nodes_resumed.R
-   Rscript src/simulations/local/02_marginal_prob_first_split_resumed.R
-   Rscript src/simulations/cluster/marginal_prob_first_split_ic.R
-   Rscript src/simulations/cluster/resume_to_true_TF.R
-   Rscript src/simulations/cluster/true_false_uncertain.R
+   Rscript src/simulations/03_compute_number_of_nodes_resumed.R
+   Rscript src/simulations/03_marginal_prob_first_split_ic.R
+   Rscript src/simulations/03_marginal_prob_first_split_resumed.R
+   Rscript src/simulations/03_reconstruction_difficulty.R
+   Rscript src/simulations/03_resume_to_true_TF.R
+   Rscript src/simulations/03_true_false_uncertain.R
    ```
+
+   **Important**: The file `src/simulations/03_marginal_prob_first_split_ic.R` was run on a cluster and is computationally costly. 
+   We recommend making tests by setting the variable `phylo_length_test` to a small number (~50). 
 
 2. **Consolidation and modeling**:
    ```bash
-   Rscript src/simulations/local/03_simulation_analyses_main.R
+   Rscript src/simulations/04_simulation_analyses_main.R
+   Rscript src/simulations/04_simulation_analyses_trait_influence.R
    ```
 
 3. **Generate figures**:
    ```bash
-   Rscript src/simulations/local/04_visualization.R
+   Rscript src/simulations/05_visualization.R
    ```
 
 ### Ancestral Reconstruction (`src/ancestral_reconstruction/`)
@@ -271,7 +285,7 @@ To perform ancestral reconstruction, execute the files in the following order:
    ```bash
    Rscript src/ancestral_reconstruction/01_ancestral_state_reconstruction.R
    ```
-   **Note**: This is a computationally intensive script. For testing purposes, set `length_phylo <- 2` in the script. To reproduce the full results, use `length_phylo <- 200`.
+   **Note**: This is a computationally costly script, runned on a separate cluster. For testing purposes, set `length_phylo <- 2` in the script. To reproduce the full results, use `length_phylo <- 200`.
 
 4. **Post-processing**:
    ```bash
