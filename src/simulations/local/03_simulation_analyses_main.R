@@ -18,11 +18,7 @@ N_sim <- 50
 
 # load data --------------------------------------------------------------------
 # marginal probability of the first split with IC 
-marginal_probability_first_split_ic <- bind_rows(
-  read.csv(here("output/results/marginal_prob_first_split_ic_1_300.csv")),
-  read.csv(here("output/results/marginal_prob_first_split_ic_301_600.csv")),
-  read.csv(here("output/results/marginal_prob_first_split_ic_601_850.csv"))
-) 
+marginal_probability_first_split_ic <- read.csv(here("output/results/marginal_probability_first_split_ic.csv"))
 
 # frequency of good reconstruction of all the nodes in of the mcc
 mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
@@ -60,7 +56,7 @@ df_number_of_nodes <- read.csv(
 
 # marginal probability of the first split in the mcc and consensus tree
 prob_first_split_summary = read.csv(
-  here("output/results/marginal_prob_first_split_mcc_consensus_1_850.csv")
+  here("output/results/marginal_prob_first_split_mcc_consensus.csv")
   )
 
 # process data -----------------------------------------------------------------
@@ -84,19 +80,19 @@ df_number_of_nodes_avg <- df_number_of_nodes |>
 
 # posterior of the first split with IC
 # group by age 
-marginal_probability_first_split_ic = marginal_probability_first_split_ic|>
-  rename(age = tree_age, simulation = tree_simulation_number) |>
-  group_by(age) |>
-  summarise(
-    prob = mean(prob_mean, na.rm = TRUE),
-    inf = mean(prob_inf, na.rm = TRUE),
-    sup = mean(prob_sup, na.rm = TRUE),
-    .groups = "drop"
-  )
+#marginal_probability_first_split_ic = marginal_probability_first_split_ic|>
+  #rename(age = tree_age, simulation = tree_simulation_number) |>
+#  group_by(age) |>
+#  summarise(
+#    prob = mean(prob_mean, na.rm = TRUE),
+#    inf = mean(prob_inf, na.rm = TRUE),
+#    sup = mean(prob_sup, na.rm = TRUE),
+#    .groups = "drop"
+#  )
 
-write_csv(
-  marginal_probability_first_split_ic, 
-  here("output/results/marginal_probability_first_split_ic.csv"))
+#write_csv(
+#  marginal_probability_first_split_ic, 
+#  here("output/results/marginal_probability_first_split_ic.csv"))
 
 # for the consensus trees, count the number of true, false and uncertain nodes
 # with special labels for the plot
@@ -198,22 +194,18 @@ write_csv(prop_mcc_to_true, here("output/results/prop_mcc_to_true.csv"))
 # regression mcc
 df_reg_mcc <- mcc_to_true_TF |>
   inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
-  filter(node == node_mcc ) |>
+  filter(node == node_mcc) |>
   full_join(first_split_age_mcc, by = c("age","simulation")) |>
   select(-type, -exist, -node_cs,-node_mcc, -cs_prob, -X)|>
   rename(y = N_nodes) |> 
-  mutate(root_split_age_prob = as.numeric(root_split_age)/root_age) |>
-  mutate(
-    age = scale(age)[, 1],
-    mcc_prob = (mcc_prob - mean(mcc_prob, na.rm = T)) / sd(mcc_prob, na.rm = T),
-    root_split_age = (root_split_age - mean(root_split_age, na.rm = T)) / sd(root_split_age, na.rm = T),
-    root_split_age_prob = (root_split_age_prob - mean(root_split_age_prob, na.rm = T)) / sd(root_split_age_prob, na.rm = T)
-  ) |> 
-  rename(first_split_prob = mcc_prob)
+  mutate(root_split_age_prop = as.numeric(root_split_age)/root_age) |>
+  rename(first_split_prob = mcc_prob) |> 
+  mutate(y = as.factor(y))
 
+# regression with age, probability of the first split and age of the first split
 # model mcc regression 
-model_mcc <- glm(y ~ age + first_split_prob + root_split_age_prob, data = df_reg_mcc, family = 'binomial')
-
+model_mcc <- glm(y ~ age + first_split_prob + root_split_age_prop, data = df_reg_mcc, family = 'binomial')
+summary(model_mcc)
 
 # regression cs 
 resume_to_true_TF_cs <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
@@ -227,28 +219,22 @@ df_reg_cs <- resume_to_true_TF_cs |>
   rename(y = N_nodes) |>
   # delete the tree for which the first split is a leaf
   filter(!is.na(y)) |> 
-  mutate(root_split_age_prob = as.numeric(root_split_age)/root_age) |>
-  mutate(
-    age = scale(age)[, 1],
-    cs_prob = (cs_prob - mean(cs_prob, na.rm = T)) / sd(cs_prob, na.rm = T),
-    root_split_age = (root_split_age - mean(root_split_age, na.rm = T)) / sd(root_split_age, na.rm = T),
-    root_split_age_prob = scale(root_split_age_prob)[,1]
-  ) |> 
-  rename(first_split_prob = cs_prob)
-
+  mutate(root_split_age_prop = as.numeric(root_split_age)/root_age) |>
+  rename(first_split_prob = cs_prob) |> 
+  mutate(y = as.factor(y))
 
 # model consensus regression
-model_cs <- glm(y ~ age + first_split_prob + root_split_age_prob, data = df_reg_cs, family = 'binomial')
+model_cs <- glm(y ~ age + first_split_prob + root_split_age_prop, data = df_reg_cs, family = 'binomial')
+summary(model_cs)
 
-# clean regressions
-tidy_mcc <- tidy(model_mcc)
-tidy_cs <- tidy(model_cs)
-tidy_mcc$model <- "Modèle MCC"
-tidy_cs$model <- "Modèle CS"
-combined_models <- bind_rows(tidy_mcc, tidy_cs)
+# regression with age, probability of the first split
+model_mcc2 <- glm(y ~ age + first_split_prob, data = df_reg_mcc, family = 'binomial')
+model_cs2 <- glm(y ~ age + first_split_prob, data = df_reg_cs, family = 'binomial')
 
-# save regression mcc, consensus and comparison between coeficiants
-write_csv(tidy_mcc, here("output/results/regression_mcc.csv"))
-write_csv(tidy_cs, here("output/results/regression_cs.csv"))
-write_csv(combined_models, here("output/results/regression.csv"))
+
+# Sauvegarde des modèles dans des fichiers .rds
+saveRDS(model_mcc2, here("output/model_mcc.rds"))
+saveRDS(model_cs2, here("output/model_cs.rds"))
+
+
 

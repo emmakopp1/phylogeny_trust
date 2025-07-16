@@ -21,6 +21,10 @@ library(stringr)
 library(ggplot2)
 library(reshape2)
 
+# to be referenced by the user
+# path of the simulation folder you want to analyse
+cluster_directory <- here("data/simulated-2025-07-08-12000")
+
 # functions --------------------------------------------------------------------
 # given a node (in the consensus tree), a true tree and a consensus tree, return if
 # the node exists in the true tree
@@ -30,10 +34,6 @@ exist_node <- function(node, tree_true, tree_est) {
 }
 
 # load data -------------
-#simulation_folder <- "simulated-2025-07-08-12000"
-#cluster_directory <- gsub("simulation_analysis$", simulation_folder, getwd()) # on the cluster
-
-cluster_directory <- here("data/simulated-2025-07-08-12000")
 path_phylo <- list.files(cluster_directory, full.names = TRUE, recursive = TRUE)
 
 N_traits <- as.numeric(str_extract(cluster_directory, "\\d+$"))

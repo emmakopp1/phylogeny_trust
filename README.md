@@ -198,6 +198,70 @@ Phylogenetic reconstruction of multiple language families using:
 ## Usage
 
 
+### Simulation Analysis (`src/simulations/`)
+
+To reproduce the simulation analyses, follow these steps:
+
+1. **Generate simulated trees**:
+   ```bash
+   Rscript src/simulations/local/01_tree_simulation_main.R
+   ```
+
+2. **Compute MCC and consensus trees**:
+   ```bash
+   Rscript src/simulations/cluster/compute_mcc.R
+   Rscript src/simulations/cluster/compute_consensus.R
+   ```
+
+3. **Analyze results**:
+   ```bash
+   Rscript src/simulations/local/02_compute_number_of_nodes_resumed.R
+   Rscript src/simulations/local/02_marginal_prob_first_split_resumed.R
+   Rscript src/simulations/cluster/marginal_prob_first_split_ic.R
+   Rscript src/simulations/cluster/resume_to_true_TF.R
+   Rscript src/simulations/cluster/true_false_uncertain.R
+   ```
+
+4. **Consolidation and modeling**:
+   ```bash
+   Rscript src/simulations/local/03_simulation_analyses_main.R
+   ```
+
+5. **Generate figures**:
+   ```bash
+   Rscript src/simulations/local/04_visualization.R
+   ```
+
+### Ancestral Reconstruction (`src/ancestral_reconstruction/`)
+
+To perform ancestral reconstruction, execute the files in the following order:
+
+1. **Compute meaning sets**:
+   ```bash
+   Rscript src/ancestral_reconstruction/00_compute_meaning_set.R
+   ```
+
+2. **Extract tracelogs**:
+   ```bash
+   Rscript src/ancestral_reconstruction/00_tracelogs.R
+   ```
+
+3. **Ancestral reconstruction**:
+   ```bash
+   Rscript src/ancestral_reconstruction/01_ancestral_state_reconstruction.R
+   ```
+
+4. **Post-processing**:
+   ```bash
+   Rscript src/ancestral_reconstruction/02_post_process.R
+   ```
+
+5. **Visualization**:
+   ```bash
+   Rscript src/ancestral_reconstruction/03_visualization.R
+   ```
+
+
 ## Data Availability
 
 - **Real Data**: Phylogenetic analyses of Indo-European and Sino-Tibetan language families

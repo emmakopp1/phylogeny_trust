@@ -17,6 +17,8 @@ library(dplyr)
 library(dotwhisker)
 library(ggplot2)
 library(ape)
+library(phangorn)
+library(ggeffects)
 
 # load data --------------------------------------------------------------------
 df_number_of_nodes_avg =  read_csv(here("output/results/number_of_nodes_summary.csv"))
@@ -345,32 +347,28 @@ nodelabels(node = mrca_67, frame = 'circle', cex = 0.5)
 ggsave(here("output/figs/plausible_node.pdf"))
 
 # 6. regression 
-combined_models = read_csv(here("output/results/regression.csv"))
+model_mcc2 <- readRDS(here("output/model_mcc.rds"))
+model_cs2 <- readRDS(here("output/model_cs.rds"))
 
-# 4. Nettoyer les noms des termes pour un affichage plus clair
-combined_models <- combined_models %>%
-  mutate(term = recode(term,
-                       `(Intercept)` = "Interception",
-                       `age` = "Âge du noeud",
-                       `first_split_prob` = "probabiliy of the first split",
-                       `root_split_age` = "Âge du premier split racine"
-  ))
+# predictions
+pred_mcc <- ggpredict(model_mcc2, terms = "first_split_prob [all]")
+pred_cs <- ggpredict(model_cs2, terms = "first_split_prob [all]")
 
-# 5. Créer le graphique de comparaison
-dwplot(combined_models,
-       dot_args = list(aes(color = model), size = 3),
-       whisker_args = list(aes(color = model), size = 0.8),
-       vline = aes(xintercept = 0)
-) +
-  
-  # Améliorer la légende et les labels
-  scale_color_brewer(palette = "Set1", name = "Modèle") +
+# compare both models 
+pred_mcc$model <- "MCC"
+pred_cs$model <- "Consensus"
+pred_all <- bind_rows(pred_mcc, pred_cs)
+
+reg_plot <- ggplot(pred_all, aes(x = x, y = predicted, color = model, fill = model)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2, color = NA) +
+  scale_color_manual(values = c("MCC" = "darkred", "Consensus" = "darkblue")) +
+  scale_fill_manual(values = c("MCC" = "darkred", "Consensus" = "darkblue")) +
   labs(
-    x = "coeficient estimation (Log-odds)",
-    y = "variables"
+    title = "Compare the effects first_split_prob",
+    x = "first_split_prob",
+    y = "prediction"
   ) +
-  theme_minimal() 
+  theme_minimal()
 
-
-
-
+ggsave(here("output/figs/regression_first_split_prob_effect.pdf"))

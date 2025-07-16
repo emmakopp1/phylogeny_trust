@@ -16,7 +16,9 @@ library(adephylo)
 library(reshape2)
 library(stringr)
 
-
+# to be referenced by the user
+# path of the simulation folder you want to analyse
+simulation_folder <- here("data/simulated-2025-07-08-12000")
 
 # functions --------------------------------------------------------------------
 # function which take a path to a posterior phylogeny and write the consensus tree
@@ -51,11 +53,7 @@ process_phylo <- function(path) {
 
 # prepare data
 # choose here the path of the folder where you want to compute the consensus tree
-
-simulation_folder <- "/work/simulated-2025-07-02-6000"
-
-path_folder <- paste0(getwd(), simulation_folder)
-path_phylo <- list.files(path_folder, full.names = TRUE, recursive = TRUE)
+path_phylo <- list.files(simulation_folder, full.names = TRUE, recursive = TRUE)
 path_phylo <- path_phylo[grepl("\\.trees$", path_phylo)]
 
 # application

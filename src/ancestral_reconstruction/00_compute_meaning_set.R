@@ -1,3 +1,13 @@
+# ------------------------------------------------------------------------------
+# Script Name: 00_compute_meaning_set.R
+# Description: This script processes phylogenetic NEXUS files to extract and 
+#              organize meaning groups from character state labels for ancestral 
+#              reconstruction analysis. It performs the following steps:
+#                - Reads NEXUS files containing character state labels
+#                - Extracts meaning groups from Indo-European language data
+#                - Extracts meaning groups from Sino-Tibetan language data
+#                - Outputs organized meaning sets as CSV files for downstream analysis
+# ------------------------------------------------------------------------------
 library(ape)
 library(here)
 

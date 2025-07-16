@@ -21,6 +21,10 @@ library(stringr)
 library(ggplot2)
 library(reshape2)
 
+# to be referenced by the user
+# path of the simulation folder you want to analyse
+cluster_directory <- here("data/simulated-2025-07-08-12000")
+
 # functions --------------------------------------------------------------------
 # given a node (in the true tree), a true tree and a consensus tree, return if
 # the node is plausible in the consensus tree. 
@@ -78,19 +82,8 @@ is_plausible <- function(node, tree_true, tree_cs) {
   }
 }
 
-# arguments --------------------------------------------------------------------
-#args <- commandArgs(trailingOnly = TRUE)
-#start <- as.numeric(args[1])
-#end <- as.numeric(args[2])
-#cat("Traitement des fichiers de", start, "à", end, "\n")
-
-
 # load data --------------------------------------------------------------------
 # paths 
-
-#cluster_directory <- gsub("simulation_analysis$", "simulated-2025-07-08-12000", getwd()) # on the cluster
-cluster_directory <- here("data/simulated-2025-07-08-12000")
-
 # number of traits
 N_traits <- as.numeric(str_extract(cluster_directory, "\\d+$"))
 # if N_traits is not 6 or 12 thousands, then it is the main study and N_traits = 3000
