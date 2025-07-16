@@ -197,23 +197,32 @@ Phylogenetic reconstruction of multiple language families using:
 
 ## Usage
 
-
 ### Simulation Analysis (`src/simulations/`)
 
+#### Simulation (optionnal)
+To reproduce simulate new trees and data, follow these steps:
+
+1. **Generate phylogenetic trees**:
+
+```bash
+Rscript src/simulations/local/01_tree_simulation_6000.R
+Rscript src/simulations/local/01_tree_simulation_12000.R
+Rscript src/simulations/local/01_tree_simulation_main.R
+```
+
+2. **Run manually inferences using BEAST**:
+
+3. **Compute summary trees**:
+
+```bash
+Rscript src/simulations/cluster/compute_consensus.R
+Rscript src/simulations/cluster/compute_mcc.R
+```
+
+#### Analysis
 To reproduce the simulation analyses, follow these steps:
 
-1. **Generate simulated trees**:
-   ```bash
-   Rscript src/simulations/local/01_tree_simulation_main.R
-   ```
-
-2. **Compute MCC and consensus trees**:
-   ```bash
-   Rscript src/simulations/cluster/compute_mcc.R
-   Rscript src/simulations/cluster/compute_consensus.R
-   ```
-
-3. **Analyze results**:
+1. **Analyze results**:
    ```bash
    Rscript src/simulations/local/02_compute_number_of_nodes_resumed.R
    Rscript src/simulations/local/02_marginal_prob_first_split_resumed.R
@@ -222,12 +231,12 @@ To reproduce the simulation analyses, follow these steps:
    Rscript src/simulations/cluster/true_false_uncertain.R
    ```
 
-4. **Consolidation and modeling**:
+2. **Consolidation and modeling**:
    ```bash
    Rscript src/simulations/local/03_simulation_analyses_main.R
    ```
 
-5. **Generate figures**:
+3. **Generate figures**:
    ```bash
    Rscript src/simulations/local/04_visualization.R
    ```
