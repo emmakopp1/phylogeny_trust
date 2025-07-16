@@ -18,7 +18,9 @@ library(stringr)
 
 # to be referenced by the user
 # path of the simulation folder you want to analyse
-simulation_folder <- here("data/simulated-2025-07-08-12000")
+simulation_folder <- here("data/simulated-2025-05-13")
+#simulation_folder <- here("data/simulated-2025-07-02-6000")
+#simulation_folder <- here("data/simulated-2025-07-08-12000")
 
 # functions --------------------------------------------------------------------
 # function which take a path to a posterior phylogeny and write the mcc tree

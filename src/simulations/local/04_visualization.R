@@ -347,8 +347,8 @@ nodelabels(node = mrca_67, frame = 'circle', cex = 0.5)
 ggsave(here("output/figs/plausible_node.pdf"))
 
 # 6. regression 
-model_mcc2 <- readRDS(here("output/model_mcc.rds"))
-model_cs2 <- readRDS(here("output/model_cs.rds"))
+model_mcc2 <- readRDS(here("output/results/model_mcc.rds"))
+model_cs2 <- readRDS(here("output/results/model_cs.rds"))
 
 # predictions
 pred_mcc <- ggpredict(model_mcc2, terms = "first_split_prob [all]")

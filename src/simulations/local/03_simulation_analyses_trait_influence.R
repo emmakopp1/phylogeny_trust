@@ -282,7 +282,3 @@ p2<- ggplot(count_true_to_mcc_data_long, aes(x = as.factor(n_trait), y = mean_n,
 plt_number_of_traits_influence <- p1 + p2
 ggsave(plt_number_of_traits_influence, filename = here("output/figs/number_of_traits_influence.png"), 
        width = 12, height = 6, dpi = 300)
-
-
-
-

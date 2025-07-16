@@ -65,11 +65,6 @@ path_phylo <- list.files(
 path_mcc <- path_phylo[grepl("mcc-", path_phylo)]
 path_cs <- path_phylo[grepl("consensus-", path_phylo)]
 
-#path = here("data/simulated-2025-05-13/beast-data-sim-49/beast-data-sim-49-12/consensus-12.tree")
-#cs = read.tree(path)
-#plot(cs)
-#nodelabels(cex=0.8, frame='circle')
-
 # compute for each age, simulation the root and first split ages
 # for the mcc trees
 deepest_nodes_mcc <- lapply(path_mcc, function(path) first_split(path))

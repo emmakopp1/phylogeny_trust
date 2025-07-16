@@ -57,7 +57,7 @@ df_number_of_nodes <- read.csv(
 # marginal probability of the first split in the mcc and consensus tree
 prob_first_split_summary = read.csv(
   here("output/results/marginal_prob_first_split_mcc_consensus.csv")
-  )
+)
 
 # process data -----------------------------------------------------------------
 
@@ -80,19 +80,19 @@ df_number_of_nodes_avg <- df_number_of_nodes |>
 
 # posterior of the first split with IC
 # group by age 
-#marginal_probability_first_split_ic = marginal_probability_first_split_ic|>
-  #rename(age = tree_age, simulation = tree_simulation_number) |>
-#  group_by(age) |>
-#  summarise(
-#    prob = mean(prob_mean, na.rm = TRUE),
-#    inf = mean(prob_inf, na.rm = TRUE),
-#    sup = mean(prob_sup, na.rm = TRUE),
-#    .groups = "drop"
-#  )
+marginal_probability_first_split_ic = marginal_probability_first_split_ic|>
+  rename(age = tree_age, simulation = tree_simulation_number) |>
+  group_by(age) |>
+  summarise(
+    prob = mean(prob_mean, na.rm = TRUE),
+    inf = mean(prob_inf, na.rm = TRUE),
+    sup = mean(prob_sup, na.rm = TRUE),
+    .groups = "drop"
+  )
 
-#write_csv(
-#  marginal_probability_first_split_ic, 
-#  here("output/results/marginal_probability_first_split_ic.csv"))
+write_csv(
+  marginal_probability_first_split_ic, 
+  here("output/results/marginal_probability_first_split_ic.csv"))
 
 # for the consensus trees, count the number of true, false and uncertain nodes
 # with special labels for the plot

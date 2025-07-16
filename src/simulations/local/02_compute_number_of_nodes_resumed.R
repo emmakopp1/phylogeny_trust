@@ -18,7 +18,7 @@ library(purrr)
 library(ape)
 library(adephylo)
 
-source(".Rprofile")
+# set the parameters ----------------------------------------------------------
 
 # select the path repository of your analysis 
 #path_repository <- here("data/simulated-2025-05-13")
@@ -31,11 +31,42 @@ path_repository <- here("data/simulated-2025-07-08-12000")
 age_init_sim <- 8
 
 # compute the path for the csv output
-#output_path <- paste0(getwd(),"/output/results/number_nodes_mcc_cs.csv")
-#output_path <- paste0(getwd(),"/output/results/number_nodes_mcc_cs_6000.csv")
-output_path <- paste0(getwd(),"/output/results/number_nodes_mcc_cs_12000.csv")
+#output_path <- here("output/results/number_nodes_mcc_cs.csv")
+#output_path <- here("output/results/number_nodes_mcc_cs_6000.csv")
+output_path <- here("output/results/number_nodes_mcc_cs_12000.csv")
 
 
+# functions ---------------------------------------------------------------------
+
+# sort the node of a tree by descendance from the root to the tips
+# sort the node of a tree by descendance from the root to the tips
+getNodesByDepth <- function(tree) {
+  # Recursive function
+  recursiveTraversal <- function(node, result) {
+    result[[length(result) + 1]] <- list(node = node, depth = distRoot(tree, node)[[1]])
+    
+    if (node %in% 1:(tree$Nnode + 1)) {
+      return(result)
+    } else {
+      children <- tree$edge[tree$edge[, 1] == node, 2]
+      
+      for (child in children) {
+        depth <- distRoot(tree, child)
+        result <- recursiveTraversal(child, result)
+      }
+      return(result)
+    }
+  }
+  
+  nodes <- recursiveTraversal(castor::find_root(tree), list())
+  nodes <- as.data.frame(do.call(rbind, nodes))
+  nodes$depth <- unlist(nodes$depth)
+  nodes$node <- unlist(nodes$node)
+  return(nodes[order(-nodes$depth, decreasing = T), 1])
+}
+
+
+# data -------------------------------------------------------------------------
 # load the true trees
 true_trees <- list.files(path_repository, full.names = TRUE, recursive = F) |>
   keep(~ str_detect(.x, "beast-data-sim")) |>

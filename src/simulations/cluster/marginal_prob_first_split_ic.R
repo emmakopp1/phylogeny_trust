@@ -2,6 +2,8 @@
 # Script Name: marginal_prob_first_split_ic.R
 # Description: # This file calculate the marginale probabiliity that the inferred reconstructed
 #               correctly the outgroup with the credibility interval
+#               This file was run on a cluster is computationnaly costly. 
+#               We strongly recommand to only make tests. 
 # -----------------------------------------------------------------------------------------
 library(here)
 library(ape)
@@ -18,9 +20,18 @@ library(stringr)
 library(stats)
 
 # to be referenced by the user
-# path of the simulation folder you want to analyse
-cluster_directory <- here("data/simulated-2025-07-08-12000")
+phylo_length_test <- 100
+# phylo_length_test <- 850
 
+# path of the simulation folder you want to analyse
+path_repository <- here("data/simulated-2025-05-13")
+
+# compute the number of traits in the analysis
+N_traits <- as.numeric(str_extract(path_repository, "\\d+$"))
+# if N_traits is not 6 or 12 thousands, then it is the main study and N_traits = 3000
+N_traits <- ifelse(N_traits %in% c(12000, 6000), N_traits, "")
+
+# functions -------------------------------------------------------------------
 # function to get nodes by depths
 getNodesByDepth <- function(tree) {
   # Recursive function
@@ -47,36 +58,9 @@ getNodesByDepth <- function(tree) {
   return(nodes[order(-nodes$depth, decreasing = T), 1])
 }
 
-# compute the number of traits in the analysis
-N_traits <- as.numeric(str_extract(cluster_directory, "\\d+$"))
-# if N_traits is not 6 or 12 thousands, then it is the main study and N_traits = 3000
-N_traits <- ifelse(N_traits %in% c(12000, 6000), N_traits, "")
-
-# path to access true trees and phylogenies
-path_phylo <- list.files(cluster_directory, full.names = TRUE, recursive = TRUE)
-path_trees_true <- path_phylo[grepl("tree-sim", path_phylo)]
-path_trees_phylo <- path_phylo[grepl("trees$", path_phylo)]
-
-# load trees and phylogenies
-trees_true <- lapply(path_trees_true, read.tree)
-phylogenies <- lapply(path_trees_phylo, read.nexus)
-deepest_nodes <- lapply(trees_true, function(tree) getNodesByDepth(tree)[2])
-
-burnin <- 0.1
-
-# dataframe of results 
-df <- data.frame(matrix(ncol = 6, nrow = 0))
-colnames(df) <- c("node", "tree_age", "tree_simulation_number", "prob_mean", "prob_inf", "prob_sup")
-print(df)
-
-write.table(
-  df,
-  file = paste0(cluster_directory, sprintf("/marginal_probability_first_split_ic_%d.csv", N_traits)),
-  sep = ",",
-  col.names = TRUE
-)
-
-# Fonction de traitement parallèle
+# main function which compute for each tree, node, age and simulation the 
+# the posterior of truthiness of the node by looking at the corresponding true tree 
+# we also compute IC 
 process_file <- function(i) {
   
   # true tree, its deepest node and posterior
@@ -118,7 +102,7 @@ process_file <- function(i) {
   
   write.table(
     row, 
-    paste0(cluster_directory, sprintf("/marginal_probability_first_split_ic_%d.csv", N_traits)), 
+    file_path, 
     sep = ",",
     row.names = FALSE,
     col.names = FALSE,
@@ -128,6 +112,34 @@ process_file <- function(i) {
   return(row)
 }
 
+# path to access true trees and phylogenies
+path_phylo <- list.files(path_repository, full.names = TRUE, recursive = TRUE)
+path_trees_true <- path_phylo[grepl("tree-sim", path_phylo)]
+path_trees_phylo <- path_phylo[grepl("trees$", path_phylo)]
+
+# load trees and phylogenies
+trees_true <- lapply(path_trees_true[1:phylo_length_test], read.tree)
+phylogenies <- lapply(path_trees_phylo[1:phylo_length_test], read.nexus)
+deepest_nodes <- lapply(trees_true[1:phylo_length_test], function(tree) getNodesByDepth(tree)[2])
+
+burnin <- 0.1
+
+# dataframe of results 
+df <- data.frame(matrix(ncol = 6, nrow = 0))
+colnames(df) <- c("node", "tree_age", "tree_simulation_number", "prob_mean", "prob_inf", "prob_sup")
+
+
+file_path <- ifelse(
+  N_traits == "", 
+  here("output/results/marginal_probability_first_split_ic.csv"), 
+  here("output/results/marginal_probability_first_split_ic_%d.csv", N_traits))
+
+write.csv(
+  df, 
+  file_path,
+  row.names = FALSE,
+)
+
 # cluster initialisation
 ncl <- 40
 cl <- makeCluster(ncl, type="FORK")
@@ -135,6 +147,6 @@ clusterSetRNGStream(cl)
 
 
 # parallelisation
-res_list <- parLapply(cl, seq_along(path_trees_phylo), process_file)
+res_list <- parLapply(cl, seq_along(path_trees_phylo[1:phylo_length_test]), process_file)
 stopCluster(cl)
 

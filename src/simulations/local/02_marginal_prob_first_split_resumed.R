@@ -28,10 +28,6 @@ first_split <- function(tree){
   return(children[which.max(t)])
 }
 
-# arguements -------------------------------------------------------------------
-start <- 1
-end <- 850
-cat("Traitement des fichiers de", start, "à", end, "\n")
 
 # choose the paths adapted to the simulation -----------------------------------
 #path_repository <- here("data/simulated-2025-05-13")
@@ -40,7 +36,7 @@ path_repository <- here("data/simulated-2025-07-08-12000")
 
 
 # compute the path for the csv output
-#output_path <- here(sprintf("output/results/marginal_prob_first_split_mcc_consensus_%d_%d.csv", 1, 850))
+#output_path <- here("output/results/marginal_prob_first_split_mcc_consensus.csv")
 #output_path <- here("output/results/marginal_prob_first_split_mcc_consensus_6000.csv")
 output_path <- here("output/results/marginal_prob_first_split_mcc_consensus_12000.csv")
 
@@ -106,7 +102,6 @@ process_file <- function(i){
       cs_prob = round(as.numeric(prob_cs), 3),
       mcc_prob = round(as.numeric(prob_mcc), 3)
     )
-    print(row)
     
     # write the results
     write.table(
