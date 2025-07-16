@@ -17,8 +17,26 @@ phylogeny_trust/
 │   └── simulated-2025-07-08-12000/ # Simulation dataset (12000 traits)
 ├── src/                            # Source code organized by analysis type
 │   ├── simulations/                # Phylogenetic simulation analyses
-│   ├── ancestral_reconstruction/   # Ancestral state reconstruction
-│   │   ├── 00_tracelogs.R          # Data import and processing
+│   │   ├── 01_tree_simulation_12000.R
+│   │   ├── 01_tree_simulation_6000.R
+│   │   ├── 01_tree_simulation_main.R
+│   │   ├── 02_compute_consensus.R
+│   │   ├── 02_compute_mcc.R
+│   │   ├── 03_compute_number_of_nodes_resumed.R
+│   │   ├── 03_marginal_prob_first_split_ic.R
+│   │   ├── 03_marginal_prob_first_split_resumed.R
+│   │   ├── 03_reconstruction_difficulty.R
+│   │   ├── 03_resume_to_true_TF.R
+│   │   ├── 03_true_false_uncertain.R
+│   │   ├── 04_simulation_analyses_main.R
+│   │   ├── 04_simulation_analyses_trait_influence.R
+│   │   └── 05_visualization.R
+│   └── ancestral_reconstruction/   # Ancestral state reconstruction
+│       ├── 00_compute_meaning_set.R
+│       ├── 00_tracelogs.R
+│       ├── 01_ancestral_state_reconstruction.R
+│       ├── 02_post_process.R
+│       └── 03_visualization.R
 ├── output/                         # Generated results and figures
 │   ├── results/                    # Processed datasets and statistics
 │   └── figs/                       # Publication-ready figures
@@ -48,16 +66,7 @@ Phylogenetic reconstruction of multiple language families using:
 
 ### Core Analysis Pipeline
 
-#### 1. Data Import and Processing (`src/`)
-
-**`ancestral_reconstruction/00_tracelogs.R`**
-- **Purpose**: Processes BEAST output files for ancestral reconstruction analyses of language families
-- **Input**: BEAST tree files, log files, NEXUS alignments from `data/real/`
-- **Output**: 
-  - `output/results/ntipschars.csv` - Taxa and character counts
-  - `output/results/tracelog_summary.csv` - MCMC parameter summaries with median values for frequency parameters, mutation rates, and tree heights
-
-#### 2. Simulation Analysis (`src/simulations/`)
+#### 1. Simulation Analysis (`src/simulations/`)
 
 ##### Main Scripts (`src/simulations/`)
 
@@ -68,6 +77,11 @@ Phylogenetic reconstruction of multiple language families using:
   - `tree-sim-{sim}-{age}.tree` - True phylogenetic trees
   - `beast-*.xml` - BEAST configuration files
   - `ctmc-strict-bd-*.trees` - Posterior tree distributions
+
+**`02_compute_consensus.R` and `02_compute_mcc.R`**
+- **Purpose**: Computes 50% majority-rule consensus trees and Computes MCC trees from posterior distributions
+- **Input**: `*.trees` files from simulation directories
+- **Output**: `consensus-{age}.tree` and `mcc-{age}.tree` files in same directories
 
 **`03_compute_number_of_nodes_resumed.R`**
 - **Purpose**: Counts internal nodes in MCC and consensus trees
@@ -81,8 +95,13 @@ Phylogenetic reconstruction of multiple language families using:
 
 **`03_reconstruction_difficulty.R`**
 - **Purpose**: Analyzes reconstruction difficulty across different conditions
-- **Input**: Simulation results from various analyses
-- **Output**: Reconstruction difficulty metrics
+- **Input**: MCC and Consensus trees paths
+- **Output**: `output/results/first_split_age_mcc.csv` and `output/results/first_split_age_cs.csv`
+
+**`03_marginal_prob_first_split_ic.R`**
+- **Purpose**: Calculates marginal probabilities for first split identification with confidence intervals
+- **Input**: `tree-sim-*.tree` and `*.trees` from simulation directories
+- **Output**: `marginal_prob_first_split_ic_{N_traits}.csv`
 
 **`04_simulation_analyses_main.R`**
 - **Purpose**: Consolidates simulation results and performs statistical modeling
@@ -92,6 +111,16 @@ Phylogenetic reconstruction of multiple language families using:
   - `output/results/count_true_to_cs.rds` - Node accuracy counts
   - `output/results/regression_*.csv` - Logistic regression results
   - `output/results/prop_*.csv` - Reconstruction accuracy proportions
+
+**`03_resume_to_true_TF.R`**
+- **Purpose**: Determines if nodes in summary trees exist in true trees
+- **Input**: True trees, consensus trees, MCC trees
+- **Output**: `resume_to_true_TF_{N_traits}.csv`
+
+**`03_true_false_uncertain.R`**
+- **Purpose**: Classifies true tree nodes as true, false, or uncertain in consensus trees
+- **Input**: True trees, consensus trees
+- **Output**: `true_false_uncertain_nodes_{N_traits}.csv`
 
 **`04_simulation_analyses_trait_influence.R`**
 - **Purpose**: Analyzes the influence of trait number on reconstruction accuracy
@@ -106,34 +135,8 @@ Phylogenetic reconstruction of multiple language families using:
   - `barplot_prop_resume_to_true.pdf`
   - `plausible_node.pdf`
 
-##### Additional Scripts (`src/simulations/`)
 
-**`02_compute_mcc.R`**
-- **Purpose**: Computes Maximum Clade Credibility trees from posterior distributions
-- **Input**: `*.trees` files from simulation directories
-- **Output**: `mcc-{age}.tree` files in same directories
-
-**`02_compute_consensus.R`**
-- **Purpose**: Computes 50% majority-rule consensus trees
-- **Input**: `*.trees` files from simulation directories
-- **Output**: `consensus-{age}.tree` files in same directories
-
-**`03_marginal_prob_first_split_ic.R`**
-- **Purpose**: Calculates marginal probabilities for first split identification with confidence intervals
-- **Input**: `tree-sim-*.tree` and `*.trees` from simulation directories
-- **Output**: `marginal_prob_first_split_ic_{start}_{end}.csv`
-
-**`03_resume_to_true_TF.R`**
-- **Purpose**: Determines if nodes in summary trees exist in true trees
-- **Input**: True trees, consensus trees, MCC trees
-- **Output**: `resume_to_true_TF_{N_traits}.csv`
-
-**`03_true_false_uncertain.R`**
-- **Purpose**: Classifies true tree nodes as true, false, or uncertain in consensus trees
-- **Input**: True trees, consensus trees
-- **Output**: `true_false_uncertain_nodes_{N_traits}.csv`
-
-#### 3. Ancestral State Reconstruction (`src/ancestral_reconstruction/`)
+#### 2. Ancestral State Reconstruction (`src/ancestral_reconstruction/`)
 
 **`00_compute_meaning_set.R`**
 - **Purpose**: Extracts semantic meaning boundaries from NEXUS files
@@ -141,6 +144,13 @@ Phylogenetic reconstruction of multiple language families using:
 - **Output**:
   - `output/results/meanings_sets_ie.csv`
   - `output/results/meanings_sets_st.csv`
+
+**`ancestral_reconstruction/00_tracelogs.R`**
+- **Purpose**: Processes BEAST output files for ancestral reconstruction analyses of language families
+- **Input**: BEAST tree files, log files, NEXUS alignments from `data/real/`
+- **Output**: 
+  - `output/results/ntipschars.csv` - Taxa and character counts
+  - `output/results/tracelog_summary.csv` - MCMC parameter summaries with median values for frequency parameters, mutation rates, and tree heights
 
 **`01_ancestral_state_reconstruction.R`**
 - **Purpose**: Performs ancestral state reconstruction using Markov models
@@ -170,7 +180,6 @@ Phylogenetic reconstruction of multiple language families using:
 - **Tree Comparison**: `resume_to_true_TF_*.csv`
 - **Regression Analysis**: `regression_*.csv`
 - **Ancestral States**: `ancestral_reconstruction_*.csv`
-- **Theoretical Bounds**: `bounds_real_tb*.csv`
 
 ### Figures (`output/figs/`)
 
@@ -185,10 +194,29 @@ Phylogenetic reconstruction of multiple language families using:
   - `ape`, `phangorn` - Phylogenetic analysis
   - `TreeSim` - Tree simulation
   - `phytools` - Phylogenetic tools
-  - `tidyverse` - Data manipulation
+  - `tidyverse`, `dplyr`, `tidyr` - Data manipulation
   - `broom` - Statistical modeling
   - `parallel` - Parallel computing
   - `here` - Path management
+  - `ggplot2`, `patchwork` - Data visualization
+  - `Matrix` - Sparse and dense matrix classes
+  - `castor` - Phylogenetic comparative analysis
+  - `adephylo` - Phylogenetic signal analysis
+  - `stringr` - String manipulation
+  - `reshape2` - Data reshaping
+  - `purrr` - Functional programming tools
+  - `gridExtra` - Grid graphics utilities
+  - `magrittr` - Pipe operators
+  - `xml2` - XML parsing
+  - `readr` - Data import
+  - `tibble` - Modern data frames
+  - `stats` - Statistical functions
+  - `dotwhisker` - Coefficient plots
+  - `ggeffects` - Marginal effects visualization
+  - `beastier` - BEAST interface
+  - `treeio` - Tree I/O operations
+  - `tracerer` - BEAST trace log analysis
+  - `TreeTools` - Tree manipulation utilities
 
 - **External Software**:
   - **BEAST 2** - Bayesian phylogenetic analysis
@@ -286,7 +314,6 @@ To perform ancestral reconstruction, execute the files in the following order:
    ```bash
    Rscript src/ancestral_reconstruction/03_visualization.R
    ```
-
 
 ## Data Availability
 

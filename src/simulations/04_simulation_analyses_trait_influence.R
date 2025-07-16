@@ -247,38 +247,9 @@ count_true_to_mcc_data_long <- count_true_to_mcc_data |>
   )
 
 
-p1<- ggplot(count_true_to_cs_data_long, aes(x = as.factor(n_trait), y = mean_n, fill = value)) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.7) +
-  labs(
-    title = "Consensus",
-    x = "number of traits",
-    y = "average number of nodes",
-    fill = "node category"
-  ) +
-  scale_fill_manual(
-    values = c("0" = "darkred", "1" = "darkblue", "2" = "darkorange"),
-    breaks = c("0", "2", "1"),
-    labels = c("false", "plausible", "true")
-  ) +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+write_csv(count_true_to_cs_data_long, here("output/results/count_true_to_cs_data_long.csv"))
+write_csv(count_true_to_mcc_data_long, here("output/results/count_true_to_mcc_data_long.csv"))
 
 
-p2<- ggplot(count_true_to_mcc_data_long, aes(x = as.factor(n_trait), y = mean_n, fill = exist)) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.7) +
-  labs(
-    title = "MCC",
-    x = "number of traits",
-    y = "average number of nodes",
-    fill = "node category"
-  ) +
-  scale_fill_manual(
-    values = c("0" = "darkred", "1" = "darkblue"),
-    labels = c("false", "true")
-  ) +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 
-plt_number_of_traits_influence <- p1 + p2
-ggsave(plt_number_of_traits_influence, filename = here("output/figs/number_of_traits_influence.png"), 
-       width = 12, height = 6, dpi = 300)
+

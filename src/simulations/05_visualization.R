@@ -58,6 +58,14 @@ prop_cs_to_true = read_csv(here("output/results/prop_cs_to_true.csv"))
 # proportion of true, false node from the mcc to the true tree
 prop_mcc_to_true = read_csv(here("output/results/prop_mcc_to_true.csv"))
 
+# number of true false and uncertain nodes for traits analysis (for a tree of 8 millenia)
+# consensus
+count_true_to_cs_data_long <- read_csv(here("output/results/count_true_to_cs_data_long.csv")) |> 
+  mutate(value = as.factor(value))
+# mcc
+count_true_to_mcc_data_long <- read_csv(here("output/results/count_true_to_mcc_data_long.csv")) |>
+  mutate(exist = as.factor(exist))
+
 # plots ------------------------------------------------------------------------
 # 1. Marginal probability of the first split in the posterior ------------------
 plot_marginal_probability_first_split_ic <- ggplot(
@@ -372,3 +380,42 @@ reg_plot <- ggplot(pred_all, aes(x = x, y = predicted, color = model, fill = mod
   theme_minimal()
 
 ggsave(here("output/figs/regression_first_split_prob_effect.pdf"))
+
+# 6. Influence of the number of traits -----------------------------------------
+
+p1<- ggplot(count_true_to_cs_data_long, aes(x = as.factor(n_trait), y = mean_n, fill = value)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.7) +
+  labs(
+    title = "Consensus",
+    x = "number of traits",
+    y = "average number of nodes",
+    fill = "node category"
+  ) +
+  scale_fill_manual(
+    values = c("0" = "darkred", "1" = "darkblue", "2" = "darkorange"),
+    breaks = c("0", "2", "1"),
+    labels = c("false", "plausible", "true")
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+
+
+p2<- ggplot(count_true_to_mcc_data_long, aes(x = as.factor(n_trait), y = mean_n, fill = exist)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.7) +
+  labs(
+    title = "MCC",
+    x = "number of traits",
+    y = "average number of nodes",
+    fill = "node category"
+  ) +
+  scale_fill_manual(
+    values = c("0" = "darkred", "1" = "darkblue"),
+    labels = c("false", "true")
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+
+plt_number_of_traits_influence <- p1 + p2
+
+ggsave(plt_number_of_traits_influence, filename = here("output/figs/number_of_traits_influence.png"), 
+       width = 12, height = 6, dpi = 300)
