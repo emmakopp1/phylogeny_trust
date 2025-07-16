@@ -35,37 +35,6 @@ age_init_sim <- 8
 #output_path <- here("output/results/number_nodes_mcc_cs_6000.csv")
 output_path <- here("output/results/number_nodes_mcc_cs_12000.csv")
 
-
-# functions ---------------------------------------------------------------------
-
-# sort the node of a tree by descendance from the root to the tips
-# sort the node of a tree by descendance from the root to the tips
-getNodesByDepth <- function(tree) {
-  # Recursive function
-  recursiveTraversal <- function(node, result) {
-    result[[length(result) + 1]] <- list(node = node, depth = distRoot(tree, node)[[1]])
-    
-    if (node %in% 1:(tree$Nnode + 1)) {
-      return(result)
-    } else {
-      children <- tree$edge[tree$edge[, 1] == node, 2]
-      
-      for (child in children) {
-        depth <- distRoot(tree, child)
-        result <- recursiveTraversal(child, result)
-      }
-      return(result)
-    }
-  }
-  
-  nodes <- recursiveTraversal(castor::find_root(tree), list())
-  nodes <- as.data.frame(do.call(rbind, nodes))
-  nodes$depth <- unlist(nodes$depth)
-  nodes$node <- unlist(nodes$node)
-  return(nodes[order(-nodes$depth, decreasing = T), 1])
-}
-
-
 # data -------------------------------------------------------------------------
 # load the true trees
 true_trees <- list.files(path_repository, full.names = TRUE, recursive = F) |>
@@ -79,9 +48,6 @@ true_trees <- list.files(path_repository, full.names = TRUE, recursive = F) |>
 
 # load true topologies 
 true_topologies <- lapply(true_trees, function(path) read.tree(path))
-
-# compute the deepest nodes
-deepest_nodes <- lapply(true_topologies, function(tree) getNodesByDepth(tree)[2:11])
 
 # paths of the mcc and the consensus trees
 paths_consensus <- list.files(path_repository, full.names = T, recursive = T) |>

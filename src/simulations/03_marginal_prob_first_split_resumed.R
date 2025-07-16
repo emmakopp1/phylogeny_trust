@@ -15,6 +15,18 @@ library(castor)
 library(stringr)
 library(parallel)
 
+
+# choose the paths adapted to the simulation -----------------------------------
+#path_repository <- here("data/simulated-2025-05-13")
+#path_repository <- here("data/simulated-2025-07-02-6000")
+path_repository <- here("data/simulated-2025-07-08-12000")
+
+
+# compute the path for the csv output
+#output_path <- here("output/results/marginal_prob_first_split_mcc_consensus.csv")
+#output_path <- here("output/results/marginal_prob_first_split_mcc_consensus_6000.csv")
+output_path <- here("output/results/marginal_prob_first_split_mcc_consensus_12000.csv")
+
 # functions --------------------------------------------------------------------
 # function to get the outgroup of the tree 
 first_split <- function(tree){
@@ -28,17 +40,6 @@ first_split <- function(tree){
   return(children[which.max(t)])
 }
 
-
-# choose the paths adapted to the simulation -----------------------------------
-#path_repository <- here("data/simulated-2025-05-13")
-#path_repository <- here("data/simulated-2025-07-02-6000")
-path_repository <- here("data/simulated-2025-07-08-12000")
-
-
-# compute the path for the csv output
-#output_path <- here("output/results/marginal_prob_first_split_mcc_consensus.csv")
-#output_path <- here("output/results/marginal_prob_first_split_mcc_consensus_6000.csv")
-output_path <- here("output/results/marginal_prob_first_split_mcc_consensus_12000.csv")
 
 # load variables ---------------------------------------------------------------
 
