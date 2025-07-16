@@ -250,6 +250,7 @@ To perform ancestral reconstruction, execute the files in the following order:
    ```bash
    Rscript src/ancestral_reconstruction/01_ancestral_state_reconstruction.R
    ```
+   **Note**: This is a computationally intensive script. For testing purposes, set `length_phylo <- 2` in the script. To reproduce the full results, use `length_phylo <- 200`.
 
 4. **Post-processing**:
    ```bash
