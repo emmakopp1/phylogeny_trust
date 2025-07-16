@@ -210,7 +210,7 @@ Rscript src/simulations/local/01_tree_simulation_12000.R
 Rscript src/simulations/local/01_tree_simulation_main.R
 ```
 
-2. **Run manually inferences using BEAST**:
+2. **Run manually inferences using BEAST**
 
 3. **Compute summary trees**:
 
@@ -223,6 +223,18 @@ Rscript src/simulations/cluster/compute_mcc.R
 To reproduce the simulation analyses, follow these steps:
 
 1. **Analyze results**:
+
+For each study, select the corresponding output file:
+
+   - `data/simulated-2025-05-13` → `output_path <- here("output/results/number_nodes_mcc_cs.csv")`
+   - `data/simulated-2025-07-02-6000` → `output_path <- here("output/results/number_nodes_mcc_cs_6000.csv")`
+   - `data/simulated-2025-07-08-12000` → `output_path <- here("output/results/number_nodes_mcc_cs_12000.csv")`
+
+   **Important**: Also update the `age_init_sim` variable:
+   - Set to `1` for `data/simulated-2025-05-13`
+   - Set to `8` for the other two studies
+
+
    ```bash
    Rscript src/simulations/local/02_compute_number_of_nodes_resumed.R
    Rscript src/simulations/local/02_marginal_prob_first_split_resumed.R
