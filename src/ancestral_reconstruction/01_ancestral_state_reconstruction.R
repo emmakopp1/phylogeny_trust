@@ -36,6 +36,13 @@ library(castor)
 library(phangorn)
 library(adephylo)
 
+# arguments 
+# for testing, this will lower the execution time 
+length_phylo <- 2 
+# to reproduce the exact results fix 200
+#length_phylo <- 200
+
+
 # ----- Main processing function -----------------------------------------------
 process_k <- function(k, param) {
   
@@ -55,6 +62,7 @@ process_k <- function(k, param) {
   end <- meanings_sets$end[k]
   Y_pruned <- t(Y[start:end, , drop = FALSE])
   
+  
   for (t in 1:M) {
     tree_pruned <- tree[[t]]
     
@@ -67,7 +75,7 @@ process_k <- function(k, param) {
         tree_pruned <- drop.tip(tree_pruned, names(ii))
       }
       
-      if (sum(y, na.rm = TRUE) > 1) {
+      if (sum(y, na.rm = TRUE) > 1 & length(unique(y)) > 1) {
         rec <- ancr(fitMk(tree_pruned, y, "ARD", fittedQ = Q, pi = as.numeric(pi)))
         indice <- which(rec[["ace"]][, 2] > 0.5)
         nodes <- as.integer(names(indice))
@@ -101,7 +109,7 @@ process_k <- function(k, param) {
 # Load BEAST posterior trees and thin sample 
 phylo_ie <- read.nexus(here("data/real/iecor_ctmc-strict-M1/IECoR_M1_CTMC_Gamma_1_Rate_For_All_Mgs_combined.trees"))
 M_ie <- length(phylo_ie)
-phylo_ie <- phylo_ie[seq(0.8 * M_ie, M_ie, length = 200)]
+phylo_ie <- phylo_ie[seq(0.8 * M_ie, M_ie, length = length_phylo)]
 M_ie <- length(phylo_ie)  # update M to number of retained trees
 
 # Load and clean linguistic data 
@@ -146,14 +154,14 @@ param_ie = list(tree = phylo_ie,
                 pi = pi_ie, 
                 Q = Q_ie, 
                 path_out = path_out_ie
-                )
+)
 
 
 # Sino-Tibetan  ---------------------------------------------------------------
 # Load BEAST posterior trees and thin sample 
 phylo_st <- read.nexus(here("data/real/st_ctmc-strict-fbd-uni/st_ctmc-strict-fbd-uniform.trees"))
 M_st <- length(phylo_st)
-phylo_st <- phylo_st[seq(0.8 * M_st, M_st, length = 200)]
+phylo_st <- phylo_st[seq(0.8 * M_st, M_st, length = length_phylo)]
 M_st <- length(phylo_st)  # update M to number of retained trees
 
 # Load and clean linguistic data 
@@ -198,7 +206,9 @@ param_st = list(tree = phylo_st,
                 pi = pi_st, 
                 Q = Q_st, 
                 path_out = path_out_st
-                )
+)
+
+
 
 # ----- Parallel execution -----------------------------------------------------
 ncl <- detectCores() - 1
@@ -208,11 +218,12 @@ clusterSetRNGStream(cl)
 # Run the rest in parallel
 clusterExport(cl, varlist = c(
   "process_k", "param_st", "param_ie"
-  ))
+))
 
 parLapply(cl, 1:K_st, function(k) {
   process_k(k, param_st)
 })
+
 
 parLapply(cl, 1:K_ie, function(k) {
   process_k(k, param_ie)
