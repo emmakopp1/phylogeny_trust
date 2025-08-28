@@ -21,9 +21,10 @@ library(adephylo)
 # set the parameters ----------------------------------------------------------
 
 # select the path repository of your analysis 
-#path_repository <- here("data/simulated-2025-05-13")
-#path_repository <- here("data/simulated-2025-07-02-6000")
-path_repository <- here("data/simulated-2025-07-08-12000")
+#path_repository <- here("data/simulated-2025-07-28")
+#path_repository <- here("data/simulated-2025-07-22-1500")
+#path_repository <- here("data/simulated-2025-07-22-6000")
+path_repository <- here("data/simulated-2025-07-22-12000")
 
 
 # compute the age of the initial simulation 
@@ -32,6 +33,7 @@ age_init_sim <- 8
 
 # compute the path for the csv output
 #output_path <- here("output/results/number_nodes_mcc_cs.csv")
+#output_path <- here("output/results/number_nodes_mcc_cs_1500.csv")
 #output_path <- here("output/results/number_nodes_mcc_cs_6000.csv")
 output_path <- here("output/results/number_nodes_mcc_cs_12000.csv")
 
@@ -45,9 +47,6 @@ true_trees <- list.files(path_repository, full.names = TRUE, recursive = F) |>
     path = str_glue("{final}/beast-data-sim-{num}-{age_init_sim}/tree-sim-{num}-{age_init_sim}.tree")
   ) |>
   pull(path)
-
-# load true topologies 
-true_topologies <- lapply(true_trees, function(path) read.tree(path))
 
 # paths of the mcc and the consensus trees
 paths_consensus <- list.files(path_repository, full.names = T, recursive = T) |>

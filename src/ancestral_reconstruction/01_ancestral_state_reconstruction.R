@@ -38,9 +38,9 @@ library(adephylo)
 
 # arguments 
 # for testing, this will lower the execution time 
-length_phylo <- 2 
+#length_phylo <- 2
 # to reproduce the exact results fix 200
-#length_phylo <- 200
+length_phylo <- 200
 
 
 # ----- Main processing function -----------------------------------------------
@@ -185,7 +185,7 @@ mu_st <- 1 / (2 * pi_st$pi1)
 Q_st <- cbind(c(-lambda_st, mu_st), c(lambda_st, -mu_st))
 
 # Initialize output CSV
-path_out_st <- here("output/results/ancestral_reconstruction_st.csv")
+path_out_st <- here("output/results/ancestral_reconstruction_st_test.csv")
 write.csv(
   x = data.frame(
     value = character(),

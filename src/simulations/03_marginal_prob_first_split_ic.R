@@ -1,5 +1,6 @@
 # ------------------------------------------------------------------------------
 # Script Name: marginal_prob_first_split_ic.R
+# Run : on the cluster
 # Description: # This file calculate the marginale probabiliity that the inferred reconstructed
 #               correctly the outgroup with the credibility interval
 #               This file was run on a cluster is computationnaly costly. 

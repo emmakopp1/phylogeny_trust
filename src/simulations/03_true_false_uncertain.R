@@ -1,5 +1,6 @@
 # ------------------------------------------------------------------------------
 # Script Name: true_false_uncertain.R
+# Run : on the cluster
 # Description: Checks whether a node present in the true tree is also found 
 #              (as true, false, or uncertain) in the summary/consensus tree.
 # -----------------------------------------------------------------------------------------
@@ -17,14 +18,15 @@ library(reshape2)
 
 # to be referenced by the user -------------------------------------------------
 # path of the simulation folder you want to analyse
-#path_repository <- here("data/simulated-2025-05-13")
-#path_repository <-here("data/simulated-2025-07-02-6000")
-path_repository <- here("data/simulated-2025-07-08-12000")
+path_repository <- here("data/simulated-2025-07-22-1500")
+#path_repository <- here("data/simulated-2025-07-22-1500")
+#path_repository <- here("data/simulated-2025-07-22-6000")
+#path_repository <- here("data/simulated-2025-07-22-12000")
 
 # set the number of traits 
 # if N_traits is not 6 or 12 thousands, then it is the main study and N_traits = 3000
 N_traits <- as.numeric(str_extract(path_repository, "\\d+$"))
-N_traits <- ifelse(N_traits %in% c(12000, 6000), N_traits, "")
+N_traits <- ifelse(N_traits %in% c(12000, 6000, 1500), N_traits, "")
 
 
 # functions --------------------------------------------------------------------

@@ -21,28 +21,24 @@ library(magrittr)
 library(dplyr)
 library(beastier)
 
-# simulation of the initial tree --------------------------------------------
-path <- here(sprintf("data/simulated_temp/beast-data-sim-%s", Sys.Date()))
-dir_path <-sprintf("data/simulated-%s", Sys.Date())
-unlink(dir_path, recursive = TRUE, force = T)
-dir.create(here(dir_path))
-
+# parameters -------------------------------------------------------------------
 # parameter initialization
 N <- 50
-div <- 0.245
-r <- 0.293
-
+pi0 <- 0.943
 pi1 <- 5.695E-2
-pi0 <- 1 - pi1
-
 
 # number of simulation per age
 N_sim <- 50
 # number of of different ages
-N_rep <- 17
-#N_trait <- round(150/pi1,0)
-N_trait <- 3000
+N_rep <- 8
+#N_trait <- round(150/pi1/2,0)
+N_trait <- 3000/2
 
+# create the directory
+path <- here(sprintf("data/simulated_temp/beast-data-sim-%s-%d", Sys.Date(), N_trait))
+dir_path <-sprintf("data/simulated-%s-%d", Sys.Date(), N_trait)
+unlink(dir_path, recursive = TRUE, force = T)
+dir.create(here(dir_path))
 
 # create N_sim folders 
 for (n_sim in 1:N_sim){
@@ -59,17 +55,17 @@ tree <- phylogeny[index]
 
 # function which transform fossils as tips
 standardize_to_max_depth <- function(tree) {
-  # Calculer profondeurs et max en une fois
+  # compute depth and max depths
   tip_depths <- node.depth.edgelength(tree)[1:Ntip(tree)]
   max_depth <- max(tip_depths)
   
-  # Calcul vectorisé des différences
+  # total branch length
   diff_to_add <- max_depth - tip_depths
   
-  # Identifier arêtes terminales (tips sont toujours 1:Ntip dans edge[,2])
+  # identify tip languages
   terminal_edges <- match(1:Ntip(tree), tree$edge[, 2])
   
-  # Ajustement vectorisé
+  # change branch lengths
   tree$edge.length[terminal_edges] <- tree$edge.length[terminal_edges] + diff_to_add
   
   return(tree)
@@ -86,8 +82,7 @@ calib <- list(calib_chinese, calib_tibetan, calib_burmish)
 
 
 # scaling ----------------------------------------------------------------------
-l <- seq(1, N_rep, 1)
-#l <- seq(N_rep, N_rep, 1)
+l <- seq(N_rep, N_rep, 1)
 
 for (i in 1:N_sim){
   tree_i <- tree[[i]]
@@ -124,8 +119,10 @@ check_trait_in_template <- function(path_simulation_template, N_trait){
 
 check_trait_in_template(here("data/beast-data-sim.xml"), N_trait)
 
+# create the xml files to generate the sequences
 files <- list.files(dir_path, full.names = TRUE, recursive = TRUE)
 target_text <- read_lines(here("data/beast-data-sim.xml")) %>% paste(collapse = "\n")
+
 process_file <- function(file) {
   # get the tree
   file_text <- read_lines(file) |> paste(collapse = "\n")
@@ -145,7 +142,6 @@ updated_texts <- files |>
   map_chr(~ process_file(.x))
 
 
-
 # generate sequence with beast -------------------------------------------------
 for(n_sim in 1:N_sim){
   for (i in  l) {
@@ -158,7 +154,7 @@ for(n_sim in 1:N_sim){
              "/Users/kopp/Documents/phylogeny_trust/", 
              dir_path, 
              sprintf("/beast-data-sim-%d/beast-data-sim-%d-%d/beast-simulated-seq-%d-%d.xml", n_sim, n_sim, i, n_sim, i))
-      )
+    )
   }
 }
 
@@ -171,7 +167,7 @@ for (i in 1:N_sim){
   
   tree_i <- read.tree(here(paste0(
     dir_path, 
-    sprintf("/beast-data-sim-%d/beast-data-sim-%d-1/tree-sim-%d-1.tree", i, i, i))))
+    sprintf("/beast-data-sim-%d/beast-data-sim-%d-8/tree-sim-%d-8.tree", i, i, i))))
   
   # get the mrca node of calibrations for simulation i
   mrca_node <- list()
@@ -221,7 +217,7 @@ for (i in 1:N_sim){
   # write the xml
   output_path <- here(paste0(
     dir_path, 
-    sprintf("/beast-data-sim-%d/beast-data-sim-%d-1/ctmc-strict-bd-%d-1.xml", i, i, i)
+    sprintf("/beast-data-sim-%d/beast-data-sim-%d-8/ctmc-strict-bd-%d-8.xml", i, i, i)
   ))
   
   write_xml(beauti_template, 
@@ -239,7 +235,7 @@ sequences <- list.files(dir_path, full.names = TRUE, recursive = TRUE) |>
 beast_files <- lapply(1:N_sim, function(i) {
   file_path <- here(paste0(
     dir_path, 
-    sprintf("/beast-data-sim-%d/beast-data-sim-%d-1/ctmc-strict-bd-%d-1.xml", i, i, i)))
+    sprintf("/beast-data-sim-%d/beast-data-sim-%d-8/ctmc-strict-bd-%d-8.xml", i, i, i)))
   read_xml(file_path)
 })
 
@@ -263,7 +259,7 @@ replace_value <- function(xml_file, df, path_out) {
 
 # apply function replace_value
 for (file in sequences) {
-    
+  
   # extract sequences
   taxons <- read_xml(file) |>
     xml_find_all("//sequence") |>
@@ -274,7 +270,7 @@ for (file in sequences) {
         taxon = taxon, value = value
       )
     })
-    
+  
   # output path of the xml file
   path_out <- str_replace(
     file,
@@ -292,26 +288,6 @@ beast_inputs = list.files(dir_path, full.names = TRUE, recursive = TRUE) |>
   keep(~ str_detect(.x, "\\.xml$")) |>
   keep(~ str_detect(.x, "ctmc"))
 
-# modify the prior calibration of a file. The coefficient is in the file_path name
-modify_uniform_attributes <- function(file_path) {
-  
-  tree_age <- as.integer(str_extract(file_path, "(?<=-)(\\d+)(?=\\.xml)"))
-  xml_file <- read_xml(file_path)
-  uniform_node <- xml_file |>
-    xml_find_all("//distribution[contains(@id, '.prior')]//Uniform")
-  
-  # Modifier lower
-  current_lower <- as.numeric(xml_attr(uniform_node, "lower"))
-  new_lower <- current_lower * tree_age
-  xml_set_attr(uniform_node, "lower", as.character(new_lower))
-  
-  # Modifier upper
-  current_upper <- as.numeric(xml_attr(uniform_node, "upper"))
-  new_upper <- current_upper * tree_age
-  xml_set_attr(uniform_node, "upper", as.character(new_upper))
-  
-  write_xml(xml_file, file_path)
-}
 
 # change the .trees and .log files (fileName attribute)
 modify_filenames <- function(file_path) {
@@ -332,9 +308,8 @@ modify_filenames <- function(file_path) {
 }
 
 # Apply functions
-walk(beast_inputs, modify_uniform_attributes)
 walk(beast_inputs, modify_filenames)
- 
+
 
 
 

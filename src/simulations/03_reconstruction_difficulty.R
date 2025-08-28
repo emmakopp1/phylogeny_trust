@@ -21,7 +21,7 @@ library(phangorn)
 
 # functions --------------------------------------------------------------------
 # select the path repository of your analysis 
-path_repository <-here("data/simulated-2025-05-13")
+path_repository <-here("data/simulated-2025-07-28")
 
 # compute the path for the csv output
 output_path_mcc <- here("output/results/first_split_age_mcc.csv")

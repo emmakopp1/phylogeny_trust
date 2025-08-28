@@ -83,7 +83,7 @@ plot_marginal_probability_first_split_ic <- ggplot(
   theme_minimal(base_size = 12)
 
 plot_marginal_probability_first_split_ic
-ggsave(here("output/figs/marginal_probability_first_split_ic.pdf"))
+ggsave(here("output/figs/marginal_probability_first_split_ic.pdf"), width = 8, height = 6)
 
 # 2. plot of the marginal probability of first_split in the mcc & consensus --------
 plot_mcc_posterior_prob <- ggplot(prob_first_split_mcc, aes(x = age, y = mean_mcc_prob, color = "MCC")) +
@@ -99,7 +99,7 @@ plot_mcc_posterior_prob <- ggplot(prob_first_split_mcc, aes(x = age, y = mean_mc
   theme_minimal(base_size = 10)
 
 plot_mcc_posterior_prob
-ggsave(here("output/figs/marginal_probability_first_split_mcc.pdf"))
+ggsave(here("output/figs/marginal_probability_first_split_mcc.pdf"), width = 8, height = 6)
 
 
 
@@ -126,7 +126,7 @@ plot_number_of_nodes = ggplot(df_number_of_nodes_avg, aes(x = age)) +
   )
 
 plot_number_of_nodes
-ggsave(here("output/figs/number_of_nodes_consensus_mcc.pdf"))
+ggsave(here("output/figs/number_of_nodes_consensus_mcc.pdf"), width = 8, height = 6)
 
 # 4. true, false and uncertain nodes in the summary tree (summary to true) -----
 # consensus
@@ -179,7 +179,7 @@ plot_mcc_incertain <- ggplot(count_true_to_mcc, aes(x = factor(age), y = n_mean,
 
 plot_cs_incertain + plot_mcc_incertain
 
-ggsave(here("output/figs/barplot_resume_to_true.pdf"))
+ggsave(here("output/figs/barplot_resume_to_true.pdf"), width = 12, height = 6)
 
 # 5. Plot of number of true nodes in the summary tree (true to summary) ---------
 # mcc
@@ -228,12 +228,12 @@ plot_count_cs_to_true <- ggplot(count_cs_to_true, aes(x = factor(age), y = n_mea
 
 plot_count_cs_to_true + plot_count_true_to_mcc
 
-ggsave(here("output/figs/barplot_true_to_resume.pdf"))
+ggsave(here("output/figs/barplot_true_to_resume.pdf"), width = 12, height = 6)
 
 # 4bis. true, false and uncertain nodes in the summary tree (summary to true) ----
 # consensus data
 
-plot_prop_true_to_cs <- ggplot(prop_true_to_cs, aes(x = factor(age), y = mean_n, fill = factor(value))) +
+plot_prop_true_to_cs <- ggplot(prop_true_to_cs, aes(x = factor(age), y = mean_n, fill = factor(value, levels = c("0", "2", "1")))) +
   geom_col(position = "fill") +
   labs(
     title = "Consensus",
@@ -242,13 +242,12 @@ plot_prop_true_to_cs <- ggplot(prop_true_to_cs, aes(x = factor(age), y = mean_n,
     fill = "Value"
   ) +
   scale_fill_manual(
-    values = c("0" = "darkred","2" = "darkorange", "1" = "darkblue"),
-    breaks = c("0", "2", "1"),
-    labels = c("Absent", "Uncertain", "Present")
+    values = c("0" = "darkred", "2" = "darkorange", "1" = "darkblue"),
+    breaks = c("1", "2", "0"),  # Ajustez aussi l'ordre ici
+    labels = c("false", "plausible", "true")  # Et l'ordre des labels
   ) +
   coord_cartesian(clip = "off") +
   theme_minimal()
-
 
 # plot
 plot_prop_mcc_to_true <- ggplot(prop_mcc_to_true, aes(x = factor(age), y = n_mean, fill = factor(exist))) +
@@ -261,7 +260,7 @@ plot_prop_mcc_to_true <- ggplot(prop_mcc_to_true, aes(x = factor(age), y = n_mea
   ) +
   scale_fill_manual(
     values = c("0" = "darkred", "1" = "darkblue"),
-    labels = c("0" = "Absent", "1" = "Present")
+    labels = c("0" = "false", "1" = "true")
   ) +
   coord_cartesian(clip = "off") +
   theme_minimal()
@@ -269,7 +268,7 @@ plot_prop_mcc_to_true <- ggplot(prop_mcc_to_true, aes(x = factor(age), y = n_mea
 
 plot_prop_true_to_cs + plot_prop_mcc_to_true
 
-ggsave(here("output/figs/barplot_prop_true_to_resume.pdf"))
+ggsave(here("output/figs/barplot_prop_true_to_resume.pdf"), width = 12, height = 6)
 
 # 5bis. Plot of number of true nodes in the summary tree (true to resume) ------
 # consensus
@@ -307,52 +306,55 @@ plot_prop_cs_to_true <- ggplot(prop_cs_to_true, aes(x = factor(age), y = n_mean,
 
 plot_prop_cs_to_true + plot_prop_mcc_to_true
 
-ggsave(here("output/figs/barplot_prop_resume_to_true.pdf"))
+ggsave(here("output/figs/barplot_prop_resume_to_true.pdf"), width = 12, height = 6)
 
 # 6. plot of one plausible rake node and one not plausible rake node in the consensus
 # import one consensus and one true tree of age 10 simulation 1 
-tree_cs <- read.tree(here('data/simulated-2025-05-13/beast-data-sim-1/beast-data-sim-1-10/consensus-10.tree'))
-tree_true <- read.tree(here('data/simulated-2025-05-13/beast-data-sim-1/beast-data-sim-1-10/tree-sim-1-10.tree'))
+tree_cs <- read.tree(here('data/simulated-2025-07-28/beast-data-sim-7/beast-data-sim-7-15/consensus-15.tree'))
+tree_true <- read.tree(here('data/simulated-2025-07-28/beast-data-sim-7/beast-data-sim-7-15/tree-sim-7-15.tree'))
 
-# analyse a plausible rake node
-node <- 62
-descendant <- Descendants(tree_true, node)[[1]]
-tip <- tree_true$tip.label[descendant]
-mrca <- getMRCA(tree_cs, tip)
+# analyse a plausible rake node in the consensus tree
+node_plausible <- 53 # in the true tree 
+descendant_plausible <- Descendants(tree_true, node_plausible)[[1]]
+tip_plausible <- tree_true$tip.label[descendant_plausible]
+mrca_plausible <- getMRCA(tree_cs, tip_plausible) # mrca in the cs tree
 
-# analyse a not plausible rake node
-node_67 <- 67
-descendant_67 <- Descendants(tree_true, node_67)[[1]]
-tip_67 <- tree_true$tip.label[descendant_67]
-mrca_67 <- getMRCA(tree_cs, tip_67)
+# analyse a not plausible rake node in the consensus tree
+node_not_plausible <- 71 # node in the true tree
+descendant_not_plausible <- Descendants(tree_true, node_not_plausible)[[1]]
+tip_not_plausible <- tree_true$tip.label[descendant_not_plausible]
+mrca_not_plausible <- getMRCA(tree_cs, tip_not_plausible) # mrca in the cs tree
 
+# colors in the true tree
 # tip colors
 tip_colors_tt <- rep("black", length(tree_true$tip.label))
-# node 62 in blue
-tip_colors_tt[descendant] <- "blue"        
-# node 67 in red
-tip_colors_tt[descendant_67] <- "red"       
-tip_colors_cs <- rep("black", length(tree_cs$tip.label))
+# plausible node in blue
+tip_colors_tt[descendant_plausible] <- "blue"        
+# not plausible node in red
+tip_colors_tt[descendant_not_plausible] <- "red"       
 
+# colors in the consensus tree
+tip_colors_cs <- rep("black", length(tree_cs$tip.label))
 # identify tip position in the consensus tree
-tip_positions_cs <- match(tip, tree_cs$tip.label)
+tip_positions_cs <- match(tip_plausible, tree_cs$tip.label)
 tip_colors_cs[tip_positions_cs] <- "blue"   
 
-tip_positions_cs_67 <- match(tip_67, tree_cs$tip.label)
-tip_colors_cs[tip_positions_cs_67] <- "red"
+tip_positions_cs_not_plausible <- match(tip_not_plausible, tree_cs$tip.label)
+tip_colors_cs[tip_positions_cs_not_plausible] <- "red"
 
-par(mfrow=c(1,2))
 # true tree
-plot(tree_true, tip.color = tip_colors_tt, cex = 0.7)
-nodelabels(node = node, frame = 'circle', cex = 0.5)
-nodelabels(node = node_67, frame = 'circle', cex = 0.5)
+pdf(here("output/figs/plausible_node.pdf"), width = 12, height = 6)
+par(mfrow=c(1,2))
+plot(tree_true, tip.color = tip_colors_tt, cex=0.6)
+nodelabels(node = node_plausible, frame = 'circle', cex = 0.5)
+nodelabels(node = node_not_plausible, frame = 'circle', cex = 0.5)
 
 # consensus tree
-plot(tree_cs, direction = "leftwards", tip.color = tip_colors_cs, cex=0.7)
-nodelabels(node = mrca, frame = 'circle', cex = 0.5)
-nodelabels(node = mrca_67, frame = 'circle', cex = 0.5)
+plot(tree_cs,direction = "leftwards", tip.color = tip_colors_cs, cex=0.6)
+nodelabels(node = mrca_plausible, frame = 'circle', cex = 0.5)
+nodelabels(node = mrca_not_plausible, frame = 'circle', cex = 0.5)
 
-ggsave(here("output/figs/plausible_node.pdf"))
+dev.off()
 
 # 6. regression 
 model_mcc2 <- readRDS(here("output/results/model_mcc.rds"))
@@ -363,27 +365,34 @@ pred_mcc <- ggpredict(model_mcc2, terms = "first_split_prob [all]")
 pred_cs <- ggpredict(model_cs2, terms = "first_split_prob [all]")
 
 # compare both models 
-pred_mcc$model <- "MCC"
-pred_cs$model <- "Consensus"
+pred_mcc$Tree <- "MCC"
+pred_cs$Tree <- "Consensus"
 pred_all <- bind_rows(pred_mcc, pred_cs)
 
-reg_plot <- ggplot(pred_all, aes(x = x, y = predicted, color = model, fill = model)) +
+reg_plot <- ggplot(pred_all, aes(x = x, y = predicted, color = Tree, fill = Tree)) +
   geom_line() +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2, color = NA) +
   scale_color_manual(values = c("MCC" = "darkred", "Consensus" = "darkblue")) +
   scale_fill_manual(values = c("MCC" = "darkred", "Consensus" = "darkblue")) +
   labs(
-    title = "Compare the effects first_split_prob",
-    x = "first_split_prob",
-    y = "prediction"
+    title = "",
+    x = "probability of the first split",
+    y = "prediction of the accuracy"
   ) +
   theme_minimal()
 
-ggsave(here("output/figs/regression_first_split_prob_effect.pdf"))
+reg_plot
+ggsave(here("output/figs/regression_first_split_prob_effect.pdf"), width = 8, height = 6)
 
 # 6. Influence of the number of traits -----------------------------------------
+library(patchwork)
 
-p1<- ggplot(count_true_to_cs_data_long, aes(x = as.factor(n_trait), y = mean_n, fill = value)) +
+# Définir les limites communes pour l'axe y (en partant de 0)
+y_max <- max(c(count_true_to_cs_data_long$mean_n, count_true_to_mcc_data_long$mean_n), na.rm=T)
+y_limits <- c(0, y_max * 1.05)
+y_breaks <- seq(0, ceiling(y_max), by = ceiling(y_max/5))  # Breaks plus logiques
+
+p1 <- ggplot(count_true_to_cs_data_long, aes(x = as.factor(n_trait), y = mean_n, fill = value)) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.7) +
   labs(
     title = "Consensus",
@@ -396,11 +405,11 @@ p1<- ggplot(count_true_to_cs_data_long, aes(x = as.factor(n_trait), y = mean_n, 
     breaks = c("0", "2", "1"),
     labels = c("false", "plausible", "true")
   ) +
+  scale_y_continuous(limits = y_limits, breaks = y_breaks, expand = c(0, 0)) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 
-
-p2<- ggplot(count_true_to_mcc_data_long, aes(x = as.factor(n_trait), y = mean_n, fill = exist)) +
+p2 <- ggplot(count_true_to_mcc_data_long, aes(x = as.factor(n_trait), y = mean_n, fill = exist)) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.7) +
   labs(
     title = "MCC",
@@ -412,10 +421,10 @@ p2<- ggplot(count_true_to_mcc_data_long, aes(x = as.factor(n_trait), y = mean_n,
     values = c("0" = "darkred", "1" = "darkblue"),
     labels = c("false", "true")
   ) +
+  scale_y_continuous(limits = y_limits, breaks = y_breaks, expand = c(0, 0)) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 
 plt_number_of_traits_influence <- p1 + p2
-
-ggsave(plt_number_of_traits_influence, filename = here("output/figs/number_of_traits_influence.png"), 
-       width = 12, height = 6, dpi = 300)
+plt_number_of_traits_influence
+ggsave(plt_number_of_traits_influence, filename = here("output/figs/number_of_traits_influence.pdf"), width = 12, height = 6)

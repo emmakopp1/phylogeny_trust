@@ -17,13 +17,14 @@ library(parallel)
 
 
 # choose the paths adapted to the simulation -----------------------------------
-#path_repository <- here("data/simulated-2025-05-13")
-#path_repository <- here("data/simulated-2025-07-02-6000")
-path_repository <- here("data/simulated-2025-07-08-12000")
-
+#path_repository <- here("data/simulated-2025-07-28")
+#path_repository <- here("data/simulated-2025-07-22-1500")
+#path_repository <- here("data/simulated-2025-07-22-6000")
+path_repository <- here("data/simulated-2025-07-22-12000")
 
 # compute the path for the csv output
 #output_path <- here("output/results/marginal_prob_first_split_mcc_consensus.csv")
+#output_path <- here("output/results/marginal_prob_first_split_mcc_consensus_1500.csv")
 #output_path <- here("output/results/marginal_prob_first_split_mcc_consensus_6000.csv")
 output_path <- here("output/results/marginal_prob_first_split_mcc_consensus_12000.csv")
 
