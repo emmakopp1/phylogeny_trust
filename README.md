@@ -57,7 +57,7 @@ The simulation study evaluates phylogenetic reconstruction accuracy using birth-
 
 - **Tree Simulation**: 50 taxa birth-death trees scaled to 8 ages (1-8 time units)
 - **Trait Evolution**: Binary trait evolution under CTMC models
-- **Data Sizes**: 1500, 6000, and 12000 traits
+- **Data Sizes**: 1500, 3000, 6000, and 12000 traits
 - **Reconstruction Methods**: MCC and 50% majority-rule consensus trees
 - **Evaluation Metrics**: Node accuracy, first split identification, marginal probabilities
 
@@ -140,11 +140,6 @@ Phylogenetic reconstruction of multiple language families using:
   - `marginal_probability_first_split_ic.pdf`
   - `barplot_prop_resume_to_true.pdf`
   - `plausible_node.pdf`
-
-**`analyse_sequence_lengths.R`**
-- **Purpose**: Analyzes sequence length distributions across simulations
-- **Input**: Simulation directories and BEAST XML files
-- **Output**: Sequence length analysis results
 
 #### 3. Shared Cognate Analysis (`src/shared_cognates/`)
 
@@ -365,7 +360,7 @@ To analyze shared cognates between phylogenetic subgroups, execute:
 ## Data Availability
 
 - **Real Data**: Phylogenetic analyses of Indo-European and Sino-Tibetan language families
-- **Simulated Data**: Birth-death trees with varying trait counts (1500, 6000, 12000)
+- **Simulated Data**: Birth-death trees with varying trait counts (1500, 3000, 6000, 12000)
 - **Results**: Processed datasets and statistical summaries
 
 ## Citation
