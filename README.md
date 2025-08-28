@@ -105,7 +105,7 @@ Phylogenetic reconstruction of multiple language families using:
 **`03_marginal_prob_first_split_ic.R`**
 - **Purpose**: Calculates marginal probabilities for first split identification with confidence intervals
 - **Input**: `tree-sim-*.tree` and `*.trees` from simulation directories
-- **Output**: `marginal_prob_first_split_ic_{N_traits}.csv`
+- **Output**: `marginal_prob_first_split_ic.csv`
 
 **`03_resume_to_true_TF.R`**
 - **Purpose**: Determines if nodes in summary trees exist in true trees
