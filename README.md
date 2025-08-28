@@ -12,12 +12,14 @@ phylogeny_trust/
 │   ├── real/                       # Real linguistic phylogenetic data
 │   │   ├── iecor_ctmc-strict-M1/   # Indo-European (IE) BEAST results
 │   │   └── st_ctmc-strict-fbd-uni/ # Sino-Tibetan (ST) BEAST results
-│   ├── simulated-2025-05-13/       # Simulation dataset (850 traits)
-│   ├── simulated-2025-07-02-6000/  # Simulation dataset (6000 traits)
-│   └── simulated-2025-07-08-12000/ # Simulation dataset (12000 traits)
+│   ├── simulated-2025-07-22-1500/  # Simulation dataset (1500 traits)
+│   ├── simulated-2025-07-22-6000/  # Simulation dataset (6000 traits)
+│   ├── simulated-2025-07-22-12000/ # Simulation dataset (12000 traits)
+│   └── simulated-2025-07-28/       # Latest simulation dataset
 ├── src/                            # Source code organized by analysis type
 │   ├── simulations/                # Phylogenetic simulation analyses
 │   │   ├── 01_tree_simulation_12000.R
+│   │   ├── 01_tree_simulation_1500.R
 │   │   ├── 01_tree_simulation_6000.R
 │   │   ├── 01_tree_simulation_main.R
 │   │   ├── 02_compute_consensus.R
@@ -30,7 +32,11 @@ phylogeny_trust/
 │   │   ├── 03_true_false_uncertain.R
 │   │   ├── 04_simulation_analyses_main.R
 │   │   ├── 04_simulation_analyses_trait_influence.R
-│   │   └── 05_visualization.R
+│   │   ├── 05_visualization.R
+│   │   └── analyse_sequence_lengths.R
+│   ├── shared_cognates/            # Shared cognate analysis
+│   │   ├── shared_cognates.R       # Main analysis script
+│   │   └── visualization.R         # Visualization script
 │   └── ancestral_reconstruction/   # Ancestral state reconstruction
 │       ├── 00_compute_meaning_set.R
 │       ├── 00_tracelogs.R
@@ -51,7 +57,7 @@ The simulation study evaluates phylogenetic reconstruction accuracy using birth-
 
 - **Tree Simulation**: 50 taxa birth-death trees scaled to 8 ages (1-8 time units)
 - **Trait Evolution**: Binary trait evolution under CTMC models
-- **Data Sizes**: 3000, 6000, and 12000 traits
+- **Data Sizes**: 1500, 6000, and 12000 traits
 - **Reconstruction Methods**: MCC and 50% majority-rule consensus trees
 - **Evaluation Metrics**: Node accuracy, first split identification, marginal probabilities
 
@@ -70,7 +76,7 @@ Phylogenetic reconstruction of multiple language families using:
 
 ##### Main Scripts (`src/simulations/`)
 
-**`01_tree_simulation_main.R`, `01_tree_simulation_6000.R`, `01_tree_simulation_12000.R`**
+**`01_tree_simulation_main.R`, `01_tree_simulation_1500.R`, `01_tree_simulation_6000.R`, `01_tree_simulation_12000.R`**
 - **Purpose**: Simulation scripts generating phylogenetic trees and BEAST analyses
 - **Input**: `data/beast-data-sim.xml`, `data/ctmc-strict-bd-template.xml`
 - **Output**: `data/simulated-{date}/` containing:
@@ -134,6 +140,29 @@ Phylogenetic reconstruction of multiple language families using:
   - `marginal_probability_first_split_ic.pdf`
   - `barplot_prop_resume_to_true.pdf`
   - `plausible_node.pdf`
+
+**`analyse_sequence_lengths.R`**
+- **Purpose**: Analyzes sequence length distributions across simulations
+- **Input**: Simulation directories and BEAST XML files
+- **Output**: Sequence length analysis results
+
+#### 3. Shared Cognate Analysis (`src/shared_cognates/`)
+
+**`shared_cognates.R`**
+- **Purpose**: Analyzes shared cognates between phylogenetic subgroups
+- **Input**: 
+  - Simulated phylogenetic trees: `data/simulated-*/tree-sim-*.tree`
+  - BEAST sequence data: `data/simulated-*/beast-simulated-seq-*.xml`
+- **Output**:
+  - `output/results/shared_cognates.rds` - Complete analysis results
+  - `output/results/shared_cognate_summary_table.csv` - Summary statistics
+
+**`visualization.R`** (shared_cognates)
+- **Purpose**: Creates visualizations for shared cognate analysis
+- **Input**: `output/results/shared_cognates.rds`, summary table
+- **Output**: 
+  - `output/figs/shared_cognate_heatmap_*.pdf` - Similarity heatmaps
+  - `output/figs/shared_cognate_outgroup.pdf` - Temporal evolution plot
 
 
 #### 2. Ancestral State Reconstruction (`src/ancestral_reconstruction/`)
@@ -217,6 +246,7 @@ Phylogenetic reconstruction of multiple language families using:
   - `treeio` - Tree I/O operations
   - `tracerer` - BEAST trace log analysis
   - `TreeTools` - Tree manipulation utilities
+  - `pheatmap` - Heatmap visualization
 
 - **External Software**:
   - **BEAST 2** - Bayesian phylogenetic analysis
@@ -231,6 +261,7 @@ To reproduce simulate new trees and data, follow these steps:
 1. **Generate phylogenetic trees**:
 
 ```bash
+Rscript src/simulations/01_tree_simulation_1500.R
 Rscript src/simulations/01_tree_simulation_6000.R
 Rscript src/simulations/01_tree_simulation_12000.R
 Rscript src/simulations/01_tree_simulation_main.R
@@ -252,13 +283,14 @@ To reproduce the simulation analyses, follow these steps:
 
 In the files `03_compute_number_of_nodes_resumed` and `03_marginal_prob_first_split_resumed.R` select the corresponding output file:
 
-   - `data/simulated-2025-05-13` → `output_path <- here("output/results/number_nodes_mcc_cs.csv")`
-   - `data/simulated-2025-07-02-6000` → `output_path <- here("output/results/number_nodes_mcc_cs_6000.csv")`
-   - `data/simulated-2025-07-08-12000` → `output_path <- here("output/results/number_nodes_mcc_cs_12000.csv")`
+   - `data/simulated-2025-07-22-1500` → `output_path <- here("output/results/number_nodes_mcc_cs_1500.csv")`
+   - `data/simulated-2025-07-22-6000` → `output_path <- here("output/results/number_nodes_mcc_cs_6000.csv")`
+   - `data/simulated-2025-07-22-12000` → `output_path <- here("output/results/number_nodes_mcc_cs_12000.csv")`
+   - `data/simulated-2025-07-28` → `output_path <- here("output/results/number_nodes_mcc_cs.csv")`
 
 In the file `03_compute_number_of_nodes_resumed` you should set the `age_init_sim` variable:
-   - Set to `1` for `data/simulated-2025-05-13`
-   - Set to `8` for the other two studies
+   - Set to `1:17` for `data/simulated-2025-07-28` (latest dataset)
+   - Set to `8` for the dated simulation studies
 
 Run the analysis files in this order:
 
@@ -315,10 +347,25 @@ To perform ancestral reconstruction, execute the files in the following order:
    Rscript src/ancestral_reconstruction/03_visualization.R
    ```
 
+### Shared Cognate Analysis (`src/shared_cognates/`)
+
+To analyze shared cognates between phylogenetic subgroups, execute:
+
+1. **Main analysis**:
+   ```bash
+   Rscript src/shared_cognates/shared_cognates.R
+   ```
+   **Note**: Configure the `path_repository` variable to select the desired simulation dataset (default: `data/simulated-2025-07-28`).
+
+2. **Generate visualizations**:
+   ```bash
+   Rscript src/shared_cognates/visualization.R
+   ```
+
 ## Data Availability
 
 - **Real Data**: Phylogenetic analyses of Indo-European and Sino-Tibetan language families
-- **Simulated Data**: Birth-death trees with varying trait counts (3000, 6000, 12000)
+- **Simulated Data**: Birth-death trees with varying trait counts (1500, 6000, 12000)
 - **Results**: Processed datasets and statistical summaries
 
 ## Citation
