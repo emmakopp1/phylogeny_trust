@@ -23,8 +23,13 @@ library(ggeffects)
 # load data --------------------------------------------------------------------
 df_number_of_nodes_avg =  read_csv(here("output/results/number_of_nodes_summary.csv"))
 prob_first_split_mcc = read_csv(here("output/results/prob_first_split_mcc.csv"))
-marginal_probability_first_split_ic = read_csv(here("output/results/marginal_prob_first_split_ic.csv"))
-
+marginal_probability_first_split_ic = read_csv(here("output/results/marginal_prob_first_split_ic.csv")) |> 
+  group_by(tree_age) |> 
+  summarise(
+    prob_mean = mean(prob_mean), 
+    prob_inf = mean(prob_inf), 
+    prob_sup = mean(prob_sup)
+  )
 # count the number of true, false and uncertain node from the true to consensus tree
 count_true_to_cs = readRDS(here("output/results/count_true_to_cs.rds")) |>
   group_by(age) |>
@@ -72,7 +77,7 @@ plot_marginal_probability_first_split_ic <- ggplot(
   marginal_probability_first_split_ic,
   aes(x = tree_age, y = prob_mean)
 ) +
-  geom_ribbon(aes(ymin = prob_inf, ymax = prob_inf), fill = "skyblue", alpha = 0.5) +
+  geom_ribbon(aes(ymin = prob_inf, ymax = prob_sup), fill = "skyblue", alpha = 0.5) +
   geom_line(color = "darkblue", size = 1) +
   geom_point(color = "darkblue", size = 2) +
   labs(

@@ -92,13 +92,12 @@ process_file <- function(i) {
   # find the smallest group of the first split of the true tree
   A <-  tree_true$tip.label[Descendants(tree_true, deepest_node, type = "tips")[[1]]] 
   B <- setdiff(tree_true$tip.label, A)
-  outgroup <- if (length(A) <= length(B)) A else B
   
   # posterior thin-in
   M <- length(phylo)
   phylo <- phylo[seq(burnin * M, M, length = 200)]
   
-  res <- sapply(phylo, function(t) is.monophyletic(t, outgroup))
+  res <- sapply(phylo, function(t) is.monophyletic(t, A) &  is.monophyletic(t, B))
   ic <- prop.test(sum(res), length(res), conf.level = 0.95)$conf.int
   ic_inf <- ic[1]
   ic_sup <- ic[2]
@@ -129,6 +128,6 @@ process_file <- function(i) {
 ncl <- 40
 cl <- makeCluster(ncl, type="FORK")
 clusterSetRNGStream(cl)
-res_list <- parLapply(cl, seq_along(path_trees_phylo), process_file)
+res_list <- parLapply(cl, seq_along(path_trees_phylo[1:17]), process_file)
 stopCluster(cl)
 
