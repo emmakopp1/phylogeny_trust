@@ -32,8 +32,7 @@ phylogeny_trust/
 │   │   ├── 03_true_false_uncertain.R
 │   │   ├── 04_simulation_analyses_main.R
 │   │   ├── 04_simulation_analyses_trait_influence.R
-│   │   ├── 05_visualization.R
-│   │   └── analyse_sequence_lengths.R
+│   │   └── 05_visualization.R
 │   ├── shared_cognates/            # Shared cognate analysis
 │   │   ├── shared_cognates.R       # Main analysis script
 │   │   └── visualization.R         # Visualization script
@@ -45,8 +44,7 @@ phylogeny_trust/
 │       └── 03_visualization.R
 ├── output/                         # Generated results and figures
 │   ├── results/                    # Processed datasets and statistics
-│   └── figs/                       # Publication-ready figures
-└── archive/                        # Legacy and experimental code
+└── └── figs/                       # Publication-ready figures
 ```
 
 ## Methodology
@@ -55,7 +53,7 @@ phylogeny_trust/
 
 The simulation study evaluates phylogenetic reconstruction accuracy using birth-death trees with varying evolutionary ages and trait counts:
 
-- **Tree Simulation**: 50 taxa birth-death trees scaled to 8 ages (1-8 time units)
+- **Tree Simulation**: 50 taxa birth-death trees scaled to 17 ages (1-17 time units)
 - **Trait Evolution**: Binary trait evolution under CTMC models
 - **Data Sizes**: 1500, 3000, 6000, and 12000 traits
 - **Reconstruction Methods**: MCC and 50% majority-rule consensus trees
@@ -64,8 +62,8 @@ The simulation study evaluates phylogenetic reconstruction accuracy using birth-
 ### Real Data Analysis
 
 Phylogenetic reconstruction of multiple language families using:
-- **Families**: Indo-European (data outputs files taken from CITE ARTICLE), Sino-Tibetan (input data taken from CITE ARTICLE and but we did the inference)
-- **Methods**: BEAST with strict clock and birth-death/fossilized birth-death models
+- **Families**: Indo-European (data outputs files taken from [2]), Sino-Tibetan (input data taken from [1])
+- **Methods**: BEAST with birth-death tree prior and uniform rates
 - **Ancestral Reconstruction**: Semantic meaning evolution analysis
 
 ## Script Documentation
@@ -79,7 +77,7 @@ Phylogenetic reconstruction of multiple language families using:
 **`01_tree_simulation_main.R`, `01_tree_simulation_1500.R`, `01_tree_simulation_6000.R`, `01_tree_simulation_12000.R`**
 - **Purpose**: Simulation scripts generating phylogenetic trees and BEAST analyses
 - **Input**: `data/beast-data-sim.xml`, `data/ctmc-strict-bd-template.xml`
-- **Output**: `data/simulated-{date}/` containing:
+- **Output**: `data/simulated-{sim}/` containing:
   - `tree-sim-{sim}-{age}.tree` - True phylogenetic trees
   - `beast-*.xml` - BEAST configuration files
   - `ctmc-strict-bd-*.trees` - Posterior tree distributions
@@ -109,15 +107,6 @@ Phylogenetic reconstruction of multiple language families using:
 - **Input**: `tree-sim-*.tree` and `*.trees` from simulation directories
 - **Output**: `marginal_prob_first_split_ic_{N_traits}.csv`
 
-**`04_simulation_analyses_main.R`**
-- **Purpose**: Consolidates simulation results and performs statistical modeling
-- **Input**: Multiple CSV files from `output/results/`
-- **Output**:
-  - `output/results/marginal_probability_first_split_ic.csv` - First split probabilities
-  - `output/results/count_true_to_cs.rds` - Node accuracy counts
-  - `output/results/regression_*.csv` - Logistic regression results
-  - `output/results/prop_*.csv` - Reconstruction accuracy proportions
-
 **`03_resume_to_true_TF.R`**
 - **Purpose**: Determines if nodes in summary trees exist in true trees
 - **Input**: True trees, consensus trees, MCC trees
@@ -127,6 +116,15 @@ Phylogenetic reconstruction of multiple language families using:
 - **Purpose**: Classifies true tree nodes as true, false, or uncertain in consensus trees
 - **Input**: True trees, consensus trees
 - **Output**: `true_false_uncertain_nodes_{N_traits}.csv`
+
+**`04_simulation_analyses_main.R`**
+- **Purpose**: Consolidates simulation results and performs statistical modeling
+- **Input**: Multiple CSV files from `output/results/`
+- **Output**:
+  - `output/results/marginal_probability_first_split_ic.csv` - First split probabilities
+  - `output/results/count_true_to_cs.rds` - Node accuracy counts
+  - `output/results/regression_*.csv` - Logistic regression results
+  - `output/results/prop_*.csv` - Reconstruction accuracy proportions
 
 **`04_simulation_analyses_trait_influence.R`**
 - **Purpose**: Analyzes the influence of trait number on reconstruction accuracy
@@ -147,7 +145,7 @@ Phylogenetic reconstruction of multiple language families using:
 - **Purpose**: Analyzes shared cognates between phylogenetic subgroups
 - **Input**: 
   - Simulated phylogenetic trees: `data/simulated-*/tree-sim-*.tree`
-  - BEAST sequence data: `data/simulated-*/beast-simulated-seq-*.xml`
+  - BEAST synthetic data: `data/simulated-*/beast-simulated-seq-*.xml`
 - **Output**:
   - `output/results/shared_cognates.rds` - Complete analysis results
   - `output/results/shared_cognate_summary_table.csv` - Summary statistics
@@ -156,7 +154,7 @@ Phylogenetic reconstruction of multiple language families using:
 - **Purpose**: Creates visualizations for shared cognate analysis
 - **Input**: `output/results/shared_cognates.rds`, summary table
 - **Output**: 
-  - `output/figs/shared_cognate_heatmap_*.pdf` - Similarity heatmaps
+  - `output/figs/shared_cognate_heatmap_*.pdf` - Similarity heatmaps for different tree ages
   - `output/figs/shared_cognate_outgroup.pdf` - Temporal evolution plot
 
 
@@ -284,7 +282,7 @@ In the files `03_compute_number_of_nodes_resumed` and `03_marginal_prob_first_sp
    - `data/simulated-2025-07-28` → `output_path <- here("output/results/number_nodes_mcc_cs.csv")`
 
 In the file `03_compute_number_of_nodes_resumed` you should set the `age_init_sim` variable:
-   - Set to `1:17` for `data/simulated-2025-07-28` (latest dataset)
+   - Set to `1` for `data/simulated-2025-07-28` (latest dataset)
    - Set to `8` for the dated simulation studies
 
 Run the analysis files in this order:
