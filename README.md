@@ -274,16 +274,16 @@ To reproduce the simulation analyses, follow these steps:
 
 1. **Analyze results**:
 
-> **Important**: In the files `03_compute_number_of_nodes_resumed` and `03_marginal_prob_first_split_resumed.R` select the corresponding output file:
-> 
->    - `data/simulated-2025-07-22-1500` → `output_path <- here("output/results/number_nodes_mcc_cs_1500.csv")`
->    - `data/simulated-2025-07-22-6000` → `output_path <- here("output/results/number_nodes_mcc_cs_6000.csv")`
->    - `data/simulated-2025-07-22-12000` → `output_path <- here("output/results/number_nodes_mcc_cs_12000.csv")`
->    - `data/simulated-2025-07-28` → `output_path <- here("output/results/number_nodes_mcc_cs.csv")`
-> 
-> In the file `03_compute_number_of_nodes_resumed` you should set the `age_init_sim` variable:
->    - Set to `1` for `data/simulated-2025-07-28` (latest dataset)
->    - Set to `8` for the dated simulation studies
+**Important**: 
+
+- In the file `03_compute_number_of_nodes_resumed.R` you should set the `age_init_sim` variable:
+   - Set to `1` for `data/simulated-2025-07-28` (latest dataset)
+   - Set to `8` for the dated simulation studies
+
+- The file `03_marginal_prob_first_split_ic.R` was run on a cluster and is computationally costly. 
+   We recommend making tests on a small number of files (~50). 
+
+- In the files `03_compute_number_of_nodes_resumed.R`, `03_marginal_prob_first_split_resumed.R`, `03_resume_to_true.R` and `03_true_false_uncertain.R` you should run 4 times the script : one for each analysis by changing the input and output files. For example : the input file is `data/simulated-2025-07-22-1500` → `output_path <- here("output/results/number_nodes_mcc_cs_1500.csv")`
 
 Run the analysis files in this order:
 
@@ -295,9 +295,6 @@ Run the analysis files in this order:
    Rscript src/simulations/03_resume_to_true_TF.R
    Rscript src/simulations/03_true_false_uncertain.R
    ```
-
-   **Important**: The file `src/simulations/03_marginal_prob_first_split_ic.R` was run on a cluster and is computationally costly. 
-   We recommend making tests by setting the variable `phylo_length_test` to a small number (~50). 
 
 2. **Consolidation and modeling**:
    ```bash

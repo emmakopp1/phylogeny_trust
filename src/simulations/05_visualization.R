@@ -23,7 +23,7 @@ library(ggeffects)
 # load data --------------------------------------------------------------------
 df_number_of_nodes_avg =  read_csv(here("output/results/number_of_nodes_summary.csv"))
 prob_first_split_mcc = read_csv(here("output/results/prob_first_split_mcc.csv"))
-marginal_probability_first_split_ic = read_csv(here("output/results/marginal_probability_first_split_ic.csv"))
+marginal_probability_first_split_ic = read_csv(here("output/results/marginal_prob_first_split_ic.csv"))
 
 # count the number of true, false and uncertain node from the true to consensus tree
 count_true_to_cs = readRDS(here("output/results/count_true_to_cs.rds")) |>
@@ -70,9 +70,9 @@ count_true_to_mcc_data_long <- read_csv(here("output/results/count_true_to_mcc_d
 # 1. Marginal probability of the first split in the posterior ------------------
 plot_marginal_probability_first_split_ic <- ggplot(
   marginal_probability_first_split_ic,
-  aes(x = age, y = prob)
+  aes(x = tree_age, y = prob_mean)
 ) +
-  geom_ribbon(aes(ymin = inf, ymax = sup), fill = "skyblue", alpha = 0.5) +
+  geom_ribbon(aes(ymin = prob_inf, ymax = prob_inf), fill = "skyblue", alpha = 0.5) +
   geom_line(color = "darkblue", size = 1) +
   geom_point(color = "darkblue", size = 2) +
   labs(

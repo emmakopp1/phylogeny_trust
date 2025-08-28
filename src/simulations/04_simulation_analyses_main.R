@@ -19,7 +19,7 @@ N_sim <- 50
 
 # load data --------------------------------------------------------------------
 # marginal probability of the first split with IC 
-marginal_probability_first_split_ic <- read.csv(here("output/results/marginal_probability_first_split_ic.csv"))
+marginal_probability_first_split_ic <- read.csv(here("output/results/marginal_prob_first_split_ic.csv"))
 
 # frequency of good reconstruction of all the nodes in of the mcc
 mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
@@ -56,8 +56,6 @@ df_number_of_nodes <- read.csv(
 prob_first_split_summary = read.csv(
   here("output/results/marginal_prob_first_split_mcc_consensus.csv")
 )
-
-prob_nodes_summary <- read_csv(here("output/results/prob_nodes_summary.csv"))
 
 # process data -----------------------------------------------------------------
 
@@ -226,7 +224,7 @@ saveRDS(model_cs2, here("output/results/model_cs.rds"))
 
 # correlation matrix between covariates
 cor_matrix <- cor(df_reg_mcc[c("age", "first_split_prob", "root_split_age_prop")], use = "complete.obs")
-corrplot(cor_matrix, method = "circle", type = "full")
+#corrplot(cor_matrix, method = "circle", type = "full")
 
 
 
