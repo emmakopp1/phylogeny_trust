@@ -281,7 +281,7 @@ To reproduce the simulation analyses, follow these steps:
    - Set to `8` for the dated simulation studies
 
 - The file `03_marginal_prob_first_split_ic.R` was run on a cluster and is computationally costly. 
-   We recommend making tests on a small number of files (~50). 
+   We recommend making tests on a small number of files (~50) or to keep its output.
 
 - In the files `03_compute_number_of_nodes_resumed.R`, `03_marginal_prob_first_split_resumed.R`, `03_resume_to_true.R` and `03_true_false_uncertain.R` you should run 4 times the script : one for each analysis by changing the input and output files. For example : the input file is `data/simulated-2025-07-22-1500` → `output_path <- here("output/results/number_nodes_mcc_cs_1500.csv")`
 
