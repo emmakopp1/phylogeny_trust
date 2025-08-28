@@ -46,7 +46,7 @@ count_true_to_cs = readRDS(here("output/results/count_true_to_cs.rds")) |>
   ungroup() 
 
 # number of well reconstructed node in the mcc tree
-count_true_to_mcc = readRDS(here("output/results/count_true_to_mcc.csv"))
+count_true_to_mcc = read_rds(here("output/results/count_true_to_mcc.csv"))
 
 # count the numer of true node from de consensus tree to the true tree
 count_cs_to_true = read_csv(here("output/results/count_cs_to_true.csv"))
