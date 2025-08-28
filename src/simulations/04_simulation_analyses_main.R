@@ -13,6 +13,7 @@
 # ------------------------------------------------------------------------------
 library(here)
 library(broom)
+library(corrplot)
 library(tidyverse)
 N_sim <- 50
 
@@ -223,53 +224,9 @@ summary(model_cs2)
 saveRDS(model_mcc2, here("output/results/model_mcc.rds"))
 saveRDS(model_cs2, here("output/results/model_cs.rds"))
 
-# A ENLEVER
-# regression on all the nodes --------------------------------------------------
-covariables_mcc = prob_nodes_summary |> filter(model == "MCC")
-
-# regression mcc
-df_reg_mcc <- mcc_to_true_TF |> # y 
-  inner_join(covariables_mcc, by = c("age", "simulation")) |> # covariables
-  full_join(first_split_age_mcc, by = c("age","simulation")) |>
-  select(-type, -exist, -node_cs,-node_mcc, -cs_prob, -X)|>
-  rename(y = N_nodes) |> 
-  mutate(root_split_age_prop = as.numeric(root_split_age)/root_age) |>
-  rename(first_split_prob = mcc_prob) |> 
-  mutate(y = as.factor(y))
-
-# regression with age, probability of the first split and age of the first split
-# model mcc regression 
-model_mcc <- glm(y ~ age + first_split_prob + root_split_age_prop, data = df_reg_mcc, family = 'binomial')
-summary(model_mcc)
-
-# regression cs 
-resume_to_true_TF_cs <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
-  filter(type == 'consensus')
-
-df_reg_cs <- resume_to_true_TF_cs |>
-  inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
-  filter(node == node_cs ) |>
-  full_join(first_split_age_cs, by = c("age","simulation")) |>
-  select(-type, -exist, -node_cs,-node_mcc, -mcc_prob, -X)|>
-  rename(y = N_nodes) |>
-  # delete the tree for which the first split is a leaf
-  filter(!is.na(y)) |> 
-  mutate(root_split_age_prop = as.numeric(root_split_age)/root_age) |>
-  rename(first_split_prob = cs_prob) |> 
-  mutate(y = as.factor(y))
-
-# model consensus regression
-model_cs <- glm(y ~ age + first_split_prob + root_split_age_prop, data = df_reg_cs, family = 'binomial')
-summary(model_cs)
-
-# regression with age, probability of the first split
-model_mcc2 <- glm(y ~ age + first_split_prob, data = df_reg_mcc, family = 'binomial')
-model_cs2 <- glm(y ~ age + first_split_prob, data = df_reg_cs, family = 'binomial')
-
-
-# Sauvegarde des modèles dans des fichiers .rds
-saveRDS(model_mcc2, here("output/results/model_mcc.rds"))
-saveRDS(model_cs2, here("output/results/model_cs.rds"))
+# correlation matrix between covariates
+cor_matrix <- cor(df_reg_mcc[c("age", "first_split_prob", "root_split_age_prop")], use = "complete.obs")
+corrplot(cor_matrix, method = "circle", type = "full")
 
 
 
