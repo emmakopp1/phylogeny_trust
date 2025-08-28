@@ -274,16 +274,16 @@ To reproduce the simulation analyses, follow these steps:
 
 1. **Analyze results**:
 
-In the files `03_compute_number_of_nodes_resumed` and `03_marginal_prob_first_split_resumed.R` select the corresponding output file:
-
-   - `data/simulated-2025-07-22-1500` → `output_path <- here("output/results/number_nodes_mcc_cs_1500.csv")`
-   - `data/simulated-2025-07-22-6000` → `output_path <- here("output/results/number_nodes_mcc_cs_6000.csv")`
-   - `data/simulated-2025-07-22-12000` → `output_path <- here("output/results/number_nodes_mcc_cs_12000.csv")`
-   - `data/simulated-2025-07-28` → `output_path <- here("output/results/number_nodes_mcc_cs.csv")`
-
-In the file `03_compute_number_of_nodes_resumed` you should set the `age_init_sim` variable:
-   - Set to `1` for `data/simulated-2025-07-28` (latest dataset)
-   - Set to `8` for the dated simulation studies
+> **Important**: In the files `03_compute_number_of_nodes_resumed` and `03_marginal_prob_first_split_resumed.R` select the corresponding output file:
+> 
+>    - `data/simulated-2025-07-22-1500` → `output_path <- here("output/results/number_nodes_mcc_cs_1500.csv")`
+>    - `data/simulated-2025-07-22-6000` → `output_path <- here("output/results/number_nodes_mcc_cs_6000.csv")`
+>    - `data/simulated-2025-07-22-12000` → `output_path <- here("output/results/number_nodes_mcc_cs_12000.csv")`
+>    - `data/simulated-2025-07-28` → `output_path <- here("output/results/number_nodes_mcc_cs.csv")`
+> 
+> In the file `03_compute_number_of_nodes_resumed` you should set the `age_init_sim` variable:
+>    - Set to `1` for `data/simulated-2025-07-28` (latest dataset)
+>    - Set to `8` for the dated simulation studies
 
 Run the analysis files in this order:
 
