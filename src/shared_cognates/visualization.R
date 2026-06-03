@@ -45,7 +45,7 @@ Q <- matrix(
 
 # load data --------------------------------------------------------------------
 shared_cognates <- readRDS(here("output/results/shared_cognates.rds"))
-prop_shared_tip_pair <- readRDS(here("output/results/shared_cognate_tip_pair.csv"))
+prop_shared_tip_pair <- readRDS(here("output/results/shared_cognate_tip_pair.rds"))
 
 plot(shared_cognates$tree_age, shared_cognates$value,
      type = "b",
@@ -63,7 +63,6 @@ arrows(x0     = shared_cognates$tree_age,
        col    = "steelblue")
 
 # cognats partagé entre une pair de langue (une de l'outgroup et une de l'ingroup)
-prop_shared_tip_pair <- readRDS(here("output/results/shared_cognate_tip_pair.pdf"))
 tip_A <- unique(prop_shared_tip_pair$tipA)
 tip_B <- unique(prop_shared_tip_pair$tipB)
 plot(1:17, prop_shared_tip_pair$prop,

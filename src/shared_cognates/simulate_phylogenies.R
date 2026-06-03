@@ -1,5 +1,5 @@
 library(xml2); library(ape); library(phytools); library(glue)
-library(here); library(castor); library(phangorn)
+library(here); library(castor); library(phangorn); library(tidyverse)
 
 dir.create(here('data/shared_cognates'), showWarnings = FALSE)
 
@@ -189,7 +189,7 @@ prop_shared_tip_pair <- tibble(
   prop = prop_shared
 )
 
-saveRDS(prop_shared_tip_pair, here("output/results/shared_cognate_tip_pair.csv"))
+saveRDS(prop_shared_tip_pair, here("output/results/shared_cognate_tip_pair.rds"))
 #prop_shared <- readRDS(here("output/results/shared_cognate_tip_pair.pdf"))
 
 
