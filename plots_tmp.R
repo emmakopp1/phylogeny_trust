@@ -1,7 +1,6 @@
 library(tidyverse)
 library(here)
 library(ggh4x)
-library(legendry)
 library(khroma)
 library(knitr)
 
@@ -24,8 +23,6 @@ Q <- matrix(
 )
 
 shared_cognates <- readRDS(here("output/results/shared_cognates.rds"))
-
-
 shared_cognates |>
   ggplot() +
   geom_pointpath(
@@ -135,13 +132,12 @@ ggsave(
 )
 plot_crop(here("output/figs/shared_cognate_tip_pair.pdf"))
 
-count_true_to_mcc <- read_rds(here("output/results/count_true_to_mcc.csv")) |>
-  select(age, value = exist, mean_n = n_mean) |>
-  mutate(type = "MCC", value = as.character(value))
-count_true_to_cs <- readRDS(here("output/results/count_true_to_cs.rds")) |>
+prop_true_to_cs <- read_csv(here("output/results/prop_true_to_cs.csv")) |>
   mutate(type = "Majority-rule consensus", value = as.character(value))
 
-bind_rows(count_true_to_mcc, count_true_to_cs) |>
+
+bind_rows(prop_true_to_cs, prop_mcc_to_true, prop_hipstr_to_true) |>
+  mutate(type = fct_inorder(type)) |>
   mutate(
     value = case_when(
       value == "1" ~ "Present",
@@ -150,31 +146,93 @@ bind_rows(count_true_to_mcc, count_true_to_cs) |>
     )
   ) |>
   mutate(value = factor(value, levels = c("Absent", "Uncertain", "Present"))) |>
-  # group_by(type, value) |>
-  # mutate(p = mean_n)
-  # ungroup() |>
-  ggplot(aes(x = factor(age), y = mean_n, fill = value)) +
-  geom_col(position = "fill") +
+  ggplot(aes(x = age, y = mean_n, fill = value)) +
+  geom_col(position = "fill", linewidth = .15) +
+  geom_hline(
+    yintercept = .5,
+    linetype = "dashed",
+    linewidth = .5,
+    color = "white"
+  ) +
   labs(
     x = "Age (ka BP)",
     y = "Average proportion of nodes",
     fill = ""
   ) +
   scale_fill_highcontrast(reverse = TRUE) +
+  scale_color_highcontrast(reverse = TRUE) +
   coord_cartesian(clip = "off", expand = FALSE) +
   facet_wrap(~type) +
-  theme_minimal() +
-  theme_minimal(base_family = base_font) +
+  theme_minimal(base_family = base_font, base_size = 12) +
   theme(
     aspect.ratio = .618,
     panel.grid.minor = element_blank(),
     legend.text = element_text(size = 12),
+    legend.position = "bottom",
+    legend.margin = margin(t = -.5, r = 0, b = 0, l = 0, unit = "lines"),
+    strip.text = element_text(size = 12)
   )
 ggsave(
   here("output/figs/barplot_prop_true_to_resume.pdf"),
-  width = 12 * 1.35,
-  height = 12,
+  width = 12,
+  height = 12 * 1.25,
   units = "cm",
   device = cairo_pdf
 )
 plot_crop(here("output/figs/barplot_prop_true_to_resume.pdf"))
+
+prop_cs_to_true <- read_csv(here("output/results/prop_cs_to_true.csv")) |>
+  rename(value = exist, mean_n = n_mean) |>
+  mutate(type = "Consensus", value = as.character(value))
+prop_mcc_to_true <- read_csv(here("output/results/prop_mcc_to_true.csv")) |>
+  rename(value = exist, mean_n = n_mean) |>
+  mutate(type = "MCC", value = as.character(value))
+prop_hipstr_to_true <- read_csv(here(
+  "output/results/prop_hipstr_to_true.csv"
+)) |>
+  rename(value = exist, mean_n = n_mean) |>
+  mutate(type = "HIPSTR", value = as.character(value))
+
+bind_rows(prop_cs_to_true, prop_mcc_to_true, prop_hipstr_to_true) |>
+  mutate(type = fct_inorder(type)) |>
+  mutate(
+    value = case_when(
+      value == "1" ~ "Present",
+      value == "2" ~ "Uncertain",
+      value == "0" ~ "Absent"
+    )
+  ) |>
+  mutate(value = factor(value, levels = c("Absent", "Uncertain", "Present"))) |>
+  ggplot(aes(x = age, y = mean_n, fill = value)) +
+  geom_col(position = "fill", linewidth = .15) +
+  geom_hline(
+    yintercept = .5,
+    linetype = "dashed",
+    linewidth = .5,
+    color = "white"
+  ) +
+  labs(
+    x = "Age (ka BP)",
+    y = "Average proportion of nodes",
+    fill = ""
+  ) +
+  scale_fill_manual(values = rev(color("high contrast")(3)[-2])) +
+  coord_cartesian(clip = "off", expand = FALSE) +
+  facet_wrap(~type) +
+  theme_minimal(base_family = base_font, base_size = 12) +
+  theme(
+    aspect.ratio = .618,
+    panel.grid.minor = element_blank(),
+    legend.text = element_text(size = 12),
+    legend.position = "bottom",
+    legend.margin = margin(t = -.5, r = 0, b = 0, l = 0, unit = "lines"),
+    strip.text = element_text(size = 12)
+  )
+ggsave(
+  here("output/figs/barplot_prop_resume_to_true.pdf"),
+  width = 12,
+  height = 12 * 1.25,
+  units = "cm",
+  device = cairo_pdf
+)
+plot_crop(here("output/figs/barplot_prop_resume_to_true.pdf"))
