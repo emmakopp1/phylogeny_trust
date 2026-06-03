@@ -134,3 +134,47 @@ ggsave(
   device = cairo_pdf
 )
 plot_crop(here("output/figs/shared_cognate_tip_pair.pdf"))
+
+count_true_to_mcc <- read_rds(here("output/results/count_true_to_mcc.csv")) |>
+  select(age, value = exist, mean_n = n_mean) |>
+  mutate(type = "MCC", value = as.character(value))
+count_true_to_cs <- readRDS(here("output/results/count_true_to_cs.rds")) |>
+  mutate(type = "Majority-rule consensus", value = as.character(value))
+
+bind_rows(count_true_to_mcc, count_true_to_cs) |>
+  mutate(
+    value = case_when(
+      value == "1" ~ "Present",
+      value == "2" ~ "Uncertain",
+      value == "0" ~ "Absent"
+    )
+  ) |>
+  mutate(value = factor(value, levels = c("Absent", "Uncertain", "Present"))) |>
+  # group_by(type, value) |>
+  # mutate(p = mean_n)
+  # ungroup() |>
+  ggplot(aes(x = factor(age), y = mean_n, fill = value)) +
+  geom_col(position = "fill") +
+  labs(
+    x = "Age (ka BP)",
+    y = "Average proportion of nodes",
+    fill = ""
+  ) +
+  scale_fill_highcontrast(reverse = TRUE) +
+  coord_cartesian(clip = "off", expand = FALSE) +
+  facet_wrap(~type) +
+  theme_minimal() +
+  theme_minimal(base_family = base_font) +
+  theme(
+    aspect.ratio = .618,
+    panel.grid.minor = element_blank(),
+    legend.text = element_text(size = 12),
+  )
+ggsave(
+  here("output/figs/barplot_prop_true_to_resume.pdf"),
+  width = 12 * 1.35,
+  height = 12,
+  units = "cm",
+  device = cairo_pdf
+)
+plot_crop(here("output/figs/barplot_prop_true_to_resume.pdf"))
