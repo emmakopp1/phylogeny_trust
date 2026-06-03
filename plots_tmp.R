@@ -45,7 +45,7 @@ prop_shared_tip_pair |>
       yend = .1
     ),
     linetype = "dashed",
-    linewidth = .25
+    linewidth = .35
   ) +
   geom_segment(
     aes(
@@ -55,11 +55,12 @@ prop_shared_tip_pair |>
       yend = -Inf
     ),
     linetype = "dashed",
-    linewidth = .25
+    linewidth = .35
   ) +
   geom_line(
     data = tibble(age = seq(0, 17, .1)),
     aes(x = age, y = exp(-2 * Q[1, 2] * age)),
+    linewidth = .75,
     col = plt[2]
   ) +
   # geom_line(data = tibble(age = seq(0, 17, .1)), aes(x = age, y = exp(-2 * .14 * age)), col = plt[1]) +
@@ -72,7 +73,7 @@ prop_shared_tip_pair |>
   ylab("Proportion of shared cognates") +
   xlab("Age of the most recent common ancestor (ka)") +
   scale_y_continuous(breaks = seq(0, 1, .1)) +
-  scale_x_continuous(breaks = seq(0, 17, 1), expand = FALSE) +
+  scale_x_continuous(breaks = seq(0, 17, 1)) +
   scale_color_vibrant(
     name = NULL,
     guide = guide_legend(
