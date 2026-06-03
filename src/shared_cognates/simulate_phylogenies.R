@@ -189,7 +189,7 @@ prop_shared_tip_pair <- tibble(
   prop = prop_shared
 )
 
-saveRDS(prop_shared_tip_pair, here("output/results/shared_cognate_tip_pair.pdf"))
+saveRDS(prop_shared_tip_pair, here("output/results/shared_cognate_tip_pair.csv"))
 #prop_shared <- readRDS(here("output/results/shared_cognate_tip_pair.pdf"))
 
 

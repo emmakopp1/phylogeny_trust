@@ -19,17 +19,38 @@ library(ggplot2)
 library(ape)
 library(phangorn)
 library(ggeffects)
+library(HDInterval)
 
 # load data --------------------------------------------------------------------
 df_number_of_nodes_avg =  read_csv(here("output/results/number_of_nodes_summary.csv"))
 prob_first_split_mcc = read_csv(here("output/results/prob_first_split_mcc.csv"))
-marginal_probability_first_split_ic = read_csv(here("output/results/marginal_prob_first_split_ic.csv")) |> 
-  group_by(tree_age) |> 
+prob_first_split_hipstr = read_csv(here("output/results/prob_first_split_hipstr.csv"))
+
+marginal_probability_first_split_ic = read_csv(here("output/results/marginal_prob_first_split_ic.csv"))
+
+hdi_results <- map(1:17, ~ {
+  test <- marginal_probability_first_split_ic |>
+    filter(tree_age == .x) |>
+    select(prob_mean)
+  list(
+    lower = hdi(test, credMass = 0.90)[1],
+    upper = hdi(test, credMass = 0.90)[2]
+  )
+})
+hdi_lower <- map_dbl(hdi_results, "lower")
+hdi_upper <- map_dbl(hdi_results, "upper")
+
+marginal_probability_first_split_ic = marginal_probability_first_split_ic |>
+  group_by(tree_age) |>
   summarise(
-    prob_mean = mean(prob_mean), 
-    prob_inf = mean(prob_inf), 
+    prob_mean = mean(prob_mean),
+    prob_inf = mean(prob_inf),
     prob_sup = mean(prob_sup)
   )
+marginal_probability_first_split_ic$prob_inf <- hdi_lower
+marginal_probability_first_split_ic$prob_sup <- hdi_upper
+marginal_probability_first_split_ic
+
 # count the number of true, false and uncertain node from the true to consensus tree
 count_true_to_cs = readRDS(here("output/results/count_true_to_cs.rds")) |>
   group_by(age) |>

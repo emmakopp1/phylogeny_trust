@@ -63,6 +63,7 @@ process_k <- function(k, param) {
   Y_pruned <- t(Y[start:end, , drop = FALSE])
   
   for (t in 1:M) {
+    cat('tree',t, '\n')
     tree_pruned <- tree[[t]]
     
     for (trait in 1:ncol(Y_pruned)) {
@@ -82,7 +83,7 @@ process_k <- function(k, param) {
         
         # loop for internal nodes
         for (node in (tree_pruned$Nnode+3):(tree_pruned$Nnode * 2 + 1)){
-          cat('tree',t, 'trait ',trait, 'node ',node,'\n')
+          #cat('tree',t, 'trait ',trait, 'node ',node,'\n')
           i_node = which(as.numeric(names(rec[["ace"]][, 2])) == node)
           if (length(i_node) == 0) next
           p = as.numeric(rec[["ace"]][, 2][i_node])
@@ -102,7 +103,7 @@ process_k <- function(k, param) {
             stringsAsFactors = FALSE
           )
           
-          Sys.sleep(runif(1, 0, 0.01))  # 0-10ms
+          #Sys.sleep(runif(1, 0, 0.01))  # 0-10ms
           write.table(
             row,
             file = path_out,
@@ -114,7 +115,7 @@ process_k <- function(k, param) {
         }
         
         for (tip in tree_pruned$tip.label){
-          cat('tree',t, 'trait ',trait, 'node ',tip,'\n')
+          #cat('tree',t, 'trait ',trait, 'node ',tip,'\n')
           tip_number = which(tree_pruned$tip.label==tip) 
           parent = getParent(tree_pruned, tip_number)
           i_parent = which(as.numeric(names(rec[["ace"]][, 2])) == parent)
@@ -131,7 +132,7 @@ process_k <- function(k, param) {
             stringsAsFactors = FALSE
           )
           
-          Sys.sleep(runif(1, 0, 0.01))  # 0-10ms
+          #Sys.sleep(runif(1, 0, 0.01))  # 0-10ms
           write.table(
             row,
             file = path_out,
@@ -175,7 +176,7 @@ mu_ie <- clock_rate_ie / (2 * pi_ie$pi1)
 Q_ie <- cbind(c(-lambda_ie, mu_ie), c(lambda_ie, -mu_ie))
 
 # Initialize output CSV
-path_out_ie <- here("output/results/ancestral_reconstruction_ie_glissements_sementiques.csv")
+path_out_ie <- here("output/results/ancestral_reconstruction_ie_glissements_sementiques_water.csv")
 write.csv(
   x = data.frame(
     node = character(), 
@@ -285,3 +286,4 @@ stopCluster(cl)
 # fichier log 
 # tail -f logs/run.log
 
+process_k(k, param_ie)

@@ -5,6 +5,7 @@ library(castor)
 library(phangorn)
 library(adephylo)
 library(dplyr)
+library(tidyverse)
 
 # Charger les données IE
 phylo_ie <- read.nexus(here("data/real/iecor_ctmc-strict-M1/IECoR_M1_CTMC_Gamma_1_Rate_For_All_Mgs_combined.trees"))
@@ -70,12 +71,20 @@ for (trait_global in traits_test) {
 
 res_df <- do.call(rbind, results)
 saveRDS(res_df, here("output/results/ancr_t4699_t4700.rds"))
-res_df = readRDS(here("output/results/ancr_t4699_t4700.rds"))
 
+# ICI
+res_df <- read.csv(
+  here("/Users/kopp/Documents/phylogeny_trust/output/results/ancestral_reconstruction_ie_glissements_sementiques_water.csv"),
+  row.names = NULL
+)
+colnames(res_df) <- c("node", "p_node", "meaning", "node_parent", "p_parent", "tree", "trait")
 head(res_df)
+
+
+res_df |> pull(trait) |> unique()
 t4699 = res_df |> filter(trait == 4699, tree==95)
 
-mean(t4699$value, na.rm=T)
+mean(t4699$p_node, na.rm=T)
 
 t4700 = res_df |> filter(trait == 4700)
 
@@ -86,6 +95,7 @@ tree4699 = readRDS(here("output/trees/ancr/tree_pruned_ie/tree_water_t95_trait46
 tree4700 = readRDS(here("output/trees/ancr/tree_pruned_ie/tree_water_t132_trait4700.rds"))
 
 # trait 4699
+par(mfrow=c(1,2))
 plot(tree4699, cex=0.4)
 nodelabels(node = 294, cex=0.4)
 
