@@ -6,6 +6,7 @@ library(khroma)
 library(knitr)
 
 base_font <- "Noto Sans Condensed"
+plt <- color("vibrant")(3)
 
 N_traits <- 3000
 pi1 <- 0.94305
@@ -21,12 +22,47 @@ Q <- matrix(
   nrow = 2,
   byrow = TRUE
 )
+
+shared_cognates <- readRDS(here("output/results/shared_cognates.rds"))
+
+
+shared_cognates |>
+  ggplot() +
+  geom_pointpath(
+    aes(x = tree_age, y = value),
+    color = plt[2],
+    linewidth = 1,
+    stroke = .1
+  ) +
+  geom_errorbar(
+    aes(x = tree_age, ymin = inf, ymax = sup),
+    color = plt[2],
+    width = .2
+  ) +
+  ylab("Proportion of shared cognates") +
+  xlab("Age of the most recent common ancestor (ka)") +
+  scale_y_continuous(breaks = seq(0, 1, .1)) +
+  scale_x_continuous(breaks = seq(0, 17, 1)) +
+  coord_cartesian(clip = "off") +
+  theme_minimal(base_family = base_font) +
+  theme(
+    aspect.ratio = .618,
+    panel.grid.minor = element_blank()
+  )
+ggsave(
+  here("output/figs/shared_cognate_no_homoplasie.pdf"),
+  width = 12,
+  height = 12,
+  units = "cm",
+  device = cairo_pdf
+)
+plot_crop(here("output/figs/shared_cognate_no_homoplasie.pdf"))
+
 prop_shared_tip_pair <- readRDS(here(
   "output/results/shared_cognate_tip_pair.pdf"
 )) |>
   rowid_to_column("age")
 
-plt <- color("vibrant")(3)
 prop_shared_tip_pair |>
   ggplot() +
   geom_segment(aes(x = 0, xend = 0, y = 0, yend = 0, color = "Computed")) +
