@@ -76,16 +76,21 @@ process_k <- function(k, param) {
       }
       
       if (sum(y, na.rm = TRUE) > 1 & length(unique(y)) > 1) {
-        rec <- ancr(fitMk(tree_pruned, y, "ARD", fittedQ = Q, pi = as.numeric(pi)))
+        rec <- ancr(fitMk(tree_pruned, y, "ARD", fixedQ = Q, pi = as.numeric(pi)))
         indice <- which(rec[["ace"]][, 2] > 0.5)
         nodes <- as.integer(names(indice))
         
         if (length(nodes) > 0) {
-          value <- max(as.numeric(max(distRoot(tree_pruned)) - distRoot(tree_pruned, nodes)))
+          
+          all_dists <- distRoot(tree_pruned, 1:max(tree_pruned$edge))
+          values    <- as.numeric(max(distRoot(tree_pruned)) - all_dists)
+          node      <- which.max(values)
+          value     <- values[node]
           
           row <- data.frame(
             value = value,
             sens = meaning_k,
+            node = node,
             tree = t,
             trait = trait + start - 1,
             stringsAsFactors = FALSE
@@ -128,16 +133,18 @@ K_ie <- length(meanings_sets_ie$meaning)
 I_k_ie <- meanings_sets_ie$end - meanings_sets_ie$start + 1
 
 pi_ie <- bounds_real_tb_ie[, c("pi0", "pi1")]
-lambda_ie <- 1 / (2 * pi_ie$pi0)
-mu_ie <- 1 / (2 * pi_ie$pi1)
+clock_rate_ie = 0.00166
+lambda_ie <- clock_rate_ie / (2 * pi_ie$pi0)
+mu_ie <- clock_rate_ie / (2 * pi_ie$pi1)
 Q_ie <- cbind(c(-lambda_ie, mu_ie), c(lambda_ie, -mu_ie))
 
 # Initialize output CSV
-path_out_ie <- here("output/results/ancestral_reconstruction_ie.csv")
+path_out_ie <- here("output/results/ancestral_reconstruction_ie_water.csv")
 write.csv(
   x = data.frame(
     value = character(), 
     sens = character(), 
+    node = character(),
     tree = character(), 
     trait = character(),
     stringsAsFactors = FALSE),
@@ -208,25 +215,30 @@ param_st = list(tree = phylo_st,
                 path_out = path_out_st
 )
 
+# Execution for water -----------------------------------------------------
+process_k(160, param_ie)
 
 
 # ----- Parallel execution -----------------------------------------------------
-ncl <- detectCores() - 1
-cl <- makeCluster(ncl, type = "FORK")
-clusterSetRNGStream(cl)
+
+#ncl <- detectCores() - 1
+#cl <- makeCluster(ncl, type = "FORK")
+#clusterSetRNGStream(cl)
 
 # Run the rest in parallel
-clusterExport(cl, varlist = c(
-  "process_k", "param_st", "param_ie"
-))
+#clusterExport(cl, varlist = c(
+#  "process_k", "param_st", "param_ie"
+#))
 
-parLapply(cl, 1:K_st, function(k) {
-  process_k(k, param_st)
-})
+#parLapply(cl, 1:K_st, function(k) {
+#  process_k(k, param_st)
+#})
 
 
-parLapply(cl, 1:K_ie, function(k) {
-  process_k(k, param_ie)
-})
+#parLapply(cl, 1:K_ie, function(k) {
+#  process_k(k, param_ie)
+#})
 
-stopCluster(cl)
+#stopCluster(cl)
+
+

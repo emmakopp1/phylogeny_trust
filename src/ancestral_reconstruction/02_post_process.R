@@ -69,9 +69,49 @@ summary_data_st$mean_sinitic[is.nan(summary_data_st$mean_sinitic)] <- 0
 write_csv(summary_data_st, here("output/results/ancestral_reconstruction_summary_st.csv"))
 
 # indo-european ---------------------------------------------------------------
+# Number of trait per meaning
+trait_per_meaning_ie <- read.csv(here("data/real/meanings_sets_ie.csv")) |>
+  mutate(n_traits = end - start + 1) |>
+  select(meaning, n_traits) |>
+  rename(sens = meaning)
+
 # Load dataframe
-path_ie <- here("output/results/ancestral_reconstruction_ie.csv")
-data_ie <- read.csv2(path_ie, header = TRUE, sep = ',')
+path_ie <- here("output/results/ancestral_reconstruction_ie_water.csv")
+data_ie <- read.csv2(path_ie, header = TRUE, sep = ',') |> 
+  distinct()
+
+# proto meaning/trait value
+roots_ie = read.csv(here("data/real/iecor_ctmc-strict-M1/iecor_roots.csv")) |>
+  rename(cognate_id = id)
+
+# Nexus files
+nexus_text_ie <- readLines(here("data/real/iecor_ctmc-strict-M1/iecor.nex"))
+# Extraire les charstatelabels
+start <- which(str_detect(nexus_text_ie, "charstatelabels"))
+end <- which(str_detect(nexus_text_ie, "^\\s*;"))
+end <- end[end > start][1]
+labels_lines <- nexus_text_ie[(start+1):(end-1)]
+
+# Parser chaque ligne
+trait_map <- labels_lines |>
+  str_trim() |>
+  str_remove(",$") |>
+  str_match("^(\\d+)\\s+(\\S+)$") |>
+  as.data.frame() |>
+  setNames(c("full", "trait_num", "label")) |>
+  filter(!is.na(trait_num)) |>
+  mutate(
+    trait_num = as.integer(trait_num),
+    type = case_when(
+      str_detect(label, "_group$") ~ "group",
+      str_detect(label, "_cognate_") ~ "cognate",
+      TRUE ~ "other"
+    ),
+    word = str_extract(label, "^[^_]+"),
+    cognate_id = if_else(type == "cognate",
+                         as.integer(str_extract(label, "\\d+$")),
+                         NA_integer_)
+  )
 
 # Load and clean linguistic data 
 Y_ie <- read.nexus.data(here("data/real/iecor_ctmc-strict-M1/iecor.nex"))
@@ -87,7 +127,7 @@ tocharian_anatolian <- c(
   "TocharianB",
   "Hittite",
   "Luvian"
-  )
+)
 
 # Select Chinese languages
 Y_tocharian_anatolian <- Y_ie |>
@@ -95,33 +135,36 @@ Y_tocharian_anatolian <- Y_ie |>
   relocate(trait, .before = everything()) |> 
   select(all_of(tocharian_anatolian))
 
-# For each trait check if there is a Chinese language presence
-data_ie_main <- data_ie |>
-  left_join(Y_tocharian_anatolian, by = "trait") |> 
-  mutate(any_outgroup = rowSums(across(tocharian_anatolian, ~ .x == 1), na.rm = TRUE) > 0) |> 
-  relocate(any_outgroup, .after = trait)
+# Final dataframe 
+data_ie_by_trait_and_sens <- data_ie |>
+  select(-node) |>
+  mutate(value = as.numeric(value)) |>
+  group_by(trait, sens) |>
+  summarise(mean_value = mean(value, na.rm = TRUE), .groups = "drop") |>
+  mutate(trait_num = as.integer(trait)) |>
+  left_join(
+    trait_map |> select(trait_num, label, word, type, cognate_id),
+    by = "trait_num"
+  ) |>
+  select(-trait_num, -type, -word, -label)  |>
+  group_by(sens) |>
+  mutate(max_value = max(mean_value, na.rm = TRUE)) |>
+  ungroup() |>
+  mutate(ratio_value_max = mean_value / max_value) |>
+  left_join(trait_per_meaning_ie, by = "sens") |>
+  mutate(mean_value = round(mean_value, 3)) |>
+  mutate(max_value = round(max_value, 3)) |>
+  mutate(ratio_value_max = round(ratio_value_max, 3)) |>
+  right_join(Y_tocharian_anatolian, by = "trait") |>
+  mutate(any_outgroup = rowSums(across(all_of(tocharian_anatolian), ~ .x == 1), na.rm = TRUE) > 0) |>
+  group_by(sens) |>
+  mutate(mean_outgroup = mean(any_outgroup, na.rm = TRUE))|>
+  ungroup() |>
+  select(-TocharianA, -TocharianB, -Hittite, -Luvian, -any_outgroup) |>
+  mutate(mean_outgroup = round(mean_outgroup,3)) |>
+  left_join(roots_ie,by="cognate_id") |>
+  select(-root_language)
 
-# For each tree and sens keep the maximum depth reconstruction (value)
-max_depth_data_ie <- data_ie_main |> 
-  mutate(value = as.numeric(value)) |> 
-  group_by(sens, tree) |>
-  slice_max(value, n = 1, with_ties = FALSE) |>
-  ungroup()
+head(data_ie_by_trait_and_sens)
 
-# For each sens average the maximum depth reconstruction value and the 
-# presence of Chinese
-summary_data_ie <- max_depth_data_ie |> 
-  group_by(sens) |> 
-  summarize(mean_max_depth = mean(value, na.rm = TRUE), 
-            mean_outgroup = mean(any_outgroup, na.rm = TRUE),
-            .groups = "drop") |> 
-  mutate(
-    sens = sens |>
-      str_replace_all("_", " ") |>
-      str_remove_all("\\bthe\\b") |>
-      str_remove_all("\\bto\\b") |>
-      str_trim() |>
-      str_squish()
-  )
-
-write_csv(summary_data_ie, here("output/results/ancestral_reconstruction_summary_ie.csv"))
+write_csv(data_ie_by_trait_and_sens, here("output/results/ancestral_reconstruction_summary_ie_water.csv"))

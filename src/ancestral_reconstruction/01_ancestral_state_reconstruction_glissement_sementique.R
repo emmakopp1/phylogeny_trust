@@ -91,6 +91,8 @@ process_k <- function(k, param) {
           i_parent = which(as.numeric(names(rec[["ace"]][, 2])) == parent)
           p_parent = as.numeric(rec[["ace"]][, 2][i_parent])
           
+          #value <- max(as.numeric(max(distRoot(tree_pruned)) - distRoot(tree_pruned, nodes)))
+          
           
           row <- data.frame(
             node = node,
@@ -259,7 +261,7 @@ param_st = list(tree = phylo_st,
 )
 
 # ----- Test -------------------------------------------------------------------
-#process_k(4699,param_ie)
+process_k(160,param_ie)
 
 # ----- Parallel execution -----------------------------------------------------
 ncl <- detectCores() - 2
