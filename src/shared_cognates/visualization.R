@@ -45,7 +45,7 @@ Q <- matrix(
 
 # load data --------------------------------------------------------------------
 shared_cognates <- readRDS(here("output/results/shared_cognates.rds"))
-prop_shared_tip_pair <- readRDS(here("output/results/shared_cognate_tip_pair.pdf"))
+prop_shared_tip_pair <- readRDS(here("output/results/shared_cognate_tip_pair.csv"))
 
 plot(shared_cognates$tree_age, shared_cognates$value,
      type = "b",
