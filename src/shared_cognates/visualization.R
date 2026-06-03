@@ -75,3 +75,11 @@ plot(1:17, prop_shared_tip_pair$prop,
      ylim = c(0, 1))
 # Courbe théorique de Swadeash
 curve(exp(-2 * Q[1,2] * x), from = 1, to = 17, add = TRUE, col = "red", lty = 2, lwd = 2)
+
+# Valeur observée sur données réelles
+abline(h = mean(shared), col = "black", lty = 3, lwd = 1.5)
+text(x = 17, y = mean(shared),
+     labels = paste0("Real sino-tibetan data : ", round(mean(shared), 3)),
+     adj    = c(1, -30),
+     col    = "black",
+     cex    = 0.85)
