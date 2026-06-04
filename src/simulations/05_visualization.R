@@ -52,7 +52,7 @@ marginal_probability_first_split_ic$prob_sup <- hdi_upper
 marginal_probability_first_split_ic
 
 # count the number of true, false and uncertain node from the true to consensus tree
-count_true_to_cs = readRDS(here("output/results/count_true_to_cs.rds")) |>
+count_true_to_cs = read_csv(here("output/results/count_true_to_cs.csv")) |>
   group_by(age) |>
   mutate(
     mean_present = mean_n[value == "1"],
@@ -67,7 +67,7 @@ count_true_to_cs = readRDS(here("output/results/count_true_to_cs.rds")) |>
   ungroup() 
 
 # number of well reconstructed node in the mcc tree
-count_true_to_mcc = read_rds(here("output/results/count_true_to_mcc.csv"))
+count_true_to_mcc = read_csv(here("output/results/count_true_to_mcc.csv"))
 
 # count the numer of true node from de consensus tree to the true tree
 count_cs_to_true = read_csv(here("output/results/count_cs_to_true.csv"))
@@ -196,10 +196,10 @@ plot_mcc_incertain <- ggplot(count_true_to_mcc, aes(x = factor(age), y = n_mean,
     y = "number of nodes",
     fill = "Existence"
   ) +
-  scale_fill_manual(
-    values = c("0" = "darkred", "1" = "darkblue"),
-    labels = c("0" = "Absent", "1" = "Present")
-  ) +
+  #scale_fill_manual(
+  #  values = c("0" = "darkred", "1" = "darkblue"),
+  #  labels = c("0" = "Absent", "1" = "Present")
+  #) +
   coord_cartesian(clip = "off") +
   theme_minimal()
 

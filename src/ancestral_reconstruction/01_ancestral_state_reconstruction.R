@@ -84,8 +84,10 @@ process_k <- function(k, param) {
           
           all_dists <- distRoot(tree_pruned, 1:max(tree_pruned$edge))
           values    <- as.numeric(max(distRoot(tree_pruned)) - all_dists)
-          node      <- which.max(values)
-          value     <- values[node]
+          
+          # Prendre le max seulement parmi les noeuds reconstruits
+          node  <- nodes[which.max(values[nodes])]
+          value <- values[node]
           
           row <- data.frame(
             value = value,

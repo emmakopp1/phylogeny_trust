@@ -168,3 +168,9 @@ data_ie_by_trait_and_sens <- data_ie |>
 head(data_ie_by_trait_and_sens)
 
 write_csv(data_ie_by_trait_and_sens, here("output/results/ancestral_reconstruction_summary_ie_water.csv"))
+
+
+head(data_ie_by_trait_and_sens)
+
+
+

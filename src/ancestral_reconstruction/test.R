@@ -48,7 +48,7 @@ for (trait_global in traits_test) {
     }
     
     if (sum(y, na.rm = TRUE) > 1 & length(unique(y)) > 1) {
-      rec <- ancr(fitMk(tree_pruned, y, "ARD", fittedQ = Q_ie, pi = as.numeric(pi_ie)))
+      rec <- ancr(fitMk(tree_pruned, y, "ARD", fixedQ = Q_ie, pi = as.numeric(pi_ie)))
       indice <- which(rec[["ace"]][, 2] > 0.5)
       nodes <- as.integer(names(indice))
       

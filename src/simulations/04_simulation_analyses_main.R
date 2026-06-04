@@ -86,7 +86,7 @@ count_true_to_cs <- true_false_uncertain |>
   mutate(value = factor(value, levels = c("0", "2", "1"))) |>
   arrange(age, value) 
 
-saveRDS(count_true_to_cs, here("output/results/count_true_to_cs.rds"))
+write.csv(count_true_to_cs, here("output/results/count_true_to_cs.csv"))
 
 # for the mcc tree count the number of true, false
 
@@ -117,7 +117,7 @@ count_true_to_mcc <- resume_to_true_grouped |>
     y_label = ifelse(exist == "1", 0, total) # alignement manuel
   ) 
 
-saveRDS(count_true_to_mcc,here("output/results/count_true_to_mcc.csv"))
+write.csv(count_true_to_mcc,here("output/results/count_true_to_mcc.csv"))
 
 
 # count the numer of true node from de consensus tree to the true tree
