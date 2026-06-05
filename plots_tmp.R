@@ -421,3 +421,37 @@ plot_crop(here("output/figs/hist_age_concepts.pdf"))
 # summary_data_st |>
 #   ggplot() +
 #   geom_point(aes(x = mean_max_depth, y = n_traits))
+
+prob_first_split_mcc <- read_csv(here(
+  "output/results/prob_first_split_mcc.csv"
+)) |>
+  rename(p = mean_mcc_prob) |>
+  mutate(type = "MCC")
+prob_first_split_hipstr <- read_csv(here(
+  "output/results/prob_first_split_hipstr.csv"
+)) |>
+  rename(p = mean_hipstr_prob) |>
+  mutate(type = "HIPSTR")
+
+marginal_probability_first_split_ic <- read_csv(here(
+  "output/results/marginal_prob_first_split_ic.csv"
+)) |>
+  group_by(tree_age) |>
+  summarise(p = mean(prob_mean)) |>
+  ungroup()
+
+marginal_probability_first_split_ic |>
+  ggplot() +
+  geom_pointpath(aes(x = tree_age, y = p), color = plt[2]) +
+  xlab("Age (ka BP)") +
+  ylab("Probability of presence in\nthe early-diverging lineage")
+# bind_rows(
+#   prob_first_split_mcc,
+#   prob_first_split_hipstr
+# ) |>
+#   ggplot() +
+#   geom_line(aes(x = age, y = p, color = type), linewidth = .75) +
+#   scale_color_bright() +
+#   xlab("Age (ka BP)") +
+#   ylab("Probability of presence in\nthe early-diverging lineage") +
+#   theme(legend.position = "bottom")
