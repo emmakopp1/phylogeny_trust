@@ -26,7 +26,7 @@ df_number_of_nodes_avg =  read_csv(here("output/results/number_of_nodes_summary.
 prob_first_split_mcc = read_csv(here("output/results/prob_first_split_mcc.csv"))
 prob_first_split_hipstr = read_csv(here("output/results/prob_first_split_hipstr.csv"))
 
-marginal_probability_first_split_ic = read_csv(here("output/results/marginal_prob_first_split_ic.csv"))
+marginal_probability_first_split_hdi = read_csv(here("output/results/marginal_prob_first_split_hdi.csv"))
 
 
 # count the number of true, false and uncertain node from the true to consensus tree
@@ -73,7 +73,7 @@ count_true_to_mcc_data_long <- read_csv(here("output/results/count_true_to_mcc_d
 # plots ------------------------------------------------------------------------
 # 1. Marginal probability of the first split in the posterior ------------------
 plot_marginal_probability_first_split_ic <- ggplot(
-  marginal_probability_first_split_ic,
+  marginal_probability_first_split_hdi,
   aes(x = tree_age, y = prob_mean)
 ) +
   geom_ribbon(aes(ymin = prob_inf, ymax = prob_sup), fill = "skyblue", alpha = 0.5) +
@@ -87,7 +87,7 @@ plot_marginal_probability_first_split_ic <- ggplot(
   theme_minimal(base_size = 12)
 
 plot_marginal_probability_first_split_ic
-ggsave(here("output/figs/marginal_probability_first_split_ic.pdf"), width = 8, height = 6)
+ggsave(here("output/figs/marginal_probability_first_split_hdi.pdf"), width = 8, height = 6)
 
 # 2. plot of the marginal probability of first_split in the mcc & consensus --------
 plot_mcc_posterior_prob <- ggplot(prob_first_split_mcc, aes(x = age, y = mean_mcc_prob, color = "MCC")) +

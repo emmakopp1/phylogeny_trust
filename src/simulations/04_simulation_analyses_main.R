@@ -28,7 +28,7 @@ hdi_results <- map(1:17, ~ {
     select(prob_mean)
   list(
     lower = hdi(test, credMass = 0.90)[1],
-    upper = hdi(test, credMass = 0.90)[2]
+    upper = hdi(test, credMass = 0.99)[2]
   )
 })
 hdi_lower <- map_dbl(hdi_results, "lower")
@@ -45,7 +45,7 @@ marginal_probability_first_split_ic$prob_inf <- hdi_lower
 marginal_probability_first_split_ic$prob_sup <- hdi_upper
 marginal_probability_first_split_ic
 
-write.csv(marginal_probability_first_split_ic, here("output/results/marginal_prob_first_split_ic.csv"))
+write.csv(marginal_probability_first_split_ic, here("output/results/marginal_prob_first_split_hdi.csv"))
 
 # frequency of good reconstruction of all the nodes in of the mcc
 mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
