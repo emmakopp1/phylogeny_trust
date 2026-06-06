@@ -14,12 +14,38 @@
 library(here)
 library(broom)
 library(corrplot)
+library(HDInterval)
 library(tidyverse)
 N_sim <- 50
 
 # load data --------------------------------------------------------------------
 # marginal probability of the first split with IC 
 marginal_probability_first_split_ic <- read.csv(here("output/results/marginal_prob_first_split_ic.csv"))
+
+hdi_results <- map(1:17, ~ {
+  test <- marginal_probability_first_split_ic |>
+    filter(tree_age == .x) |>
+    select(prob_mean)
+  list(
+    lower = hdi(test, credMass = 0.90)[1],
+    upper = hdi(test, credMass = 0.90)[2]
+  )
+})
+hdi_lower <- map_dbl(hdi_results, "lower")
+hdi_upper <- map_dbl(hdi_results, "upper")
+
+marginal_probability_first_split_ic = marginal_probability_first_split_ic |>
+  group_by(tree_age) |>
+  summarise(
+    prob_mean = mean(prob_mean),
+    prob_inf = mean(prob_inf),
+    prob_sup = mean(prob_sup)
+  )
+marginal_probability_first_split_ic$prob_inf <- hdi_lower
+marginal_probability_first_split_ic$prob_sup <- hdi_upper
+marginal_probability_first_split_ic
+
+write.csv(marginal_probability_first_split_ic, here("output/results/marginal_prob_first_split_ic.csv"))
 
 # frequency of good reconstruction of all the nodes in of the mcc
 mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
