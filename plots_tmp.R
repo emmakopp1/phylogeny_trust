@@ -6,6 +6,7 @@ library(khroma)
 library(knitr)
 
 base_font <- "Noto Sans Condensed"
+base_font2 <- "Noto Sans ExtraCondensed"
 plt <- color("vibrant")(3)
 theme_set(
   theme_minimal(base_family = base_font, base_size = 12) +
@@ -261,7 +262,7 @@ bind_rows(prop_true_to_cs, prop_mcc_to_true, prop_hipstr_to_true) |>
     )
   ) |>
   mutate(value = factor(value, levels = c("Absent", "Uncertain", "Present"))) |>
-  ggplot(aes(x = age, y = mean_n, fill = value)) +
+  ggplot(aes(x = (age), y = mean_n, fill = value)) +
   geom_col(position = "fill", linewidth = .15) +
   geom_hline(
     yintercept = .5,
@@ -271,14 +272,28 @@ bind_rows(prop_true_to_cs, prop_mcc_to_true, prop_hipstr_to_true) |>
   ) +
   labs(
     x = "Age (ka BP)",
-    y = "Average proportion of nodes",
+    y = "Average proportion of true nodes",
     fill = ""
   ) +
   scale_fill_highcontrast(reverse = TRUE) +
   scale_color_highcontrast(reverse = TRUE) +
+  # scale_x_continuous(breaks = c(5,10,15)) +
+  # scale_x_discrete(
+  #   guide = guide_axis(check.overlap = TRUE)
+  # ) +
   coord_cartesian(clip = "off", expand = FALSE) +
   facet_wrap(~type) +
   theme(
+    # axis.text = element_text(family = base_font2, size = 8),
+    # axis.text.y.left = element_text(margin = margin(r = 0.175, unit = "lines")),
+    # axis.text.x.bottom = element_text(margin = margin(t = 0.25, unit = "lines")),
+    axis.ticks = element_line(size = .25, color = "grey40"),
+    axis.ticks.length = unit(0.15, "lines"),
+    axis.title = element_text(size = 10),
+    # axis.title.y.left = element_text(margin = margin(b = 0.25, unit = "lines")),
+    legend.text = element_text(size = 10),
+    legend.key.size = unit(.75, "line"),
+    # panel.spacing.x = unit(0.15, "lines"),
     legend.position = "bottom",
     legend.margin = margin(t = -.5, r = 0, b = 0, l = 0, unit = "lines"),
   )
