@@ -433,25 +433,59 @@ prob_first_split_hipstr <- read_csv(here(
   rename(p = mean_hipstr_prob) |>
   mutate(type = "HIPSTR")
 
-marginal_probability_first_split_ic <- read_csv(here(
-  "output/results/marginal_prob_first_split_ic.csv"
-)) |>
-  group_by(tree_age) |>
-  summarise(p = mean(prob_mean)) |>
-  ungroup()
+marginal_probability_first_split_hdi <- read_csv(here(
+  "output/results/marginal_prob_first_split_hdi.csv"
+))
 
-marginal_probability_first_split_ic |>
+marginal_probability_first_split_hdi |>
   ggplot() +
-  geom_pointpath(aes(x = tree_age, y = p), color = plt[2]) +
+  geom_ribbon(
+    aes(x = tree_age, ymin = prob_inf, ymax = prob_sup),
+    fill = plt[3],
+    alpha = .25
+  ) +
+  geom_segment(
+    aes(
+      x = -Inf,
+      xend = min(
+        filter(marginal_probability_first_split_hdi, prob_mean <= .5)$tree_age
+      ),
+      y = .5,
+      yend = .5
+    ),
+    linetype = "dashed",
+    color = "grey40",
+    linewidth = .35
+  ) +
+  geom_segment(
+    aes(
+      x = min(
+        filter(marginal_probability_first_split_hdi, prob_mean <= .5)$tree_age
+      ),
+      xend = min(
+        filter(marginal_probability_first_split_hdi, prob_mean <= .5)$tree_age
+      ),
+      y = .5,
+      yend = -Inf
+    ),
+    linetype = "dashed",
+    color = "grey40",
+    linewidth = .35
+  ) +
+  geom_pointpath(
+    aes(x = tree_age, y = prob_mean),
+    color = plt[2],
+    linewidth = 1,
+    stroke = .1
+  ) +
+  scale_x_continuous(breaks = seq(0, 17, 1)) +
   xlab("Age (ka BP)") +
-  ylab("Probability of presence in\nthe early-diverging lineage")
-# bind_rows(
-#   prob_first_split_mcc,
-#   prob_first_split_hipstr
-# ) |>
-#   ggplot() +
-#   geom_line(aes(x = age, y = p, color = type), linewidth = .75) +
-#   scale_color_bright() +
-#   xlab("Age (ka BP)") +
-#   ylab("Probability of presence in\nthe early-diverging lineage") +
-#   theme(legend.position = "bottom")
+  ylab("Mean probability of correctly\ninferring the first split")
+ggsave(
+  here("output/figs/marginal_probability_first_split_hdi.pdf"),
+  width = 12,
+  height = 12,
+  units = "cm",
+  device = cairo_pdf
+)
+plot_crop(here("output/figs/marginal_probability_first_split_hdi.pdf"))
