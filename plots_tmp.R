@@ -350,8 +350,10 @@ summary_data_st <- read_csv(here(
 )) |>
   mutate(family = "Sino-Tibetan") |>
   rename(mean_outgroup = mean_sinitic)
-summary_data_ie <- summary_data_ie |> 
-  rename(mean_outgroup = mean_tocharian)
+summary_data_ie <- read_csv(here(
+  "output/results/ancestral_reconstruction_summary_ie.csv"
+)) |>
+  mutate(family = "Indo-European")
 
 concepts <- bind_rows(summary_data_st, summary_data_ie) |>
   filter(!is.na(mean_outgroup)) |>
