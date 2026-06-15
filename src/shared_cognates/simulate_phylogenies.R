@@ -1,7 +1,28 @@
 library(xml2); library(ape); library(phytools); library(glue)
 library(here); library(castor); library(phangorn); library(tidyverse)
+library(tracerer)
 
 dir.create(here('data/shared_cognates'), showWarnings = FALSE)
+
+# Load Sino Tibetan phylogenetic analysis outputs ------------------------------
+
+tracelog_st <- parse_beast_tracelog_file(here("data/real/st_ctmc-strict-fbd-uni/st_ctmc-strict-fbd-uniform.log"))
+tracelog_st[round(nrow(tracelog_st) * 0.2) : nrow(tracelog_st), ]
+pi1_density <- tracelog_st$freqParameter.s.sino.tibetan.2
+pi0_density <- tracelog_st$freqParameter.s.sino.tibetan.1
+clock_rate_density <- tracelog_st$clockRate.c.clock
+
+q_density <- clock_rate_density/(2*pi0_density) + clock_rate_density/(2*pi1_density)
+
+library(posterior)
+trace_tail <- ess_tail(q_density)
+trace_bulk <- ess_bulk(q_density)
+
+# Define constants and substitution model 
+#K_ie <- length(meanings_sets_ie$meaning)
+#I_k_ie <- meanings_sets_ie$end - meanings_sets_ie$start + 1
+
+
 
 # Paramètres -------------------------------------------------------------------
 N_sim      <- 1
@@ -15,6 +36,8 @@ Q <- matrix(
     clock_rate/(2*pi1), -clock_rate/(2*pi1)),
   nrow = 2, byrow = TRUE
 )
+
+q <- clock_rate/(2*pi0) + clock_rate/(2*pi1)
 
 res        <- vector("list", 17)
 root_state <- vector("list", 17)

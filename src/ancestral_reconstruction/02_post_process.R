@@ -3,13 +3,13 @@ library(here)
 library(dplyr)
 library(ggplot2)
 library(tidyverse)
+library(adephylo)
 library(stringr)
 
 # sino-tibetan -----------------------------------------------------------------
 # Load dataframe
-path_st <- here("output/results/ancestral_reconstruction_st.csv")
-data_st <- read.csv2(path_st, header = TRUE, sep = ',')
-
+path_st <- here("output/results/ancestral_reconstruction_st_final.csv")
+data_st <- read.csv(path_st, header = TRUE, sep = ',', row.names = NULL)
 
 # Load and clean linguistic data 
 Y_chinese <- read.nexus.data(here("data/real/st_ctmc-strict-fbd-uni/st.nex"))
@@ -76,7 +76,7 @@ trait_per_meaning_ie <- read.csv(here("data/real/meanings_sets_ie.csv")) |>
   rename(sens = meaning)
 
 # Load dataframe
-path_ie <- here("output/results/ancestral_reconstruction_ie_water.csv")
+path_ie <- here("output/results/ancestral_reconstruction_st_final.csv")
 data_ie <- read.csv2(path_ie, header = TRUE, sep = ',') |> 
   distinct()
 
@@ -135,6 +135,52 @@ Y_tocharian_anatolian <- Y_ie |>
   relocate(trait, .before = everything()) |> 
   select(all_of(tocharian_anatolian))
 
+# For each trait check if there is a Chinese language presence
+data_ie_main <- data_ie |>
+  left_join(Y_tocharian_anatolian, by = "trait") |> 
+  mutate(any_tocharian = if_any(c("TocharianA", "TocharianB", "Hittite", "Luvian"), ~ .x == 1)) |> 
+  mutate(any_tocharian = as.integer(any_tocharian)) |> 
+  relocate(any_tocharian, .after = trait)
+
+# For each tree and sens keep the maximum depth reconstruction (value)
+max_depth_data_ie <- data_ie_main |> 
+  mutate(value = as.numeric(value)) |> 
+  group_by(sens, tree) |>
+  slice_max(value, n = 1, with_ties = FALSE) |>
+  ungroup()
+
+# For each sens average the maximum depth reconstruction value and the 
+# presence of Chinese
+summary_data_ie <- max_depth_data_ie |> 
+  group_by(sens) |> 
+  summarize(mean_max_depth = mean(value, na.rm = TRUE), 
+            mean_tocharian = mean(any_tocharian, na.rm = TRUE),
+            .groups = "drop") |> 
+  mutate(
+    sens = sens |>
+      str_replace_all("_", " ") |>
+      str_remove_all("\\bthe\\b") |>
+      str_remove_all("\\bto\\b") |>
+      str_trim() |>
+      str_squish()
+  )
+
+summary_data_ie$mean_tocharian[is.nan(summary_data_ie$mean_tocharian)] <- 0
+
+write_csv(summary_data_ie, here("output/results/ancestral_reconstruction_summary_.csv"))
+
+### EN PLUS 
+
+# Calcul de l'âge moyen de la racine sur la posterieur
+length_phylo <- 200
+phylo_ie <- read.nexus(here("data/real/iecor_ctmc-strict-M1/IECoR_M1_CTMC_Gamma_1_Rate_For_All_Mgs_combined.trees"))
+M_ie <- length(phylo_ie)
+phylo_ie <- phylo_ie[seq(0.8 * M_ie, M_ie, length = length_phylo)]
+M_ie <- length(phylo_ie)  # update M to number of retained trees
+
+mean_root_age <- mean(sapply(1:M_ie, function(i) max(distRoot(phylo_ie[[i]]))))
+
+
 # Final dataframe 
 data_ie_by_trait_and_sens <- data_ie |>
   select(-node) |>
@@ -163,12 +209,14 @@ data_ie_by_trait_and_sens <- data_ie |>
   select(-TocharianA, -TocharianB, -Hittite, -Luvian, -any_outgroup) |>
   mutate(mean_outgroup = round(mean_outgroup,3)) |>
   left_join(roots_ie,by="cognate_id") |>
-  select(-root_language)
+  select(-root_language) |> 
+  mutate(mean_root_age = mean_root_age)
 
 head(data_ie_by_trait_and_sens)
 
-write_csv(data_ie_by_trait_and_sens, here("output/results/ancestral_reconstruction_summary_ie_water.csv"))
+data_ie_water = data_ie_by_trait_and_sens |> filter(sens == "water")
 
+write_csv(data_ie_water, here("output/results/ancestral_reconstruction_summary_st.csv"))
 
 head(data_ie_by_trait_and_sens)
 

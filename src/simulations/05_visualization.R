@@ -20,7 +20,6 @@ library(ape)
 library(phangorn)
 library(ggeffects)
 
-
 # load data --------------------------------------------------------------------
 df_number_of_nodes_avg =  read_csv(here("output/results/number_of_nodes_summary.csv"))
 prob_first_split_mcc = read_csv(here("output/results/prob_first_split_mcc.csv"))
