@@ -15,6 +15,7 @@ library(tidyverse)
 library(broom)
 library(dplyr)
 library(dotwhisker)
+library(patchwork)
 library(ggplot2)
 library(ape)
 library(phangorn)
@@ -388,7 +389,6 @@ reg_plot
 ggsave(here("output/figs/regression_first_split_prob_effect.pdf"), width = 8, height = 6)
 
 # 6. Influence of the number of traits -----------------------------------------
-library(patchwork)
 
 # Définir les limites communes pour l'axe y (en partant de 0)
 y_max <- max(c(count_true_to_cs_data_long$mean_n, count_true_to_mcc_data_long$mean_n), na.rm=T)

@@ -76,7 +76,7 @@ trait_per_meaning_ie <- read.csv(here("data/real/meanings_sets_ie.csv")) |>
   rename(sens = meaning)
 
 # Load dataframe
-path_ie <- here("output/results/ancestral_reconstruction_st_final.csv")
+path_ie <- here("output/results/ancestral_reconstruction_ie_final.csv")
 data_ie <- read.csv2(path_ie, header = TRUE, sep = ',') |> 
   distinct()
 
@@ -107,7 +107,7 @@ trait_map <- labels_lines |>
       str_detect(label, "_cognate_") ~ "cognate",
       TRUE ~ "other"
     ),
-    word = str_extract(label, "^[^_]+"),
+    sens = str_extract(label, "^[^_]+"),
     cognate_id = if_else(type == "cognate",
                          as.integer(str_extract(label, "\\d+$")),
                          NA_integer_)
@@ -163,13 +163,20 @@ summary_data_ie <- max_depth_data_ie |>
       str_remove_all("\\bto\\b") |>
       str_trim() |>
       str_squish()
-  )
+  ) |> 
+  rename(mean_outgroup = mean_tocharian) |> 
+  left_join(
+    trait_map |> select(trait_num, label, sens, type, cognate_id),
+    by = "sens"
+  ) |> 
+  left_join(roots_ie,by="cognate_id") |>
+  select(-root_language) 
 
-summary_data_ie$mean_tocharian[is.nan(summary_data_ie$mean_tocharian)] <- 0
+summary_data_ie$mean_outgroup[is.nan(summary_data_ie$mean_outgroup)] <- 0
 
-write_csv(summary_data_ie, here("output/results/ancestral_reconstruction_summary_.csv"))
-
-### EN PLUS 
+write_csv(summary_data_ie, here("output/results/ancestral_reconstruction_summary_ie.csv"))
+ 
+### EN PLUS --------------------------------------------------------------------
 
 # Calcul de l'âge moyen de la racine sur la posterieur
 length_phylo <- 200
