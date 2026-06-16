@@ -16,6 +16,7 @@ library(adephylo)
 library(stringr)
 library(reshape2)
 
+
 # to be referenced by the user -------------------------------------------------
 # path of the simulation folder you want to analyse
 #path_repository <- here("data/simulated-2025-07-22-1500")
@@ -135,8 +136,8 @@ for (t in seq_along(trees_true)){
   
   nodes_to_exclude <- unlist(lapply(
     list(calib_chinese, calib_tibetan, calib_burmish),
-    get_excluded_nodes,
-    tree = tt
+    getMRCA,
+    phy = cs
   ))
   
   node_for_loop = setdiff(seq(tt$Nnode + 2, 2 * tt$Nnode + 1),nodes_to_exclude)

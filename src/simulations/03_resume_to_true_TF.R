@@ -21,9 +21,9 @@ library(stringr)
 # to be referenced by the user
 # path of the simulation folder you want to analyse
 #path_repository <- here("data/simulated-2025-07-22-1500")
-path_repository <- here("data/simulated-2025-07-28")
+#path_repository <- here("data/simulated-2025-07-28")
 #path_repository <- here("data/simulated-2025-07-22-6000")
-#path_repository <- here("data/simulated-2025-07-22-12000")
+path_repository <- here("data/simulated-2025-07-22-12000")
 
 # set the number of traits 
 # if N_traits is not 6 or 12 thousands, then it is the main study and N_traits = 3000
@@ -41,7 +41,7 @@ exist_node <- function(node, tree_true, tree_est) {
 
 # exclude calibration nodes
 get_excluded_nodes <- function(tree, tips) {
-  mrca <- getMRCA(tree, tips)
+  mrcagetMRCA(tree, tips)
   desc <- Descendants(tree, mrca, type = 'all')
   setdiff(c(mrca, desc), seq_len(Ntip(tree)))
 }
@@ -97,8 +97,8 @@ for (t in seq_along(trees_true)){
   
   nodes_to_exclude <- unlist(lapply(
     list(calib_chinese, calib_tibetan, calib_burmish),
-    get_excluded_nodes,
-    tree = cs
+    getMRCA,
+    phy = cs
   ))
   
   node_for_loop = setdiff(seq(N_tip + 1, N_tip + cs$Nnode ),nodes_to_exclude)
@@ -146,8 +146,8 @@ for (t in seq_along(trees_true)){
   
   nodes_to_exclude <- unlist(lapply(
     list(calib_chinese, calib_tibetan, calib_burmish),
-    get_excluded_nodes,
-    tree = mcc
+    getMRCA,
+    phy = mcc
   ))
   
   node_for_loop = setdiff(seq(N_tip + 1, N_tip + mcc$Nnode ),nodes_to_exclude)
@@ -194,10 +194,9 @@ for (t in seq_along(trees_true)){
   
   nodes_to_exclude <- unlist(lapply(
     list(calib_chinese, calib_tibetan, calib_burmish),
-    get_excluded_nodes,
-    tree = hipstr
+    getMRCA,
+    phy = hipstr
   ))
-  
   node_for_loop = setdiff(seq(N_tip + 1, N_tip + hipstr$Nnode ),nodes_to_exclude)
   
   for (node in node_for_loop){
