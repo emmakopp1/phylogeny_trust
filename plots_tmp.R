@@ -4,6 +4,7 @@ library(ggh4x)
 library(ggrepel)
 library(khroma)
 library(knitr)
+library(patchwork)
 
 base_font <- "Noto Sans Condensed"
 base_font2 <- "Noto Sans ExtraCondensed"
@@ -504,3 +505,52 @@ ggsave(
   device = cairo_pdf
 )
 plot_crop(here("output/figs/marginal_probability_first_split_hdi.pdf"))
+
+count_true_to_cs_data_long <- read_csv(here(
+  "output/results/count_true_to_cs_data_long.csv"
+)) |>
+  mutate(summary_type = "CS") |>
+  rename(type = value) |>
+  mutate(
+    type = case_when(
+      type == "0" ~ "false",
+      type == "1" ~ "true",
+      type == "2" ~ "plausible"
+    )
+  )
+count_true_to_mcc_data_long <- read_csv(here(
+  "output/results/count_true_to_mcc_data_long.csv"
+)) |>
+  mutate(summary_type = "MCC") |>
+  rename(type = exist) |>
+  mutate(
+    type = case_when(
+      type == "0" ~ "false",
+      type == "1" ~ "true"
+    )
+  )
+
+bind_rows(count_true_to_cs_data_long, count_true_to_mcc_data_long) |>
+  ggplot(aes(x = as.factor(n_trait), y = mean_n, fill = as.factor(type))) +
+  geom_bar(
+    stat = "identity",
+    position = position_dodge(width = .85),
+    width = .75
+  ) +
+  scale_fill_highcontrast(reverse = FALSE) +
+  labs(
+    x = "Number of traits",
+    y = "Average number of nodes",
+    fill = "Node category"
+  ) +
+  facet_wrap(~summary_type) +
+  theme(legend.position = "bottom", panel.grid.major.x = element_blank())
+
+ggsave(
+  here("output/figs/number_of_traits_influence.pdf"),
+  width = 12,
+  height = 12,
+  units = "cm",
+  device = cairo_pdf
+)
+plot_crop(here("output/figs/number_of_traits_influence.pdf"))
