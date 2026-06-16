@@ -192,6 +192,63 @@ nodelabels(node=tt, cex=0.4)
 
 
 
+# sino tibetain 
+
+a <- tt_st |> 
+  pull(meaning) |> 
+  unique() |> 
+  gsub("_", " ", x = _) |> 
+  gsub("the ", "", x = _) |> 
+  gsub("to ", "", x = _)
+b <- summary_data_st |> pull(sens) |> unique()
+
+setdiff(a, b)  # valeurs dans a absentes de b
+intersect(a, b)  # valeurs communes
+
+# indo européen
+
+a <- tt_ie |> 
+  pull(meaning) |> 
+  unique() |> 
+  gsub("_", " ", x = _) |> 
+  gsub("the ", "", x = _) |> 
+  gsub("to ", "", x = _)
+b <- summary_data_ie |> pull(sens) |> unique()
+
+setdiff(a, b)  # valeurs dans a absentes de b
+
+meanings_sets_st <- read.csv(here("output/results/meanings_sets_st.csv"))
+meanings_sets_ie <- read.csv(here("output/results/meanings_sets_ie.csv"))
+
+meanings_sets_ie
+
+
+# test calibrations
+
+# 3 calibrations, burmish, sinitic and tibetan
+calib_chinese <- tt$tip.label[grep('Sinitic',tt$tip.label)]
+calib_tibetan <- tt$tip.label[grep('Tibetan',tt$tip.label)]
+calib_burmish <- c("BurmishOldBurmese","BurmishRangoon")
+
+# chinese nodes to exclude 
+mrca_chinese = getMRCA(tt, calib_chinese)
+chinese_desc = Descendants(tt, mrca_chinese, type='all')
+chinese_nodes_to_exclude = setdiff(c(mrca_chinese,chinese_desc), seq_len(Ntip(tt)))
+
+# tibetan nodes to exclude 
+mrca_tibetan = getMRCA(tt, calib_tibetan)
+tibetan_desc = Descendants(tt, mrca_tibetan, type='all')
+tibetan_nodes_to_exclude = setdiff(c(mrca_tibetan,tibetan_desc), seq_len(Ntip(tt)))
+
+# burmish nodes to exclude 
+mrca_burmish = getMRCA(tt, calib_burmish)
+burmish_desc = Descendants(tt, mrca_burmish, type='all')
+burmish_nodes_to_exclude = setdiff(c(mrca_burmish,burmish_desc), seq_len(Ntip(tt)))
+
+nodes_to_exclude = c(chinese_nodes_to_exclude, tibetan_nodes_to_exclude, burmish_nodes_to_exclude)
+
+
+
 
 
 

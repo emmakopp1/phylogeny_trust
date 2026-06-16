@@ -15,6 +15,7 @@ library(here)
 library(broom)
 library(corrplot)
 library(HDInterval)
+library(purrr)
 library(tidyverse)
 N_sim <- 50
 
@@ -22,13 +23,13 @@ N_sim <- 50
 # marginal probability of the first split with IC 
 marginal_probability_first_split_ic <- read.csv(here("output/results/marginal_prob_first_split_ic.csv"))
 
-hdi_results <- map(1:17, ~ {
+hdi_results <- purrr::map(1:17, ~ {
   test <- marginal_probability_first_split_ic |>
     filter(tree_age == .x) |>
     select(prob_mean)
   list(
-    lower = hdi(test, credMass = 0.90)[1],
-    upper = hdi(test, credMass = 0.99)[2]
+    lower = HDInterval::hdi(test, credMass = 0.90)[1],
+    upper = HDInterval::hdi(test, credMass = 0.99)[2]
   )
 })
 hdi_lower <- map_dbl(hdi_results, "lower")
@@ -50,6 +51,9 @@ write.csv(marginal_probability_first_split_ic, here("output/results/marginal_pro
 # frequency of good reconstruction of all the nodes in of the mcc
 mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
   filter(type == 'mcc')
+
+#mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
+#  filter(type == 'consensus')
 
 # for each mcc tree, age between the root and the first split of the true tree
 first_split_age_mcc <- read.csv(here("output/results/first_split_age_mcc.csv"))

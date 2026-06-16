@@ -18,10 +18,10 @@ library(reshape2)
 
 # to be referenced by the user -------------------------------------------------
 # path of the simulation folder you want to analyse
-path_repository <- here("data/simulated-2025-07-22-1500")
 #path_repository <- here("data/simulated-2025-07-22-1500")
+#path_repository <- here("data/simulated-2025-07-28")
 #path_repository <- here("data/simulated-2025-07-22-6000")
-#path_repository <- here("data/simulated-2025-07-22-12000")
+path_repository <- here("data/simulated-2025-07-22-12000")
 
 # set the number of traits 
 # if N_traits is not 6 or 12 thousands, then it is the main study and N_traits = 3000
@@ -84,6 +84,13 @@ is_plausible <- function(node, tree_true, tree_cs) {
   }
 }
 
+# exclude calibration nodes
+get_excluded_nodes <- function(tree, tips) {
+  mrca <- getMRCA(tree, tips)
+  desc <- Descendants(tree, mrca, type = 'all')
+  setdiff(c(mrca, desc), seq_len(Ntip(tree)))
+}
+
 # load data --------------------------------------------------------------------
 path_phylo <- list.files(path_repository, full.names = TRUE, recursive = TRUE)
 path_trees_true <- path_phylo[grepl("tree-sim", path_phylo)]
@@ -120,9 +127,21 @@ for (t in seq_along(trees_true)){
     str_match(path, "beast-data-sim-(\\d+)-\\d+")[, 2]
   )
   tree_age <- as.numeric(str_extract(path, "(\\d+)(?=\\.tree)"))
+
+  # exclude calibration nodes 
+  calib_chinese <- tt$tip.label[grep('Sinitic', tt$tip.label)]
+  calib_tibetan <- tt$tip.label[grep('Tibetan', tt$tip.label)]
+  calib_burmish <- c("BurmishOldBurmese", "BurmishRangoon")
   
+  nodes_to_exclude <- unlist(lapply(
+    list(calib_chinese, calib_tibetan, calib_burmish),
+    get_excluded_nodes,
+    tree = tt
+  ))
   
-  for (node in seq(tt$Nnode + 2, 2 * tt$Nnode + 1)) {
+  node_for_loop = setdiff(seq(tt$Nnode + 2, 2 * tt$Nnode + 1),nodes_to_exclude)
+  
+  for (node in node_for_loop){
     plausible <- is_plausible(node, tt, cs)
     row <- data.frame(
       tree_age = tree_age,

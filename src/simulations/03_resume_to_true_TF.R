@@ -20,8 +20,8 @@ library(stringr)
 
 # to be referenced by the user
 # path of the simulation folder you want to analyse
-path_repository <- here("data/simulated-2025-07-22-1500")
 #path_repository <- here("data/simulated-2025-07-22-1500")
+path_repository <- here("data/simulated-2025-07-28")
 #path_repository <- here("data/simulated-2025-07-22-6000")
 #path_repository <- here("data/simulated-2025-07-22-12000")
 
@@ -39,6 +39,14 @@ exist_node <- function(node, tree_true, tree_est) {
   return(list(res = is.monophyletic(tree_true, x), N_nodes =  tree_est$Nnode ))
 }
 
+# exclude calibration nodes
+get_excluded_nodes <- function(tree, tips) {
+  mrca <- getMRCA(tree, tips)
+  desc <- Descendants(tree, mrca, type = 'all')
+  setdiff(c(mrca, desc), seq_len(Ntip(tree)))
+}
+
+
 # load data --------------------------------------------------------------------
 path_phylo <- list.files(path_repository, full.names = TRUE, recursive = TRUE)
 
@@ -46,11 +54,13 @@ path_phylo <- list.files(path_repository, full.names = TRUE, recursive = TRUE)
 path_trees_true <- path_phylo[grepl("tree-sim", path_phylo)]
 path_trees_cs <- path_phylo[grepl("consensus-", path_phylo)]
 path_trees_mcc <- path_phylo[grepl("mcc-", path_phylo)]
+path_trees_hipstr <- path_phylo[grepl("hipstr-", path_phylo)]
 
 # passer en mode parLapply(cl, path_trees_true, read.tree)
 trees_true <- lapply(path_trees_true, read.tree)
 trees_cs <- lapply(path_trees_cs, read.tree)
 trees_mcc <- lapply(path_trees_mcc, read.tree)
+trees_hipstr <- lapply(path_trees_hipstr, read.nexus)
 
 
 # dataframe of results 
@@ -80,7 +90,20 @@ for (t in seq_along(trees_true)){
   
   N_tip = length(cs$tip.label)
   
-  for (node in seq(N_tip + 1, N_tip + cs$Nnode )){
+  # exclude calibration nodes 
+  calib_chinese <- cs$tip.label[grep('Sinitic', cs$tip.label)]
+  calib_tibetan <- cs$tip.label[grep('Tibetan', cs$tip.label)]
+  calib_burmish <- c("BurmishOldBurmese", "BurmishRangoon")
+  
+  nodes_to_exclude <- unlist(lapply(
+    list(calib_chinese, calib_tibetan, calib_burmish),
+    get_excluded_nodes,
+    tree = cs
+  ))
+  
+  node_for_loop = setdiff(seq(N_tip + 1, N_tip + cs$Nnode ),nodes_to_exclude)
+  
+  for (node in node_for_loop){
     exist <- exist_node(node, tt, cs)
     row <- data.frame(
       type = 'consensus',
@@ -116,12 +139,71 @@ for (t in seq_along(trees_true)){
   )
   tree_age <- as.numeric(str_extract(path, "(\\d+)(?=\\.tree)"))
   
-  N_tip = length(mcc$tip.label)
+  # exclude calibration nodes 
+  calib_chinese <- mcc$tip.label[grep('Sinitic', mcc$tip.label)]
+  calib_tibetan <- mcc$tip.label[grep('Tibetan', mcc$tip.label)]
+  calib_burmish <- c("BurmishOldBurmese", "BurmishRangoon")
   
-  for (node in seq(N_tip + 1, N_tip + mcc$Nnode)){
+  nodes_to_exclude <- unlist(lapply(
+    list(calib_chinese, calib_tibetan, calib_burmish),
+    get_excluded_nodes,
+    tree = mcc
+  ))
+  
+  node_for_loop = setdiff(seq(N_tip + 1, N_tip + mcc$Nnode ),nodes_to_exclude)
+  
+  for (node in node_for_loop){
     exist <- exist_node(node, tt, mcc)
     row <- data.frame(
       type = 'mcc',
+      age = tree_age,
+      simulation = tree_simulation_number,
+      node = node,
+      state = exist$N_nodes,
+      result = exist$res
+    )
+    
+    
+    write.table(
+      row, 
+      file_path, 
+      sep = ",",
+      row.names = FALSE,
+      col.names = FALSE,
+      append = TRUE      
+    )
+  }
+}
+
+# for hipstr tree 
+for (t in seq_along(trees_true)){
+  # consensus and true tree
+  tt = trees_true[[t]]
+  hipstr = trees_hipstr [[t]]
+  
+  path <- path_trees_true[[t]]
+  tree_simulation_number <- as.numeric(
+    str_match(path, "beast-data-sim-(\\d+)-\\d+")[, 2]
+  )
+  tree_age <- as.numeric(str_extract(path, "(\\d+)(?=\\.tree)"))
+  
+  # exclude calibration nodes 
+  calib_chinese <- hipstr$tip.label[grep('Sinitic', hipstr$tip.label)]
+  calib_tibetan <- hipstr$tip.label[grep('Tibetan', hipstr$tip.label)]
+  calib_burmish <- c("BurmishOldBurmese", "BurmishRangoon")
+  
+  nodes_to_exclude <- unlist(lapply(
+    list(calib_chinese, calib_tibetan, calib_burmish),
+    get_excluded_nodes,
+    tree = hipstr
+  ))
+  
+  node_for_loop = setdiff(seq(N_tip + 1, N_tip + hipstr$Nnode ),nodes_to_exclude)
+  
+  for (node in node_for_loop){
+    exist <- exist_node(node, tt, hipstr)
+    row <- data.frame(
+      type = 'hipstr',
       age = tree_age,
       simulation = tree_simulation_number,
       node = node,

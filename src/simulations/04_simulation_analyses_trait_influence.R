@@ -363,12 +363,12 @@ count_cs_to_true_data <- bind_rows(
     names_prefix = ""
   ) |>
   select(age, exist, 
-         #n_mean_3000, 
+         n_mean_3000, 
          n_mean_1500,
          n_mean_6000, 
          n_mean_12000, 
          total_1500,
-         #total_3000, 
+         total_3000, 
          total_6000, 
          total_12000) |>
   arrange(age, exist)
@@ -388,6 +388,7 @@ count_true_to_cs_data_long <- count_true_to_cs_data |>
     value = as.factor(value) # Assurez-vous que 'value' est un facteur pour l'esthétique de remplissage
   )
 
+# ICI
 # from true to mcc
 count_true_to_mcc_data_long <- count_true_to_mcc_data |>
   pivot_longer(
@@ -396,15 +397,37 @@ count_true_to_mcc_data_long <- count_true_to_mcc_data |>
     values_to = "mean_n"
   ) |>
   mutate(
-    n_trait = parse_number(n_trait_col),  
-    exist = as.factor(exist),
-    n_trait_col = str_replace(n_trait_col, "n_mean_", "mean_n_") 
-  )
+    n_trait = as.numeric(gsub("n_mean_", "", n_trait_col)), # Extraire le nombre de traits
+    value = as.factor(mean_n) # Assurez-vous que 'value' est un facteur pour l'esthétique de remplissage
+  ) 
 
 
 write_csv(count_true_to_cs_data_long, here("output/results/count_true_to_cs_data_long.csv"))
 write_csv(count_true_to_mcc_data_long, here("output/results/count_true_to_mcc_data_long.csv"))
 
+# --- Proportions true to cs ---
+# total de noeuds par age/n_trait (somme sur les 3 categories 0,1,2)
+count_true_to_cs_totals <- count_true_to_cs_data_long |>
+  group_by(age, n_trait) |>
+  summarise(total_n = sum(mean_n), .groups = "drop")
 
+prop_true_to_cs_data_long <- count_true_to_cs_data_long |>
+  left_join(count_true_to_cs_totals, by = c("age", "n_trait")) |>
+  mutate(prop_n = mean_n / total_n)
+
+write_csv(prop_true_to_cs_data_long, here("output/results/prop_true_to_cs_data_long.csv"))
+
+
+# --- Proportions true to mcc ---
+# total de noeuds par age/n_trait (somme sur exist = 0 et 1)
+count_true_to_mcc_totals <- count_true_to_mcc_data_long |>
+  group_by(age, n_trait) |>
+  summarise(total_n = sum(mean_n, na.rm = T), .groups = "drop")
+
+prop_true_to_mcc_data_long <- count_true_to_mcc_data_long |>
+  left_join(count_true_to_mcc_totals, by = c("age", "n_trait")) |>
+  mutate(prop_n = mean_n / total_n)
+
+write_csv(prop_true_to_mcc_data_long, here("output/results/prop_true_to_mcc_data_long.csv"))
 
 
