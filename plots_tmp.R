@@ -510,34 +510,29 @@ count_true_to_cs_data_long <- read_csv(here(
   "output/results/count_true_to_cs_data_long.csv"
 )) |>
   mutate(summary_type = "CS") |>
-  rename(type = value) |>
-  mutate(
-    type = case_when(
-      type == "0" ~ "false",
-      type == "1" ~ "true",
-      type == "2" ~ "plausible"
-    )
-  )
+  rename(type = value)
 count_true_to_mcc_data_long <- read_csv(here(
   "output/results/count_true_to_mcc_data_long.csv"
 )) |>
   mutate(summary_type = "MCC") |>
-  rename(type = exist) |>
+  rename(type = exist)
+
+bind_rows(count_true_to_cs_data_long, count_true_to_mcc_data_long) |>
   mutate(
     type = case_when(
       type == "0" ~ "false",
-      type == "1" ~ "true"
-    )
-  )
-
-bind_rows(count_true_to_cs_data_long, count_true_to_mcc_data_long) |>
+      type == "1" ~ "true",
+      type == "2" ~ "admissible"
+    ) |>
+      factor(levels = c("true", "admissible", "false"))
+  ) |>
   ggplot(aes(x = as.factor(n_trait), y = mean_n, fill = as.factor(type))) +
   geom_bar(
     stat = "identity",
     position = position_dodge(width = .85),
     width = .75
   ) +
-  scale_fill_highcontrast(reverse = FALSE) +
+  scale_fill_highcontrast() +
   labs(
     x = "Number of traits",
     y = "Average number of nodes",
