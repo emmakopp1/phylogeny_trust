@@ -152,10 +152,19 @@ max_depth_data_ie <- data_ie_main |>
 # For each sens average the maximum depth reconstruction value and the 
 # presence of Chinese
 summary_data_ie <- max_depth_data_ie |> 
+  left_join(
+    trait_map |> 
+      select(trait_num, cognate_id) |> 
+      rename(trait = trait_num),
+    by = "trait"
+  ) |> 
   group_by(sens) |> 
-  summarize(mean_max_depth = mean(value, na.rm = TRUE), 
-            mean_tocharian = mean(any_tocharian, na.rm = TRUE),
-            .groups = "drop") |> 
+  summarize(
+    mean_max_depth = mean(value, na.rm = TRUE), 
+    mean_tocharian = mean(any_tocharian, na.rm = TRUE),
+    cognate_id = cognate_id[which.max(value)],
+    .groups = "drop"
+  )|> 
   mutate(
     sens = sens |>
       str_replace_all("_", " ") |>
@@ -165,10 +174,6 @@ summary_data_ie <- max_depth_data_ie |>
       str_squish()
   ) |> 
   rename(mean_outgroup = mean_tocharian) |> 
-  left_join(
-    trait_map |> select(trait_num, label, sens, type, cognate_id),
-    by = "sens"
-  ) |> 
   left_join(roots_ie,by="cognate_id") |>
   select(-root_language) 
 
@@ -176,7 +181,7 @@ summary_data_ie$mean_outgroup[is.nan(summary_data_ie$mean_outgroup)] <- 0
 
 write_csv(summary_data_ie, here("output/results/ancestral_reconstruction_summary_ie_with_root.csv"))
  
-### EN PLUS --------------------------------------------------------------------
+### compute for each trait : la   ---------------------------------------------------
 
 # Calcul de l'âge moyen de la racine sur la posterieur
 length_phylo <- 200
@@ -196,10 +201,10 @@ data_ie_by_trait_and_sens <- data_ie |>
   summarise(mean_value = mean(value, na.rm = TRUE), .groups = "drop") |>
   mutate(trait_num = as.integer(trait)) |>
   left_join(
-    trait_map |> select(trait_num, label, word, type, cognate_id),
+    trait_map |> select(trait_num, label, type, cognate_id),
     by = "trait_num"
   ) |>
-  select(-trait_num, -type, -word, -label)  |>
+  select(-trait_num, -type, -label)  |>
   group_by(sens) |>
   mutate(max_value = max(mean_value, na.rm = TRUE)) |>
   ungroup() |>
@@ -221,9 +226,9 @@ data_ie_by_trait_and_sens <- data_ie |>
 
 head(data_ie_by_trait_and_sens)
 
-data_ie_water = data_ie_by_trait_and_sens |> filter(sens == "water")
+#data_ie_water = data_ie_by_trait_and_sens |> filter(sens == "water")
 
-write_csv(data_ie_water, here("output/results/ancestral_reconstruction_summary_st.csv"))
+write_csv(data_ie_by_trait_and_sens, here("output/results/ancestral_reconstruction_summary_ie_by_sens.csv"))
 
 head(data_ie_by_trait_and_sens)
 
