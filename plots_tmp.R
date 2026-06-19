@@ -6,15 +6,17 @@ library(khroma)
 library(knitr)
 library(patchwork)
 
+width <- 13.5
+height <- 19
 base_font <- "Noto Sans Condensed"
 base_font2 <- "Noto Sans ExtraCondensed"
 plt <- color("vibrant")(3)
 theme_set(
-  theme_minimal(base_family = base_font, base_size = 12) +
+  theme_minimal(base_family = base_font, base_size = 9) +
     theme(
       aspect.ratio = .618,
-      strip.text = element_text(size = 12),
-      legend.text = element_text(size = 12),
+      strip.text = element_text(size = 9),
+      legend.text = element_text(size = 9),
       panel.grid.minor = element_blank(),
       panel.grid.major = element_line(linewidth = .35)
     )
@@ -57,8 +59,8 @@ shared_cognates |>
   coord_cartesian(clip = "off")
 ggsave(
   here("output/figs/shared_cognate_no_homoplasie.pdf"),
-  width = 12,
-  height = 12,
+  width = width,
+  height = height,
   units = "cm",
   device = cairo_pdf
 )
@@ -130,8 +132,8 @@ prop_shared_tip_pair |>
 
 ggsave(
   here("output/figs/shared_cognate_tip_pair.pdf"),
-  width = 12,
-  height = 12,
+  width = width,
+  height = height,
   units = "cm",
   device = cairo_pdf
 )
@@ -232,8 +234,8 @@ shared_cognates |>
   )
 ggsave(
   here("output/figs/shared_cognates.pdf"),
-  width = 12,
-  height = 12,
+  width = width,
+  height = height,
   units = "cm",
   device = cairo_pdf
 )
@@ -257,12 +259,17 @@ bind_rows(prop_true_to_cs, prop_mcc_to_true, prop_hipstr_to_true) |>
   mutate(type = fct_inorder(type)) |>
   mutate(
     value = case_when(
-      value == "1" ~ "Present",
-      value == "2" ~ "Uncertain",
-      value == "0" ~ "Absent"
+      value == "1" ~ "Concordant",
+      value == "2" ~ "Reconcilable",
+      value == "0" ~ "Discordant"
     )
   ) |>
-  mutate(value = factor(value, levels = c("Absent", "Uncertain", "Present"))) |>
+  mutate(
+    value = factor(
+      value,
+      levels = c("Discordant", "Reconcilable", "Concordant")
+    )
+  ) |>
   ggplot(aes(x = (age), y = mean_n, fill = value)) +
   geom_col(position = "fill", linewidth = .15) +
   geom_hline(
@@ -273,7 +280,7 @@ bind_rows(prop_true_to_cs, prop_mcc_to_true, prop_hipstr_to_true) |>
   ) +
   labs(
     x = "Age (ka BP)",
-    y = "Average proportion of true nodes",
+    y = "Average proportion\nof nodes",
     fill = ""
   ) +
   scale_fill_highcontrast(reverse = TRUE) +
@@ -290,9 +297,9 @@ bind_rows(prop_true_to_cs, prop_mcc_to_true, prop_hipstr_to_true) |>
     # axis.text.x.bottom = element_text(margin = margin(t = 0.25, unit = "lines")),
     axis.ticks = element_line(size = .25, color = "grey40"),
     axis.ticks.length = unit(0.15, "lines"),
-    axis.title = element_text(size = 10),
+    # axis.title = element_text(size = 9),
     # axis.title.y.left = element_text(margin = margin(b = 0.25, unit = "lines")),
-    legend.text = element_text(size = 10),
+    # legend.text = element_text(size = 10),
     legend.key.size = unit(.75, "line"),
     # panel.spacing.x = unit(0.15, "lines"),
     legend.position = "bottom",
@@ -300,8 +307,8 @@ bind_rows(prop_true_to_cs, prop_mcc_to_true, prop_hipstr_to_true) |>
   )
 ggsave(
   here("output/figs/barplot_prop_true_to_resume.pdf"),
-  width = 12,
-  height = 12 * 1.25,
+  width = width,
+  height = height,
   units = "cm",
   device = cairo_pdf
 )
@@ -311,12 +318,17 @@ bind_rows(prop_cs_to_true, prop_mcc_to_true, prop_hipstr_to_true) |>
   mutate(type = fct_inorder(type)) |>
   mutate(
     value = case_when(
-      value == "1" ~ "Present",
-      value == "2" ~ "Uncertain",
-      value == "0" ~ "Absent"
+      value == "1" ~ "Concordant",
+      value == "2" ~ "Reconcialable",
+      value == "0" ~ "Discordant"
     )
   ) |>
-  mutate(value = factor(value, levels = c("Absent", "Uncertain", "Present"))) |>
+  mutate(
+    value = factor(
+      value,
+      levels = c("Discordant", "Reconcilable", "Concordant")
+    )
+  ) |>
   ggplot(aes(x = age, y = mean_n, fill = value)) +
   geom_col(position = "fill", linewidth = .15) +
   geom_hline(
@@ -327,7 +339,7 @@ bind_rows(prop_cs_to_true, prop_mcc_to_true, prop_hipstr_to_true) |>
   ) +
   labs(
     x = "Age (ka BP)",
-    y = "Average proportion of nodes",
+    y = "Average proportion\nof nodes",
     fill = ""
   ) +
   scale_fill_manual(values = rev(color("high contrast")(3)[-2])) +
@@ -339,8 +351,8 @@ bind_rows(prop_cs_to_true, prop_mcc_to_true, prop_hipstr_to_true) |>
   )
 ggsave(
   here("output/figs/barplot_prop_resume_to_true.pdf"),
-  width = 12,
-  height = 12 * 1.25,
+  width = width,
+  height = height * 1.25,
   units = "cm",
   device = cairo_pdf
 )
@@ -364,8 +376,17 @@ concepts <- bind_rows(summary_data_st, summary_data_ie) |>
     mean_max_depth == max(mean_max_depth, na.rm = TRUE) |
       mean_max_depth == min(mean_max_depth, na.rm = TRUE)
   ) |>
+  mutate(
+    max = mean_max_depth == max(mean_max_depth, na.rm = TRUE),
+    min = mean_max_depth == min(mean_max_depth, na.rm = TRUE)
+  ) |>
   ungroup() |>
-  mutate(sens = str_remove_all(sens, "hide "))
+  group_by(family, x, max, min) |>
+  slice(1) |>
+  ungroup() |>
+  mutate(sens = str_remove_all(sens, "hide ")) |>
+  mutate(sens = str_replace_all(sens, " of weight", "\n(of weight)")) |>
+  mutate(sens = str_replace_all(sens, "I first person singular", "1SG"))
 
 bind_rows(summary_data_st, summary_data_ie) |>
   ggplot() +
@@ -389,18 +410,20 @@ bind_rows(summary_data_st, summary_data_ie) |>
     segment.size = .35,
     # point.padding = .5,
     family = base_font,
+    lineheight = .8,
     color = plt[1],
     bg.color = "white",
     bg.r = 0.05,
-    size = 10 / .pt
+    size = 9 / .pt
   ) +
   facet_wrap(~family, scales = "free") +
+  coord_cartesian(clip = "off") +
   xlab("Mean maximum age (ka BP)") +
   ylab("Probability of presence in\nthe early-diverging lineage")
 ggsave(
   here("output/figs/ancestral_reconstruction_by_semantic_meaning.pdf"),
-  width = 12,
-  height = 12,
+  width = width,
+  height = height,
   units = "cm",
   device = cairo_pdf
 )
@@ -427,8 +450,8 @@ bind_rows(summary_data_st, summary_data_ie) |>
   facet_wrap(~family, scales = "free")
 ggsave(
   here("output/figs/hist_age_concepts.pdf"),
-  width = 12,
-  height = 12,
+  width = width,
+  height = height,
   units = "cm",
   device = cairo_pdf
 )
@@ -491,7 +514,7 @@ marginal_probability_first_split_hdi |>
   geom_pointpath(
     aes(x = tree_age, y = prob_mean),
     color = plt[2],
-    linewidth = 1,
+    linewidth = .85,
     stroke = .1
   ) +
   scale_x_continuous(breaks = seq(0, 17, 1)) +
@@ -499,8 +522,8 @@ marginal_probability_first_split_hdi |>
   ylab("Mean probability of correctly\ninferring the first split")
 ggsave(
   here("output/figs/marginal_probability_first_split_hdi.pdf"),
-  width = 12,
-  height = 12,
+  width = width * .8,
+  height = height,
   units = "cm",
   device = cairo_pdf
 )
@@ -510,41 +533,60 @@ count_true_to_cs_data_long <- read_csv(here(
   "output/results/count_true_to_cs_data_long.csv"
 )) |>
   mutate(summary_type = "CS") |>
-  rename(type = value)
+  rename(type = value) |>
+  mutate(
+    type = case_when(
+      type == "0" ~ "Discordant",
+      type == "1" ~ "Concordant",
+      type == "2" ~ "Reconcilable"
+    )
+  )
 count_true_to_mcc_data_long <- read_csv(here(
   "output/results/count_true_to_mcc_data_long.csv"
 )) |>
   mutate(summary_type = "MCC") |>
-  rename(type = exist)
+  rename(type = exist) |>
+  mutate(
+    type = case_when(
+      type == "0" ~ "Discordant",
+      type == "1" ~ "Concordant"
+    )
+  )
 
 bind_rows(count_true_to_cs_data_long, count_true_to_mcc_data_long) |>
   mutate(
-    type = case_when(
-      type == "0" ~ "false",
-      type == "1" ~ "true",
-      type == "2" ~ "admissible"
-    ) |>
-      factor(levels = c("true", "admissible", "false"))
+    type = factor(type, levels = c("Discordant", "Reconcilable", "Concordant"))
   ) |>
-  ggplot(aes(x = as.factor(n_trait), y = mean_n, fill = as.factor(type))) +
+  mutate(
+    p = mean_n / sum(mean_n, na.rm = TRUE),
+    .by = c(summary_type, n_trait)
+  ) |>
+  ggplot(aes(x = as.factor(n_trait), y = p, fill = as.factor(type))) +
   geom_bar(
     stat = "identity",
-    position = position_dodge(width = .85),
-    width = .75
+    position = "fill",
+    linewidth = .15
+    # width = .75
   ) +
-  scale_fill_highcontrast() +
+  geom_hline(
+    yintercept = .5,
+    linetype = "dashed",
+    linewidth = .5,
+    color = "white"
+  ) +
+  scale_fill_highcontrast(reverse = TRUE) +
   labs(
     x = "Number of traits",
-    y = "Average number of nodes",
-    fill = "Node category"
+    y = "Average proportion\nof nodes",
+    fill = ""
   ) +
   facet_wrap(~summary_type) +
   theme(legend.position = "bottom", panel.grid.major.x = element_blank())
 
 ggsave(
   here("output/figs/number_of_traits_influence.pdf"),
-  width = 12,
-  height = 12,
+  width = width * .8,
+  height = height,
   units = "cm",
   device = cairo_pdf
 )
