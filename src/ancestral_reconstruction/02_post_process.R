@@ -164,17 +164,17 @@ summary_data_ie <- max_depth_data_ie |>
       str_trim() |>
       str_squish()
   ) |> 
-  rename(mean_outgroup = mean_tocharian) 
-  #left_join
-  #  trait_map |> select(trait_num, label, sens, type, cognate_id),
-  #  by = "sens"
-  #) |> 
-  #left_join(roots_ie,by="cognate_id") |>
-  #select(-root_language) 
+  rename(mean_outgroup = mean_tocharian) |> 
+  left_join(
+    trait_map |> select(trait_num, label, sens, type, cognate_id),
+    by = "sens"
+  ) |> 
+  left_join(roots_ie,by="cognate_id") |>
+  select(-root_language) 
 
 summary_data_ie$mean_outgroup[is.nan(summary_data_ie$mean_outgroup)] <- 0
 
-write_csv(summary_data_ie, here("output/results/ancestral_reconstruction_summary_ie.csv"))
+write_csv(summary_data_ie, here("output/results/ancestral_reconstruction_summary_ie_with_root.csv"))
  
 ### EN PLUS --------------------------------------------------------------------
 

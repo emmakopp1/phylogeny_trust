@@ -324,34 +324,47 @@ ggsave(here("output/figs/barplot_prop_resume_to_true.pdf"), width = 12, height =
 tree_cs <- read.tree(here('data/simulated-2025-07-28/beast-data-sim-7/beast-data-sim-7-15/consensus-15.tree'))
 tree_true <- read.tree(here('data/simulated-2025-07-28/beast-data-sim-7/beast-data-sim-7-15/tree-sim-7-15.tree'))
 
-# analyse a plausible rake node in the consensus tree
+# analyse a concordant rake node in the consensus tree
 node_plausible <- 53 # in the true tree 
 descendant_plausible <- Descendants(tree_true, node_plausible)[[1]]
 tip_plausible <- tree_true$tip.label[descendant_plausible]
 mrca_plausible <- getMRCA(tree_cs, tip_plausible) # mrca in the cs tree
 
-# analyse a not plausible rake node in the consensus tree
+# analyse a discordant rake node in the consensus tree
 node_not_plausible <- 71 # node in the true tree
 descendant_not_plausible <- Descendants(tree_true, node_not_plausible)[[1]]
 tip_not_plausible <- tree_true$tip.label[descendant_not_plausible]
 mrca_not_plausible <- getMRCA(tree_cs, tip_not_plausible) # mrca in the cs tree
 
+# analyse a reconciliable rake node in the consensus tree
+node_rec <- 99 # in the true tree
+descendant_rec <-  Descendants(tree_true, node_rec)[[1]]
+tip_rec <- tree_true$tip.label[descendant_rec]
+mrca_rec <- getMRCA(tree_cs, tip_rec) # mrca in the cs tree
+
 # colors in the true tree
 # tip colors
 tip_colors_tt <- rep("black", length(tree_true$tip.label))
-# plausible node in blue
+# concordent in blue
 tip_colors_tt[descendant_plausible] <- "blue"        
-# not plausible node in red
-tip_colors_tt[descendant_not_plausible] <- "red"       
+# discordant node in red
+tip_colors_tt[descendant_not_plausible] <- "red"  
+# reconciliable in yellow
+tip_colors_tt[descendant_rec] <- "yellow2"    
 
 # colors in the consensus tree
 tip_colors_cs <- rep("black", length(tree_cs$tip.label))
+
 # identify tip position in the consensus tree
+# concordant
 tip_positions_cs <- match(tip_plausible, tree_cs$tip.label)
 tip_colors_cs[tip_positions_cs] <- "blue"   
-
+# discordant 
 tip_positions_cs_not_plausible <- match(tip_not_plausible, tree_cs$tip.label)
 tip_colors_cs[tip_positions_cs_not_plausible] <- "red"
+# reconciliable 
+tip_positions_cs_rec <- match(tip_rec, tree_cs$tip.label)
+tip_colors_cs[tip_positions_cs_rec] <- "yellow2"
 
 # true tree
 pdf(here("output/figs/plausible_node.pdf"), width = 12, height = 6)
@@ -359,11 +372,13 @@ par(mfrow=c(1,2))
 plot(tree_true, tip.color = tip_colors_tt, cex=0.6)
 nodelabels(node = node_plausible, frame = 'circle', cex = 0.5)
 nodelabels(node = node_not_plausible, frame = 'circle', cex = 0.5)
+nodelabels(node = node_rec, frame = 'circle', cex = 0.5)
 
 # consensus tree
 plot(tree_cs,direction = "leftwards", tip.color = tip_colors_cs, cex=0.6)
 nodelabels(node = mrca_plausible, frame = 'circle', cex = 0.5)
 nodelabels(node = mrca_not_plausible, frame = 'circle', cex = 0.5)
+nodelabels(node = mrca_rec, frame = 'circle', cex = 0.5)
 
 dev.off()
 
