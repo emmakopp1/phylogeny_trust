@@ -179,7 +179,7 @@ summary_data_ie <- max_depth_data_ie |>
 
 summary_data_ie$mean_outgroup[is.nan(summary_data_ie$mean_outgroup)] <- 0
 
-write_csv(summary_data_ie, here("output/results/ancestral_reconstruction_summary_ie_with_root.csv"))
+write_csv(summary_data_ie, here("output/results/ancestral_reconstruction_summary_ie.csv"))
  
 ### compute for each trait : la   ---------------------------------------------------
 
