@@ -71,12 +71,14 @@ ggsave(
 )
 plot_crop(here("output/figs/shared_cognate_no_homoplasie.pdf"))
 
-shared_cognates_thq <- read.csv(here("output/figs/shared_cognate_thq_no_homoplasie.csv")) |>
-  rename(age = tree_age, prop = S_root) |> 
+shared_cognates_thq <- read_csv(here(
+  "output/figs/shared_cognate_thq_no_homoplasie.csv"
+)) |>
+  rename(age = tree_age, prop = S_root) |>
   select(-coef)
 shared_cognates_thq |>
   ggplot() +
-  geom_pointpath(
+  geom_path(
     aes(x = age, y = prop),
     color = plt[2],
     linewidth = 1,
@@ -95,7 +97,6 @@ shared_cognates_thq |>
     ),
     linetype = "dashed",
     linewidth = .35,
-    color = "orange"
   ) +
   geom_segment(
     aes(
@@ -106,9 +107,8 @@ shared_cognates_thq |>
     ),
     linetype = "dashed",
     linewidth = .35,
-    color = "orange"
-  )+                         
-  coord_cartesian(clip = "off") + 
+  ) +
+  coord_cartesian(clip = "off") +
   scale_color_vibrant(
     name = NULL,
     guide = guide_legend(
@@ -122,7 +122,7 @@ shared_cognates_thq |>
   )
 ggsave(
   here("output/figs/shared_cognate_thq_no_homoplasie.pdf"),
-  width = width,
+  width = width * .8,
   height = height,
   units = "cm",
   device = cairo_pdf
