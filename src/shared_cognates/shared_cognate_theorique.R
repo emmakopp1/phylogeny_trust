@@ -5,127 +5,153 @@ library(phytools)
 library(castor)
 library(phangorn)
 library(adephylo)
+
+# Import data ------------------------------------------------------------------
 length_phylo <- 200
 # Load BEAST posterior trees and thin sample 
 phylo_st <- read.nexus(here("data/real/st_ctmc-strict-fbd-uni/st_ctmc-strict-fbd-uniform.trees"))
 M_st <- length(phylo_st)
 phylo_st <- phylo_st[seq(0.8 * M_st, M_st, length = length_phylo)]
-M_st <- length(phylo_st)  # update M to number of retained trees
-
+M_st <- length(phylo_st)
+root_age <- mean(sapply(phylo_st, function(tree) max(distRoot(tree))))
 
 # Load meaning boundaries and filter parameters
 meanings_sets_st <- read.csv(here("output/results/meanings_sets_st.csv"))
 bounds_real_tb_by_sens <- read.csv(here("output/results/tracelog_summary.csv"))
 bounds_real_tb_st <- bounds_real_tb_by_sens[bounds_real_tb_by_sens$family == "ST", ]
 
-# Define constants and substitution model 
-#K_st <- length(meanings_sets_st$meaning)
-#I_k_st <- meanings_sets_st$end - meanings_sets_st$start + 1
+# Functions --------------------------------------------------------------------
+S <- function(node, tree, mu_st){
+  
+  if (node %in% 1:Ntip(tree)){return(1)}
+  else{
+    children = Descendants(tree, node, type = "children")
+    branch_length_chidren_index = sapply(children, function(i) which(tree$edge[,1] == node & tree$edge[,2] == i))
+    branch_length_children = tree$edge.length[branch_length_chidren_index]
+    exp_branch_length_children = exp(-mu_st * branch_length_children)
+    
+    return(
+      1 - (1 - exp_branch_length_children[1] + exp_branch_length_children[1]*(1 - S(children[1], tree, mu_st)))
+      * (1 - exp_branch_length_children[2] + exp_branch_length_children[2]*(1 - S(children[2], tree, mu_st)))
+    )
+  }
+}
 
+T_1 <- function(node, tr, mu_st, lambda_st) {
+  if (node %in% 1:Ntip(tr)) { return(1) }
+  
+  children <- Descendants(tr, node, type = "children")
+  idx      <- sapply(children, function(i) which(tr$edge[,1] == node & tr$edge[,2] == i))
+  bl       <- tr$edge.length[idx]
+  
+  p_loss_1 <- (1 - exp(-mu_st * bl[1])) * (1 - T_1(children[1], tr, mu_st, lambda_st)) +
+    exp(-mu_st * bl[1])       * (1 - T_0(children[1], tr, mu_st, lambda_st))
+  
+  p_loss_2 <- (1 - exp(-mu_st * bl[2])) * (1 - T_1(children[2], tr, mu_st, lambda_st)) +
+    exp(-mu_st * bl[2])       * (1 - T_0(children[2], tr, mu_st, lambda_st))
+  
+  return(1 - p_loss_1 * p_loss_2)
+}
+
+T_0 <- function(node, tr, mu_st, lambda_st) {
+  if (node %in% 1:Ntip(tr)) { return(1) }
+  
+  children <- Descendants(tr, node, type = "children")
+  idx      <- sapply(children, function(i) which(tr$edge[,1] == node & tr$edge[,2] == i))
+  bl       <- tr$edge.length[idx]
+  
+  p_loss_1 <- (1 - exp(-lambda_st * bl[1])) * (1 - T_0(children[1], tr, mu_st, lambda_st)) +
+    exp(-lambda_st * bl[1])        * (1 - T_1(children[1], tr, mu_st, lambda_st))
+  
+  p_loss_2 <- (1 - exp(-lambda_st * bl[2])) * (1 - T_0(children[2], tr, mu_st, lambda_st)) +
+    exp(-lambda_st * bl[2])        * (1 - T_1(children[2], tr, mu_st, lambda_st))
+  
+  return(1 - p_loss_1 * p_loss_2)
+}
+
+# Compute parameters -----------------------------------------------------------
 pi_st <- bounds_real_tb_st[, c("pi0", "pi1")]
-clock_rate_st = 0.018
+clock_rate_st <- 0.018
 lambda_st <- clock_rate_st / (2 * pi_st$pi0)
-mu_st <- clock_rate_st / (2 * pi_st$pi1)
-Q_st <- cbind(c(-lambda_st, mu_st), c(lambda_st, -mu_st))
+mu_st     <- clock_rate_st / (2 * pi_st$pi1)
 
-#exp(-2*mu_st)
+# Compute S_root over all trees ------------------------------------------------
+S_root_all <- numeric(M_st)
 
-# take the last tree
-tree = phylo_st[[length_phylo]]
-root = find_root(tree)
-root_age = max(distRoot(tree))
-
-# S(x) : probabilité qu'il existe un descendant d de x tels que le trait -------
-# est présent apartout sur <x,d> | présent en x 
-# on veut calculer S(root)
-
-S <- function(node){
+for (i in seq_len(M_st)) {
+  tree <- phylo_st[[i]]
   
-  if (node %in% 1:Ntip(tree)){return(1)}
-  else{
-    # children of node
-    children = Descendants(tree, node, type = "children")
+  root <- find_root(tree)
+  
+  first_split <- Descendants(tree, root, type = "children")
+  branch_length_chidren_index <- sapply(first_split, function(j) which(tree$edge[,1] == root & tree$edge[,2] == j))
+  branch_length_children      <- tree$edge.length[branch_length_chidren_index]
+  exp_branch_length_children  <- exp(-mu_st * branch_length_children)
+  
+  S_root_all[i] <- exp_branch_length_children[1] * S(first_split[1], tree, mu_st) *
+    exp_branch_length_children[2] * S(first_split[2], tree, mu_st)
+}
+
+# Summary
+summary(S_root_all)
+hist(S_root_all, main = "Distribution de S_root sur les arbres postérieurs",
+     xlab = "S_root", col = "steelblue", border = "white")
+mean(S_root_all)
+
+# Apply T(root)
+T_1(first_split[1], tree) * (1 - exp(-mu_st * branch_length_children[1])) + 
+  T_1(first_split[2], tree) * (1 - exp(-mu_st * branch_length_children[2])) - 
+  T_1(first_split[1], tree) * (1 - exp(-mu_st * branch_length_children[1])) *
+  T_1(first_split[2], tree) * (1 - exp(-mu_st * branch_length_children[2]))
+
+# pondération de T_1 et T_0 (qui autorise homoplasie)
+# T_1 * pi1 + T_0 * pi0
+
+# Sensitivity of S(root) to tree age -------------------------------------------
+target_ages <- seq(1, 17, by = 0.1)
+
+results_S <- data.frame(
+  tree_age = numeric(),
+  coef     = numeric(),
+  S_root   = numeric()
+)
+
+for (i in seq_along(target_ages)) {
+  
+  coef_i <- target_ages[i] / root_age
+  
+  # Compute S_root for each tree in the posterior, with scaled branches
+  s_vals <- numeric(M_st)
+  
+  for (k in seq_len(M_st)) {
+    tree_k <- phylo_st[[k]]
     
-    # index of edges from node to children in the tree edges
-    branch_length_chidren_index = sapply(children,function(i) which(tree$edge[,1] == node & tree$edge[,2] == i))
+    root_k        <- find_root(tree_k)
+    root_age_k    <- max(distRoot(tree_k))
+    coef_k        <- target_ages[i] / root_age_k
     
-    # (exponential )branch length from <node,y> and <node,z> 
-    branch_length_children = tree$edge.length[branch_length_chidren_index]
-    exp_branch_length_children = exp(-mu_st * branch_length_children)
+    tree_scaled             <- tree_k
+    tree_scaled$edge.length <- tree_k$edge.length * coef_k
     
-    return(
-      1 - (1 - exp_branch_length_children[1] + exp_branch_length_children[1]*(1 - S(children[1])))
-      * (1 - exp_branch_length_children[2] + exp_branch_length_children[2]*(1 - S(children[2])))
-    )
+    first_split_k <- Descendants(tree_scaled, root_k, type = "children")
+    idx_root_k    <- sapply(first_split_k, function(j)
+      which(tree_scaled$edge[,1] == root_k & tree_scaled$edge[,2] == j))
+    bl_root_k     <- tree_scaled$edge.length[idx_root_k]
+    
+    s_vals[k] <- exp(-mu_st * bl_root_k[1]) * S(first_split_k[1], tree_scaled, mu_st) *
+      exp(-mu_st * bl_root_k[2]) * S(first_split_k[2], tree_scaled, mu_st)
   }
   
+  results_S <- rbind(results_S, data.frame(
+    tree_age = target_ages[i],
+    coef     = coef_i,
+    S_root   = mean(s_vals) + as.numeric(pi_st$pi0[1])
+  ))
 }
 
-first_split = Descendants(tree, root, type = "children")
-
-# index of edges from node to children in the tree edges
-branch_length_chidren_index = sapply(first_split,function(i) which(tree$edge[,1] == root & tree$edge[,2] == i))
-
-# (exponential )branch length from <node,y> and <node,z> 
-branch_length_children = tree$edge.length[branch_length_chidren_index]
-exp_branch_length_children = exp(-mu_st * branch_length_children)
-
-exp_branch_length_children[1]*S(first_split[1]) * exp_branch_length_children[2]*S(first_split[2])
-# je veux proba qu'il est survecu des coté 
-# sur 200 mots a la racine 
-
-# Calcul de T_1(x) : il existe des cognat non homoplasique
-T_1 <- function(node){
-  if (node %in% 1:Ntip(tree)){return(1)}
-  else{
-    children = Descendants(tree, node, type = "children")
-    
-    # index of edges from node to children in the tree edges
-    branch_length_chidren_index = sapply(children,function(i) which(tree$edge[,1] == node & tree$edge[,2] == i))
-    
-    # (exponential )branch length from <node,y> and <node,z> 
-    branch_length_children = tree$edge.length[branch_length_chidren_index]
-    exp_branch_length_children = exp(-mu_st * branch_length_children)
-    
-    return(
-      1 - (exp(-(1-lambda_st) * branch_length_children[1]) * (1 - T_1(children[1])) +
-             exp(-lambda_st * branch_length_children[1]) * (1 - T_0(children[1])) )
-      * (exp(-(1-lambda_st) * branch_length_children[2]) * (1 - T_1(children[2])) +
-           exp(-lambda_st * branch_length_children[2]) * (1 - T_0(children[2])) )
-    )
-  }
-}
-
-T_0 <- function(node){
-  if (node %in% 1:Ntip(tree)){return(1)}
-  else{
-    children = Descendants(tree, node, type = "children")
-    
-    # index of edges from node to children in the tree edges
-    branch_length_chidren_index = sapply(children,function(i) which(tree$edge[,1] == node & tree$edge[,2] == i))
-    
-    # (exponential )branch length from <node,y> and <node,z> 
-    branch_length_children = tree$edge.length[branch_length_chidren_index]
-    exp_branch_length_children = exp(-mu_st * branch_length_children)
-    
-    return(
-      1 - (exp(-(1-mu_st) * branch_length_children[1]) * (1 - T_0(children[1])) +
-             exp(-mu_st * branch_length_children[1]) * (1 - T_1(children[1])) )
-      * (exp(-(1-mu_st) * branch_length_children[2]) * (1 - T_0(children[2])) +
-           exp(-mu_st * branch_length_children[2]) * (1 - T_1(children[2])) )
-    )
-  }
-}
-Descendants(tree,51, type= "children")
-
-T_1(52) * (1 - exp(-mu_st * branch_length_children[1])) + 
-  T_1(58) * (1 - exp(-mu_st * branch_length_children[2])) - 
-  T_1(52) * (1 - exp(-mu_st * branch_length_children[1])) *
-  T_1(58) * (1 - exp(-mu_st * branch_length_children[2]))
+write.csv(results_S, here("output/figs/shared_cognate_thq_no_homoplasie.csv"))
 
 # Sensitivity of T(root) to tree age -------------------------------------------
-first_split = Descendants(tree, root, type = "children")
-
 target_ages <- seq(1, 17, by = 0.1)
 coefs       <- target_ages / root_age   # multiplicative scaling factors
 
@@ -137,65 +163,24 @@ results_T <- data.frame(
 
 for (i in seq_along(target_ages)) {
   
-  # Scale branch lengths
-  tree_scaled            <- tree
+  tree_scaled             <- tree
   tree_scaled$edge.length <- tree$edge.length * coefs[i]
   
-  # index of edges from node to children in the tree edges
-  branch_length_chidren_index = sapply(first_split,function(i) which(tree_scaled$edge[,1] == root & tree_scaled$edge[,2] == i))
-    
-  # (exponential )branch length from <node,y> and <node,z> 
-  branch_length_children = tree_scaled$edge.length[branch_length_chidren_index]
-    
-  # peut etre ca 
-  #s_val <- T_1(first_split[1]) * ( 1 - exp(-mu_st * branch_length_children[1])) + 
-  #  T_1(first_split[2]) * (1 - exp(-mu_st * branch_length_children[2])) - 
-  #  T_1(first_split[1]) * ( 1 - exp(-mu_st * branch_length_children[1])) *
-  #  T_1(first_split[2]) * (1 - exp(-mu_st * branch_length_children[2]))
+  idx_root <- sapply(first_split, function(j) 
+    which(tree_scaled$edge[,1] == root & tree_scaled$edge[,2] == j))
+  bl_root  <- tree_scaled$edge.length[idx_root]
   
-  # peut etre ca
-  s_val <-  1 - ((1 - T_1(first_split[1]) * ( 1 - exp(-mu_st * branch_length_children[1])))*
-    (1- T_1(first_split[2]) * (1 - exp(-mu_st * branch_length_children[2]))))
+  s_val <- T_1(first_split[1], tree_scaled) * (1 - exp(-mu_st * bl_root[1])) + 
+    T_1(first_split[2], tree_scaled) * (1 - exp(-mu_st * bl_root[2])) - 
+    T_1(first_split[1], tree_scaled) * (1 - exp(-mu_st * bl_root[1])) *
+    T_1(first_split[2], tree_scaled) * (1 - exp(-mu_st * bl_root[2]))
   
   results_T <- rbind(results_T, data.frame(
     tree_age = target_ages[i],
     coef     = coefs[i],
-    T_root   = s_val + pi1
+    T_root   = as.numeric(s_val + pi_st[1])
   ))
 }
-
-shared_cognate_comp <- readRDS(here("output/results/shared_cognates.rds"))
-
-# ── Plot ───────────────────────────────────────────────────────────────────────
-
-plot(
-  results_T$tree_age, results_T$T_root,
-  type = "l", lwd = 2, col = "darkblue",
-  xlab = "Age (ka BP)",
-  ylab = "",
-  main = ""
-)
-abline(v = root_age, lty = 2, col = "tomato", lwd = 1.5)
-legend("topright",
-       legend = c("T(root)", sprintf("Original age (%.2f)", root_age)),
-       col    = c("darkblue", "tomato"),
-       lty    = c(1, 2), lwd = 2)
-
-
-
-# Définir les limites communes
-xlim <- range(c(results_T$tree_age, shared_cognate_comp$tree_age))
-ylim <- range(c(results_T$T_root, shared_cognate_comp$value))
-
-# Premier plot (tous les 1)
-plot(
-  results_T$tree_age, log(results_T$T_root),
-  type = "l", lwd = 2, col = "darkblue",
-  xlab = "Tree age (root depth)",
-  ylab = "",
-  main = "",
-  xlim = xlim
-)
 
 curve(exp(-2*x*mu_st), add=T) # avec 2 langues au bout de 10k ans, 5% des cognats sont gardés
 # mais (ligne bleu + de diversit -> + de chance de survivre -> pente plus douce)

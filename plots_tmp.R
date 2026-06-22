@@ -71,6 +71,64 @@ ggsave(
 )
 plot_crop(here("output/figs/shared_cognate_no_homoplasie.pdf"))
 
+shared_cognates_thq <- read.csv(here("output/figs/shared_cognate_thq_no_homoplasie.csv")) |>
+  rename(age = tree_age, prop = S_root) |> 
+  select(-coef)
+shared_cognates_thq |>
+  ggplot() +
+  geom_pointpath(
+    aes(x = age, y = prop),
+    color = plt[2],
+    linewidth = 1,
+    stroke = .1
+  ) +
+  ylab("Proportion of shared cognates") +
+  xlab("Age of the most recent common ancestor (ka)") +
+  scale_y_continuous(breaks = seq(0.8, 1.8, 0.1)) +
+  scale_x_continuous(breaks = seq(0, 17, 5)) +
+  geom_segment(
+    aes(
+      x = as.numeric(8.60856),
+      xend = as.numeric(8.60856),
+      y = as.numeric(0.3113052 + pi1),
+      yend = -Inf
+    ),
+    linetype = "dashed",
+    linewidth = .35,
+    color = "orange"
+  ) +
+  geom_segment(
+    aes(
+      x = -Inf,
+      xend = as.numeric(8.60856),
+      y = as.numeric(0.3113052 + pi1),
+      yend = as.numeric(0.3113052 + pi1)
+    ),
+    linetype = "dashed",
+    linewidth = .35,
+    color = "orange"
+  )+                         
+  coord_cartesian(clip = "off") + 
+  scale_color_vibrant(
+    name = NULL,
+    guide = guide_legend(
+      override.aes = list(linewidth = 1.5)
+    )
+  ) +
+  coord_cartesian(clip = "off") +
+  theme(
+    legend.position = "inside",
+    legend.justification = c(1, 1)
+  )
+ggsave(
+  here("output/figs/shared_cognate_thq_no_homoplasie.pdf"),
+  width = width,
+  height = height,
+  units = "cm",
+  device = cairo_pdf
+)
+plot_crop(here("output/figs/shared_cognate_thq_no_homoplasie.pdf"))
+
 prop_shared_tip_pair <- readRDS(here(
   "output/results/shared_cognate_tip_pair.rds"
 )) |>
