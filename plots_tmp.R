@@ -92,8 +92,8 @@ shared_cognates_thq |>
     aes(
       x = as.numeric(8.60856),
       xend = as.numeric(8.60856),
-      y = as.numeric(0.3113052 + pi1),
-      yend = -Inf
+      y = as.numeric(0.3113052),   # part du point
+      yend = -Inf                   # descend vers le bas
     ),
     linetype = "dashed",
     linewidth = .35,
