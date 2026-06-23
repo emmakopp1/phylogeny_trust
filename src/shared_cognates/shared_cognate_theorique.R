@@ -88,8 +88,8 @@ for (i in seq_len(M_st)) {
   branch_length_children      <- tree$edge.length[branch_length_chidren_index]
   exp_branch_length_children  <- exp(-mu_st * branch_length_children)
   
-  S_root_all[i] <- exp_branch_length_children[1] * S(first_split[1], tree, mu_st) *
-    exp_branch_length_children[2] * S(first_split[2], tree, mu_st)
+  S_root_all[i] <- ( exp_branch_length_children[1]) * S(first_split[1], tree, mu_st) *
+    ( exp_branch_length_children[2]) * S(first_split[2], tree, mu_st)
 }
 
 # Summary
@@ -110,25 +110,17 @@ T_1(first_split[1], tree) * (1 - exp(-mu_st * branch_length_children[1])) +
 # Sensitivity of S(root) to tree age -------------------------------------------
 target_ages <- seq(1, 17, by = 0.1)
 
-results_S <- data.frame(
-  tree_age = numeric(),
-  coef     = numeric(),
-  S_root   = numeric()
-)
+# Matrice : lignes = arbres, colonnes = ages cibles
+S_matrix <- matrix(NA, nrow = M_st, ncol = length(target_ages))
 
-for (i in seq_along(target_ages)) {
+for (k in seq_len(M_st)) {
+  tree_k     <- phylo_st[[k]]
+  root_k     <- find_root(tree_k)
+  root_age_k <- max(distRoot(tree_k))
   
-  coef_i <- target_ages[i] / root_age
-  
-  # Compute S_root for each tree in the posterior, with scaled branches
-  s_vals <- numeric(M_st)
-  
-  for (k in seq_len(M_st)) {
-    tree_k <- phylo_st[[k]]
+  for (i in seq_along(target_ages)) {
     
-    root_k        <- find_root(tree_k)
-    root_age_k    <- max(distRoot(tree_k))
-    coef_k        <- target_ages[i] / root_age_k
+    coef_k <- target_ages[i] / root_age_k
     
     tree_scaled             <- tree_k
     tree_scaled$edge.length <- tree_k$edge.length * coef_k
@@ -138,18 +130,22 @@ for (i in seq_along(target_ages)) {
       which(tree_scaled$edge[,1] == root_k & tree_scaled$edge[,2] == j))
     bl_root_k     <- tree_scaled$edge.length[idx_root_k]
     
-    s_vals[k] <- exp(-mu_st * bl_root_k[1]) * S(first_split_k[1], tree_scaled, mu_st) *
-      exp(-mu_st * bl_root_k[2]) * S(first_split_k[2], tree_scaled, mu_st)
+    S_matrix[k, i] <- (exp(-mu_st * bl_root_k[1])) * S(first_split_k[1], tree_scaled, mu_st) *
+      ( exp(-mu_st * bl_root_k[2])) * S(first_split_k[2], tree_scaled, mu_st)
   }
-  
-  results_S <- rbind(results_S, data.frame(
-    tree_age = target_ages[i],
-    coef     = coef_i,
-    S_root   = mean(s_vals) + as.numeric(pi_st$pi0[1])
-  ))
 }
 
+# Moyenne sur les arbres (sur les lignes) -> vecteur de taille length(target_ages)
+S_mean <- colMeans(S_matrix)
+
+results_S <- data.frame(
+  tree_age = target_ages,
+  S_root   = S_mean
+)
+
 write.csv(results_S, here("output/figs/shared_cognate_thq_no_homoplasie.csv"))
+
+
 
 # Sensitivity of T(root) to tree age -------------------------------------------
 target_ages <- seq(1, 17, by = 0.1)
