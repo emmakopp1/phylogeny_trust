@@ -74,7 +74,7 @@ plot_crop(here("output/figs/shared_cognate_no_homoplasie.pdf"))
 shared_cognates_thq <- read_csv(here(
   "output/figs/shared_cognate_thq_no_homoplasie.csv"
 )) |>
-  rename(age = tree_age, prop = S_root) 
+  rename(age = tree_age, prop = S_root)
 
 shared_cognates_thq |>
   ggplot() +
@@ -84,16 +84,16 @@ shared_cognates_thq |>
     linewidth = 1,
     stroke = .1
   ) +
-  ylab("Proportion of shared cognates without homoplasie") +
-  xlab("Age of the most recent common ancestor (ka)") +
+  ylab("Proportion of shared cognates\n(without homoplasy)") +
+  xlab("Age (ka BP)") +
   scale_y_continuous(breaks = seq(0, 1, 0.1)) +
   scale_x_continuous(breaks = seq(0, 17, 5)) +
   geom_segment(
     aes(
-      x = as.numeric(8.60856),
-      xend = as.numeric(8.60856),
-      y = as.numeric(0.3113052),   # part du point
-      yend = -Inf                   # descend vers le bas
+      x = filter(shared_cognates_thq, prop <= .5)$age[1],
+      xend = filter(shared_cognates_thq, prop <= .5)$age[1],
+      y = filter(shared_cognates_thq, prop <= .5)$prop[1], # part du point
+      yend = -Inf # descend vers le bas
     ),
     linetype = "dashed",
     linewidth = .35,
@@ -101,9 +101,9 @@ shared_cognates_thq |>
   geom_segment(
     aes(
       x = -Inf,
-      xend = as.numeric(8.60856),
-      y = as.numeric(0.3113052 ),
-      yend = as.numeric(0.3113052)
+      xend = filter(shared_cognates_thq, prop <= .5)$age[1],
+      y = filter(shared_cognates_thq, prop <= .5)$prop[1],
+      yend = filter(shared_cognates_thq, prop <= .5)$prop[1]
     ),
     linetype = "dashed",
     linewidth = .35,
