@@ -444,9 +444,21 @@ concepts <- bind_rows(summary_data_st, summary_data_ie) |>
     min = mean_max_depth == min(mean_max_depth, na.rm = TRUE)
   ) |>
   ungroup() |>
-  group_by(family, x, max, min) |>
-  slice(1) |>
-  ungroup() |>
+  # group_by(family, x, max, min) |>
+  # slice(3) |>
+  # ungroup() |>
+  filter(
+    sens %in%
+      c(
+        "I first person singular",
+        "smoke",
+        "hide conceal",
+        "big",
+        "wet",
+        "hold",
+        "small"
+      )
+  ) |>
   mutate(sens = str_remove_all(sens, "hide ")) |>
   mutate(sens = str_replace_all(sens, " of weight", "\n(of weight)")) |>
   mutate(sens = str_replace_all(sens, "I first person singular", "1SG"))
