@@ -742,7 +742,16 @@ tree_true_plot <- ggtree(tree_true, linewidth = .25, ladderize = FALSE) %<+%
   geom_tiplab(
     aes(label = label, color = type),
     size = 8 / .pt,
-    # color = tip_colors_tt,
+    family = base_font
+  ) +
+  geom_highlight(mapping = aes(subset = node == 53), fill = plt2[1]) +
+  geom_highlight(mapping = aes(subset = node == 71), fill = plt2[3]) +
+  geom_highlight(mapping = aes(subset = node == 99), fill = plt2[2]) +
+  geom_nodelab(
+    mapping = aes(label = node, subset = node %in% c(53, 71, 99)),
+    size = 8 / .pt,
+    hjust = 1.5,
+    vjust = -0.25,
     family = base_font
   ) +
   coord_cartesian(clip = "off")
@@ -761,6 +770,14 @@ tree_cs_plot <- ggtree(tree_cs, linewidth = .25, ladderize = FALSE) %<+%
     shape = 22,
     alpha = 0
   ) +
+  geom_nodelab(
+    mapping = aes(label = node, subset = node %in% c(53)),
+    size = 8 / .pt,
+    hjust = -0.5,
+    vjust = -0.25,
+    family = base_font
+  ) +
+  geom_highlight(mapping = aes(subset = node == 53), fill = plt2[1]) +
   scale_x_reverse() +
   coord_cartesian(clip = "off")
 (tree_true_plot +
