@@ -20,3 +20,4 @@ tea_ctmc-strict-fbd-constrained.trees
 output/results/st_by_sens/st_ctmc-strict-fbd_by_sens_tracelog.csv
 output/results/ancestral_reconstruction_ie.csv
 output/results/ancestral_reconstruction_ie_glissements_sementiques.csv
+src/shared_cognates/simulate_phylogenies.R
