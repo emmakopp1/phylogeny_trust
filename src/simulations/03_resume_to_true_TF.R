@@ -110,7 +110,7 @@ for (t in seq_along(trees_true)){
       age = tree_age,
       simulation = tree_simulation_number,
       node = node,
-      state = exist$N_nodes,
+      state = length(node_for_loop),
       result = exist$res
     )
     
@@ -133,9 +133,11 @@ for (t in seq_along(trees_true)){
   tt = trees_true[[t]]
   mcc = trees_mcc[[t]]
   
+  N_tip = length(mcc$tip.label)
+  
   path <- path_trees_true[[t]]
-  tree_simulation_number <- as.numeric(
-    str_match(path, "beast-data-sim-(\\d+)-\\d+")[, 2]
+  tree_simulation_number <- tree_simulation_number <- as.numeric(
+    str_extract(path, "(?<=beast-data-sim-)\\d+")
   )
   tree_age <- as.numeric(str_extract(path, "(\\d+)(?=\\.tree)"))
   
@@ -159,7 +161,7 @@ for (t in seq_along(trees_true)){
       age = tree_age,
       simulation = tree_simulation_number,
       node = node,
-      state = exist$N_nodes,
+      state = length(node_for_loop),
       result = exist$res
     )
     
@@ -180,6 +182,8 @@ for (t in seq_along(trees_true)){
   # consensus and true tree
   tt = trees_true[[t]]
   hipstr = trees_hipstr [[t]]
+  
+  N_tip = length(hipstr$tip.label)
   
   path <- path_trees_true[[t]]
   tree_simulation_number <- as.numeric(
@@ -206,7 +210,7 @@ for (t in seq_along(trees_true)){
       age = tree_age,
       simulation = tree_simulation_number,
       node = node,
-      state = exist$N_nodes,
+      state = length(node_for_loop),
       result = exist$res
     )
     

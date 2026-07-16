@@ -285,5 +285,11 @@ saveRDS(model_hipstr2, here("output/results/model_hipstr.rds"))
 cor_matrix <- cor(df_reg_mcc[c("age", "first_split_prob", "root_split_age_prop")], use = "complete.obs")
 #corrplot(cor_matrix, method = "circle", type = "full")
 
+# Robinson-Foucault metric
 
+rf <- read.csv(here('output/results/rf_values.csv'))
+
+rf_mean_by_age <- rf |> 
+  group_by(tree_age) |> 
+  summarise(RF_mean_global = mean(RF_mean, na.rm = TRUE))
 
