@@ -702,7 +702,7 @@ mrca_rec <- getMRCA(tree_cs, tip_rec) # mrca in the cs tree
 
 # colors in the true tree
 # tip colors
-tip_colors_tt <- tirep("black", length(tree_true$tip.label))
+tip_colors_tt <- rep("black", length(tree_true$tip.label))
 # concordent in blue
 tip_colors_tt[descendant_plausible] <- plt2[1]
 # discordant node in red

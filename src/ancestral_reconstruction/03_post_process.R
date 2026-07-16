@@ -8,7 +8,7 @@ library(stringr)
 
 # sino-tibetan -----------------------------------------------------------------
 # Load dataframe
-path_st <- here("output/results/ancestral_reconstruction_st_final.csv")
+path_st <- here("output/results/ancestral_reconstruction_st.csv")
 data_st <- read.csv(path_st, header = TRUE, sep = ',', row.names = NULL)
 
 # Load and clean linguistic data 
@@ -76,7 +76,7 @@ trait_per_meaning_ie <- read.csv(here("data/real/meanings_sets_ie.csv")) |>
   rename(sens = meaning)
 
 # Load dataframe
-path_ie <- here("output/results/ancestral_reconstruction_ie_final.csv")
+path_ie <- here("output/results/ancestral_reconstruction_ie.csv")
 data_ie <- read.csv2(path_ie, header = TRUE, sep = ',') |> 
   distinct()
 
@@ -145,6 +145,7 @@ data_ie_main <- data_ie |>
 # For each tree and sens keep the maximum depth reconstruction (value)
 max_depth_data_ie <- data_ie_main |> 
   mutate(value = as.numeric(value)) |> 
+  #mutate(any_outgroup = rowSums(across(all_of(tocharian_anatolian), ~ .x == 1), na.rm = TRUE) > 0) |>
   group_by(sens, tree) |>
   slice_max(value, n = 1, with_ties = FALSE) |>
   ungroup()
