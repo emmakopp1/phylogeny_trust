@@ -58,6 +58,7 @@ mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF.csv")) |>
 # for each mcc tree, age between the root and the first split of the true tree
 first_split_age_mcc <- read.csv(here("output/results/first_split_age_mcc.csv"))
 first_split_age_cs <- read.csv(here("output/results/first_split_age_cs.csv"))
+first_split_age_hipstr <- read.csv(here("output/results/first_split_age_hipstr.csv"))
 
 # frequency of good reconstruction of all the nodes in consensus tree (true -> summary)
 # the value of node represent the node in the true tree
@@ -83,8 +84,11 @@ df_number_of_nodes <- read.csv(
 )
 
 # marginal probability of the first split in the mcc and consensus tree
+#prob_first_split_summary = read.csv(
+#  here("output/results/marginal_prob_first_split_mcc_consensus.csv")
+#)
 prob_first_split_summary = read.csv(
-  here("output/results/marginal_prob_first_split_mcc_consensus.csv")
+  here("output/results/marginal_prob_first_split_mcc_consensus_hipstr.csv")
 )
 
 # process data -----------------------------------------------------------------
@@ -240,17 +244,40 @@ df_reg_cs <- resume_to_true_TF_cs |>
 model_cs <- glm(y ~ age + first_split_prob + root_split_age_prop, data = df_reg_cs, family = 'binomial')
 summary(model_cs)
 
+# regression hipstr
+resume_to_true_TF_hipstr <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
+  filter(type == 'hipstr')
+
+df_reg_hipstr <- resume_to_true_TF_hipstr |>
+  inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
+  filter(node == node_hipstr ) |>
+  full_join(first_split_age_hipstr, by = c("age","simulation")) |>
+  select(-type, -exist, -node_cs,-node_mcc,-node_hipstr, -mcc_prob,-cs_prob, -X)|>
+  rename(y = N_nodes) |>
+  # delete the tree for which the first split is a leaf
+  filter(!is.na(y)) |> 
+  mutate(root_split_age_prop = as.numeric(root_split_age)/root_age) |>
+  rename(first_split_prob = hipstr_prob) |> 
+  mutate(y = as.factor(y))
+
+# model consensus regression
+model_hipstr <- glm(y ~ age + first_split_prob + root_split_age_prop, data = df_reg_hipstr, family = 'binomial')
+summary(model_hipstr)
+
 # regression with age, probability of the first split
 model_mcc2 <- glm(y ~ age + first_split_prob, data = df_reg_mcc, family = 'binomial')
 model_cs2 <- glm(y ~ age + first_split_prob, data = df_reg_cs, family = 'binomial')
+model_hipstr2 <- glm(y ~ age + first_split_prob, data = df_reg_hipstr, family = 'binomial')
 
 summary(model_mcc2)
 summary(model_cs2)
+summary(model_hipstr2)
 
 
 # Sauvegarde des modèles dans des fichiers .rds
 saveRDS(model_mcc2, here("output/results/model_mcc.rds"))
 saveRDS(model_cs2, here("output/results/model_cs.rds"))
+saveRDS(model_hipstr2, here("output/results/model_hipstr.rds"))
 
 # correlation matrix between covariates
 cor_matrix <- cor(df_reg_mcc[c("age", "first_split_prob", "root_split_age_prop")], use = "complete.obs")
