@@ -136,6 +136,8 @@ resume_to_true_grouped <- read_csv(here("output/results/resume_to_true_TF.csv"),
   ungroup() |>
   mutate(exist = factor(exist, levels = c("0", "1")))
 
+
+
 # number of well reconstructed node in the mcc tree
 count_true_to_mcc <- resume_to_true_grouped |>
   filter(type == "mcc") |>
@@ -175,7 +177,7 @@ write_csv(count_cs_to_true, here("output/results/count_cs_to_true.csv"))
 prop_true_to_cs <- true_false_uncertain |>
   count(age, simulation, value) |>
   group_by(age, value) |>
-  summarise(mean_n = sum(n)/N_sim, .groups = "drop") |>
+  summarise(mean_n = mean(n)/N_sim, .groups = "drop") |>
   mutate(value = factor(value, levels = c("0", "2", "1"))) |>
   arrange(age, value) 
 
@@ -185,7 +187,7 @@ write_csv(prop_true_to_cs, here("output/results/prop_true_to_cs.csv"))
 prop_mcc_to_true <- resume_to_true_grouped |>
   filter(type == "mcc") |>
   group_by(age, exist) |>
-  summarise(n_mean = sum(n)/N_sim, .groups = "drop") 
+  summarise(n_mean = mean(n)/N_sim, .groups = "drop") 
 
 write_csv(prop_mcc_to_true, here("output/results/prop_mcc_to_true.csv"))
 
@@ -193,19 +195,19 @@ write_csv(prop_mcc_to_true, here("output/results/prop_mcc_to_true.csv"))
 prop_cs_to_true <- resume_to_true_grouped |>
   filter(type == "consensus") |>
   group_by(age, exist) |>
-  summarise(n_mean = mean(n), .groups = "drop") |> 
+  summarise(n_mean = mean(n)/N_sim, .groups = "drop") |> 
   ungroup()
 
 write_csv(prop_cs_to_true, here("output/results/prop_cs_to_true.csv"))
 
-# number of true nodes in the summary tree
-prop_mcc_to_true <- resume_to_true_grouped |>
-  filter(type == "mcc") |>
+# number of true nodes in the hipstr tree
+prop_hipstr_to_true <- resume_to_true_grouped |>
+  filter(type == "hipstr") |>
   group_by(age, exist) |>
-  summarise(n_mean = mean(n), .groups = "drop") |> 
+  summarise(n_mean = mean(n)/N_sim, .groups = "drop") |> 
   ungroup()
 
-write_csv(prop_mcc_to_true, here("output/results/prop_mcc_to_true.csv"))
+write_csv(prop_hipstr_to_true, here("output/results/prop_hipstr_to_true.csv"))
 
 # regression on the first split ------------------------------------------------
 # regression mcc
