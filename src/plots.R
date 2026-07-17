@@ -700,15 +700,15 @@ descendant_rec <- Descendants(tree_true, node_rec)[[1]]
 tip_rec <- tree_true$tip.label[descendant_rec]
 mrca_rec <- getMRCA(tree_cs, tip_rec) # mrca in the cs tree
 
-# colors in the true tree
-# tip colors
-tip_colors_tt <- rep("black", length(tree_true$tip.label))
-# concordent in blue
-tip_colors_tt[descendant_plausible] <- plt2[1]
-# discordant node in red
-tip_colors_tt[descendant_not_plausible] <- plt2[3]
-# reconciliable in yellow
-tip_colors_tt[descendant_rec] <- plt2[2]
+# # colors in the true tree
+# # tip colors
+# tip_colors_tt <- rep("black", length(tree_true$tip.label))
+# # concordent in blue
+# tip_colors_tt[descendant_plausible] <- plt2[1]
+# # discordant node in red
+# tip_colors_tt[descendant_not_plausible] <- plt2[3]
+# # reconciliable in yellow
+# tip_colors_tt[descendant_rec] <- plt2[2]
 
 tb <- tibble(tip.label = tree_true$tip.label) |>
   mutate(
@@ -723,19 +723,19 @@ tb <- tibble(tip.label = tree_true$tip.label) |>
       )
   )
 
-# colors in the consensus tree
-tip_colors_cs <- rep("black", length(tree_cs$tip.label))
+# # colors in the consensus tree
+# tip_colors_cs <- rep("black", length(tree_cs$tip.label))
 
-# identify tip position in the consensus tree
-# concordant
-tip_positions_cs <- match(tip_plausible, tree_cs$tip.label)
-tip_colors_cs[tip_positions_cs] <- plt2[1]
-# discordant
-tip_positions_cs_not_plausible <- match(tip_not_plausible, tree_cs$tip.label)
-tip_colors_cs[tip_positions_cs_not_plausible] <- plt2[3]
-# reconciliable
-tip_positions_cs_rec <- match(tip_rec, tree_cs$tip.label)
-tip_colors_cs[tip_positions_cs_rec] <- plt2[2]
+# # identify tip position in the consensus tree
+# # concordant
+# tip_positions_cs <- match(tip_plausible, tree_cs$tip.label)
+# tip_colors_cs[tip_positions_cs] <- plt2[1]
+# # discordant
+# tip_positions_cs_not_plausible <- match(tip_not_plausible, tree_cs$tip.label)
+# tip_colors_cs[tip_positions_cs_not_plausible] <- plt2[3]
+# # reconciliable
+# tip_positions_cs_rec <- match(tip_rec, tree_cs$tip.label)
+# tip_colors_cs[tip_positions_cs_rec] <- plt2[2]
 
 tree_true_plot <- ggtree(tree_true, linewidth = .25, ladderize = FALSE) %<+%
   tb +
