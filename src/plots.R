@@ -748,13 +748,28 @@ tree_true_plot <- ggtree(tree_true, linewidth = .25, ladderize = FALSE) %<+%
   geom_highlight(mapping = aes(subset = node == 71), fill = plt2[3]) +
   geom_highlight(mapping = aes(subset = node == 99), fill = plt2[2]) +
   geom_nodelab(
-    mapping = aes(label = node, subset = node %in% c(53, 71, 99)),
-    size = 8 / .pt,
+    mapping = aes(subset = node == 53, label = "A"),
+    size = 9 / .pt,
+    hjust = 1.5,
+    vjust = -0.25,
+    family = base_font
+  ) +
+  geom_nodelab(
+    mapping = aes(subset = node == 71, label = "B"),
+    size = 9 / .pt,
+    hjust = 1.5,
+    vjust = -0.25,
+    family = base_font
+  ) +
+  geom_nodelab(
+    mapping = aes(subset = node == 99, label = "C"),
+    size = 9 / .pt,
     hjust = 1.5,
     vjust = -0.25,
     family = base_font
   ) +
   coord_cartesian(clip = "off")
+# tree_true_plot
 tree_cs_plot <- ggtree(tree_cs, linewidth = .25, ladderize = FALSE) %<+%
   tb +
   geom_tiplab(
@@ -771,8 +786,8 @@ tree_cs_plot <- ggtree(tree_cs, linewidth = .25, ladderize = FALSE) %<+%
     alpha = 0
   ) +
   geom_nodelab(
-    mapping = aes(label = node, subset = node %in% c(53)),
-    size = 8 / .pt,
+    mapping = aes(label = "A", subset = node %in% c(53)),
+    size = 9 / .pt,
     hjust = -0.5,
     vjust = -0.25,
     family = base_font
