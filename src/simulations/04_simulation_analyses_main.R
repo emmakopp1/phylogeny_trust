@@ -291,5 +291,8 @@ rf <- read.csv(here('output/results/rf_values.csv'))
 
 rf_mean_by_age <- rf |> 
   group_by(tree_age) |> 
-  summarise(RF_mean_global = mean(RF_mean, na.rm = TRUE))
-
+  summarise(
+    RF_mean_global = mean(RF_mean, na.rm = TRUE),
+    RF_sd_global = mean(RF_sd, na.rm = TRUE)
+    )
+rf_mean_by_age
