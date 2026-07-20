@@ -796,70 +796,12 @@ ggsave(
 plot_crop(here("output/figs/plausible_node.pdf"))
 
 
-
-# tree_true_plot
-tree_mcc_plot <- ggtree(tree_mcc, linewidth = .25, ladderize = FALSE) %<+%
-  tb +
-  geom_tiplab(
-    aes(label = label, color = type, fill = type),
-    size = 8 / .pt,
-    hjust = 1,
-    # key_glyph = draw_key_rect,
-    family = base_font
-  ) +
-  geom_tippoint(
-    aes(color = type, fill = type),
-    color = NA,
-    shape = 22,
-    alpha = 0
-  ) +
-  geom_nodelab(
-    mapping = aes(label = "A", subset = node %in% c(53)),
-    size = 9 / .pt,
-    hjust = -0.5,
-    vjust = -0.25,
-    family = base_font
-  ) +
-  geom_highlight(mapping = aes(subset = node == 53), fill = plt2[1]) +
-  scale_x_reverse() +
-  coord_cartesian(clip = "off")
-(tree_true_plot +
-    hexpand(.05) +
-    guides(color = "none") +
-    ggtitle("True tree") +
-    tree_cs_plot +
-    guides(
-      fill = guide_legend(override.aes = list(size = 5, alpha = 1))
-    ) +
-    ggtitle("Consensus tree") +
-    hexpand(.05, direction = 1) &
-    theme_void(base_family = base_font, base_size = 9) &
-    theme(
-      legend.position = "bottom",
-      legend.text = element_text(size = 9),
-      plot.title = element_text(size = 9, hjust = 0.5)
-    ) &
-    scale_color_highcontrast(reverse = TRUE, na.value = "black", guide = "none") &
-    scale_fill_highcontrast(reverse = TRUE, na.translate = FALSE) &
-    labs(color = "", fill = "")) +
-  # guide_area() +
-  plot_layout(guides = 'collect')
-ggsave(
-  here("output/figs/plausible_node_mcc.pdf"),
-  width = width,
-  height = height / 1.5,
-  units = "cm",
-  device = cairo_pdf
-)
-plot_crop(here("output/figs/plausible_node_mcc.pdf"))
-
-
 # analyse a concordant rake node in the mcc tree
 tree_mcc <- read.tree(here(
   'data/simulated-2025-07-28/beast-data-sim-7/beast-data-sim-7-15/mcc-15.tree'
 ))
-labs_lex <- sort(tree_mcc$tip.label)
-map_lex <- setNames(seq_along(labs_lex), labs_lex)
+labs_lex_mcc <- sort(tree_mcc$tip.label)
+map_lex_mcc <- setNames(seq_along(labs_lex_mcc), labs_lex_mcc)
 tree_mcc$tip.label <- paste0("T", map_lex[tree_mcc$tip.label])
 #tree_true <- read.tree(here(
 #  'data/simulated-2025-07-28/beast-data-sim-7/beast-data-sim-7-15/tree-sim-7-15.tree'
@@ -868,28 +810,73 @@ tree_mcc$tip.label <- paste0("T", map_lex[tree_mcc$tip.label])
 #map_lex <- setNames(seq_along(labs_lex), labs_lex)
 #tree_true$tip.label <- paste0("T", map_lex[tree_true$tip.label])
 
-# analyse a concordant rake node in the consensus tree
+# analyse a concordant rake node in the mcc tree
 node_plausible <- 53 # in the true tree
 descendant_plausible <- Descendants(tree_true, node_plausible)[[1]]
 tip_plausible <- tree_true$tip.label[descendant_plausible]
 mrca_plausible_mcc <- getMRCA(tree_mcc, tip_plausible) # mrca in the mcc tree
 
-# analyse a discordant rake node in the consensus tree
+# analyse a discordant rake node in the mcc tree
 node_not_plausible <- 71 # node in the true tree
 descendant_not_plausible <- Descendants(tree_true, node_not_plausible)[[1]]
 tip_not_plausible <- tree_true$tip.label[descendant_not_plausible]
 mrca_not_plausible_mcc <- getMRCA(tree_mcc, tip_not_plausible) # mrca in the cs tree
 
-# analyse a reconciliable rake node in the consensus tree
+# analyse a reconciliable rake node in the mcc tree
 node_rec <- 99 # in the true tree
 descendant_rec <- Descendants(tree_true, node_rec)[[1]]
 tip_rec <- tree_true$tip.label[descendant_rec]
 mrca_rec <- getMRCA(tree_mcc, tip_rec) # mrca in the cs tree
 
+tb_mcc <- tibble(tip.label = tree_true$tip.label) |>
+  mutate(
+    type = case_when(
+      tip.label %in% c(tip_plausible, tip_rec) ~ "Concordant",
+      tip.label %in% tip_not_plausible ~ "Discordant",
+      .default = NA
+    ) |>
+      factor(
+        levels = c("Discordant", "Reconcilable", "Concordant")
+      )
+  )
+
+tree_true_mcc_plot <- ggtree(tree_true, linewidth = .25, ladderize = FALSE) %<+%
+  tb_mcc +
+  geom_tiplab(
+    aes(label = label, color = type),
+    size = 8 / .pt,
+    family = base_font
+  ) +
+  geom_highlight(mapping = aes(subset = node == 53), fill = plt2[1]) +
+  geom_highlight(mapping = aes(subset = node == 71), fill = plt2[3]) +
+  geom_highlight(mapping = aes(subset = node == 99), fill = plt2[1]) +
+  geom_nodelab(
+    mapping = aes(subset = node == 53, label = "A"),
+    size = 9 / .pt,
+    hjust = 1.5,
+    vjust = -0.25,
+    family = base_font
+  ) +
+  geom_nodelab(
+    mapping = aes(subset = node == 71, label = "B"),
+    size = 9 / .pt,
+    hjust = 1.5,
+    vjust = -0.25,
+    family = base_font
+  ) +
+  geom_nodelab(
+    mapping = aes(subset = node == 99, label = "C"),
+    size = 9 / .pt,
+    hjust = 1.5,
+    vjust = -0.25,
+    family = base_font
+  ) +
+  coord_cartesian(clip = "off")
+
 
 # tree_true_plot
 tree_mcc_plot <- ggtree(tree_mcc, linewidth = .25, ladderize = FALSE) %<+%
-  tb +
+  tb_mcc +
   geom_tiplab(
     aes(label = label, color = type, fill = type),
     size = 8 / .pt,
@@ -903,49 +890,36 @@ tree_mcc_plot <- ggtree(tree_mcc, linewidth = .25, ladderize = FALSE) %<+%
     shape = 22,
     alpha = 0
   ) +
+  geom_highlight(mapping = aes(subset = node == 90), fill = plt2[1]) +
   geom_nodelab(
-    mapping = aes(label = "A", subset = node %in% c(72)),
+    mapping = aes(subset = node == 90, label = "C"),
     size = 9 / .pt,
-    hjust = -0.5,
+    hjust = 1.5,
     vjust = -0.25,
     family = base_font
-  ) +
-  geom_highlight(mapping = aes(subset = node == 72), fill = plt2[1]) +
-  geom_nodelab(
-    mapping = aes(label = "C", subset = node %in% c(90)),
-    size = 9 / .pt,
-    hjust = -0.5,
-    vjust = -0.25,
-    family = base_font
-  ) +
-  geom_highlight(mapping = aes(subset = node == 90), fill = plt2[2]) +
+  ) + 
   scale_x_reverse() +
   coord_cartesian(clip = "off")
 
-(tree_true_plot +
-    hexpand(.05) +
-    guides(color = "none") +
-    ggtitle("True tree") +
-    tree_mcc_plot +
-    guides(
-      fill = guide_legend(override.aes = list(size = 5, alpha = 1))
-    ) +
-    ggtitle("MCC tree") +
-    hexpand(.05, direction = 1) &
-    theme_void(base_family = base_font, base_size = 9) &
-    theme(
-      legend.position = "bottom",
-      legend.text = element_text(size = 9),
-      plot.title = element_text(size = 9, hjust = 0.5)
-    ) &
-    scale_color_highcontrast(reverse = TRUE, na.value = "black", guide = "none") &
-    scale_fill_highcontrast(reverse = TRUE, na.translate = FALSE) &
-    labs(color = "", fill = "")) +
-  # guide_area() +
-  plot_layout(guides = 'collect')
+common <- list(
+  theme_void(base_family = base_font, base_size = 9),
+  theme(
+    legend.position = "bottom",
+    legend.text = element_text(size = 9),
+    plot.title = element_text(size = 9, hjust = 0.5)
+  ),
+  scale_color_highcontrast(reverse = TRUE, na.value = "black", guide = "none"),
+  scale_fill_highcontrast(reverse = TRUE, na.translate = FALSE),
+  labs(color = "", fill = "")
+)
+
+(tree_true_plot + common + hexpand(.05) + guides(color = "none") + ggtitle("True tree") +
+    tree_mcc_plot + common + guides(fill = guide_legend(override.aes = list(size = 5, alpha = 1))) + ggtitle("MCC tree") + hexpand(.05, direction = 1)) +
+  plot_layout(guides = "collect")
+
 ggsave(
   here("output/figs/plausible_node_mcc.pdf"),
-  width = width,
+  width = width*2,
   height = height / 1.5,
   units = "cm",
   device = cairo_pdf
