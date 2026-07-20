@@ -597,7 +597,7 @@ ggsave(
 plot_crop(here("output/figs/marginal_probability_first_split_hdi.pdf"))
 
 count_true_to_cs_data_long <- read_csv(here(
-  "output/results/count_true_to_cs_data_long.csv"
+  "output/results/prop_true_to_cs_data_long.csv"
 )) |>
   mutate(summary_type = "CS") |>
   rename(type = value) |>
@@ -609,10 +609,10 @@ count_true_to_cs_data_long <- read_csv(here(
     )
   )
 count_true_to_mcc_data_long <- read_csv(here(
-  "output/results/count_true_to_mcc_data_long.csv"
+  "output/results/prop_true_to_mcc_data_long.csv"
 )) |>
   mutate(summary_type = "MCC") |>
-  rename(type = exist) |>
+  rename(type = value) |>
   mutate(
     type = case_when(
       type == "0" ~ "Discordant",
@@ -625,7 +625,7 @@ bind_rows(count_true_to_cs_data_long, count_true_to_mcc_data_long) |>
     type = factor(type, levels = c("Discordant", "Reconcilable", "Concordant"))
   ) |>
   mutate(
-    p = mean_n / sum(mean_n, na.rm = TRUE),
+    p = prop_n / sum(prop_n, na.rm = TRUE),
     .by = c(summary_type, n_trait)
   ) |>
   ggplot(aes(x = as.factor(n_trait), y = p, fill = as.factor(type))) +
@@ -836,7 +836,7 @@ tb_mcc <- tibble(tip.label = tree_true$tip.label) |>
       .default = NA
     ) |>
       factor(
-        levels = c("Discordant", "Reconcilable", "Concordant")
+        levels = c("Discordant", "Concordant")
       )
   )
 
@@ -898,8 +898,19 @@ tree_mcc_plot <- ggtree(tree_mcc, linewidth = .25, ladderize = FALSE) %<+%
     vjust = -0.25,
     family = base_font
   ) + 
+  geom_highlight(mapping = aes(subset = node == 72), fill = plt2[1]) +
+  geom_nodelab(
+    mapping = aes(subset = node == 72, label = "A"),
+    size = 9 / .pt,
+    hjust = 1.5,
+    vjust = -0.25,
+    family = base_font
+  ) + 
   scale_x_reverse() +
   coord_cartesian(clip = "off")
+
+
+col_map <- c("Discordant" = plt2[3], "Concordant" = plt2[1])
 
 common <- list(
   theme_void(base_family = base_font, base_size = 9),
@@ -908,15 +919,16 @@ common <- list(
     legend.text = element_text(size = 9),
     plot.title = element_text(size = 9, hjust = 0.5)
   ),
-  scale_color_highcontrast(reverse = TRUE, na.value = "black", guide = "none"),
-  scale_fill_highcontrast(reverse = TRUE, na.translate = FALSE),
+  scale_color_manual(values = col_map, na.value = "black", guide = "none"),
+  scale_fill_manual(values = col_map, na.translate = FALSE),
   labs(color = "", fill = "")
 )
-
-(tree_true_plot + common + hexpand(.05) + guides(color = "none") + ggtitle("True tree") +
-    tree_mcc_plot + common + guides(fill = guide_legend(override.aes = list(size = 5, alpha = 1))) + ggtitle("MCC tree") + hexpand(.05, direction = 1)) +
+p_final <- (tree_true_mcc_plot + common + hexpand(.05) + guides(color = "none") + ggtitle("True tree") +
+              tree_mcc_plot + common + guides(fill = guide_legend(override.aes = list(size = 5, alpha = 1))) + ggtitle("MCC tree") + hexpand(.05, direction = 1)) +
   plot_layout(guides = "collect")
 
+p_final <- patchwork:::`&.gg`(p_final, theme(legend.position = "bottom"))
+p_final
 ggsave(
   here("output/figs/plausible_node_mcc.pdf"),
   width = width*2,
