@@ -938,4 +938,72 @@ ggsave(
 )
 plot_crop(here("output/figs/plausible_node_mcc.pdf"))
 
+rf_hdi <- read_csv(here("output/results/rf_hdi.csv"))
+rf_hdi |>
+  ggplot() +
+  geom_ribbon(
+    aes(x = tree_age, ymin = inf, ymax = sup),
+    fill = plt[3],
+    alpha = .25
+  ) +
+  geom_pointpath(
+    aes(x = tree_age, y = RF_mean),
+    color = plt[2],
+    linewidth = .85,
+    stroke = .1
+  ) +
+  scale_x_continuous(breaks = seq(0, 17, 1)) +
+  xlab("Age (ka BP)") +
+  ylab("Robinson Foucault distance")
+ggsave(
+  here("output/figs/rf_hdi.pdf"),
+  width = width * .8,
+  height = height,
+  units = "cm",
+  device = cairo_pdf
+)
+plot_crop(here("output/figs/rf_hdi.pdf"))
 
+rf_trait_influence <- bind_rows(
+  read_csv(here("output/results/rf_values_1500.csv")) |> mutate(n_trait = 1500),
+  read_csv(here("output/results/rf_values_6000.csv")) |> mutate(n_trait = 6000),
+  read_csv(here("output/results/rf_values.csv")) |> filter(tree_age==8) |> mutate(n_trait = 3000),
+  read_csv(here("output/results/rf_values_12000.csv")) |> mutate(n_trait = 12000)
+) |> 
+  mutate(n_trait = fct_relevel(as.factor(n_trait), "1500", "3000", "6000", "12000"))
+
+rf_trait_influence |>
+  ggplot() +
+  geom_hline(
+    yintercept = .5,
+    linetype = "dashed",
+    color = "grey50",
+    linewidth = .5
+  ) +
+  geom_boxplot(
+    aes(x = n_trait, y = RF_mean),
+    fill = plt[2],
+    color = plt[2],
+    alpha = .25,
+    outlier.shape = NA,
+    width = .6
+  ) +
+  geom_jitter(
+    aes(x = n_trait, y = RF_mean),
+    color = plt[2],
+    width = .12,
+    alpha = .35,
+    size = 1.6,
+    stroke = .1
+  ) +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, .25)) +
+  xlab("Number of traits") +
+  ylab("Robinson Foucault distance")
+ggsave(
+  here("output/figs/rf_trait_influence.pdf"),
+  width = width * .8,
+  height = height,
+  units = "cm",
+  device = cairo_pdf
+)
+plot_crop(here("output/figs/rf_trait_influence.pdf"))

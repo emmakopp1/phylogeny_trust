@@ -16,6 +16,7 @@ library(tidyverse)
 library(dplyr)
 library(patchwork)
 library(tidyr)
+library(HDInterval)
 N_sim <- 50
 
 # load the data ---------
@@ -405,6 +406,7 @@ count_cs_to_true_data <- bind_rows(
 
 write_csv(count_true_to_cs_data, here("output/results/prop_true_to_cs_data_long.csv"))
 write_csv(count_true_to_mcc_data, here("output/results/prop_true_to_mcc_data_long.csv"))
+
 
 # --- Proportions true to cs ---
 # total de noeuds par age/n_trait (somme sur les 3 categories 0,1,2)

@@ -29,7 +29,7 @@ hdi_results <- purrr::map(1:17, ~ {
     select(prob_mean)
   list(
     lower = HDInterval::hdi(test, credMass = 0.90)[1],
-    upper = HDInterval::hdi(test, credMass = 0.99)[2]
+    upper = HDInterval::hdi(test, credMass = 0.90)[2]
   )
 })
 hdi_lower <- map_dbl(hdi_results, "lower")
@@ -215,7 +215,7 @@ df_reg_mcc <- mcc_to_true_TF |>
   inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
   filter(node == node_mcc) |>
   full_join(first_split_age_mcc, by = c("age","simulation")) |>
-  select(-type, -exist, -node_cs,-node_mcc, -cs_prob, -X)|>
+  select(-type, -exist, -node_cs,-node_hipstr, -hipstr_prob, -cs_prob, -X)|>
   rename(y = N_nodes) |> 
   mutate(root_split_age_prop = as.numeric(root_split_age)/root_age) |>
   rename(first_split_prob = mcc_prob) |> 
@@ -289,10 +289,32 @@ cor_matrix <- cor(df_reg_mcc[c("age", "first_split_prob", "root_split_age_prop")
 
 rf <- read.csv(here('output/results/rf_values.csv'))
 
-rf_mean_by_age <- rf |> 
-  group_by(tree_age) |> 
+rf_results <- purrr::map(1:17, ~ {
+  test <- rf |>
+    filter(tree_age == .x) |>
+    select(RF_mean)
+  list(
+    lower = HDInterval::hdi(test, credMass = 0.90)[1],
+    upper = HDInterval::hdi(test, credMass = 0.90)[2]
+  )
+})
+rf_lower <- map_dbl(rf_results, "lower")
+rf_upper <- map_dbl(rf_results, "upper")
+
+
+rf_ic = rf |>
+  group_by(tree_age) |>
   summarise(
-    RF_mean_global = mean(RF_mean, na.rm = TRUE),
-    RF_sd_global = mean(RF_sd, na.rm = TRUE)
-    )
-rf_mean_by_age
+    RF_mean = mean(RF_mean),
+    RF_min = mean(RF_min),
+    RF_max = mean(RF_max)
+  )
+
+rf_ic$inf <- rf_lower
+rf_ic$sup <- rf_upper
+rf_ic
+
+write.csv(rf_ic, here("output/results/rf_hdi.csv"))
+
+
+
