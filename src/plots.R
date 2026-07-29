@@ -589,7 +589,7 @@ marginal_probability_first_split_hdi |>
   ylab("Mean probability of correctly\ninferring the first split")
 ggsave(
   here("output/figs/marginal_probability_first_split_hdi.pdf"),
-  width = width * .8,
+  width = width * .6,
   height = height,
   units = "cm",
   device = cairo_pdf
@@ -969,7 +969,7 @@ rf_hdi |>
   ylab("Robinson-Foulds distance")
 ggsave(
   here("output/figs/rf_hdi.pdf"),
-  width = width * .8,
+  width = width * .6,
   height = height,
   units = "cm",
   device = cairo_pdf
