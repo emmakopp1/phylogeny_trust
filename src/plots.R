@@ -1007,3 +1007,51 @@ ggsave(
   device = cairo_pdf
 )
 plot_crop(here("output/figs/rf_trait_influence.pdf"))
+
+read_csv(here("output/results/mcc_reconstruction_proba_first_split.csv")) |> 
+  mutate(
+    mcc_prob_bin = cut(mcc_prob,
+                       breaks = seq(0, 1, by = 0.05),
+                       include.lowest = TRUE,
+                       labels = seq(0.025, 0.975, by = 0.05))
+  ) %>%
+  mutate(mcc_prob_bin = as.numeric(as.character(mcc_prob_bin))) |> 
+  group_by(mcc_prob_bin) |>
+  summarise(
+    mean_y = mean(y, na.rm = TRUE),
+    count  = n(),
+    .groups = "drop"
+  ) |> 
+  ggplot(aes(x = mcc_prob_bin, y = mean_y)) +
+  geom_pointpath(
+    aes(size = count),
+    color = plt[2],
+    linewidth = .85,
+    stroke = .1
+  ) +
+  scale_size_continuous(
+    name   = "Count",
+    range  = c(1, 5),
+    breaks = c(100, 200)
+  ) +
+  scale_y_continuous(
+    limits = c(0, 1),
+    breaks = seq(0, 1, 0.25)
+  ) +
+  labs(
+    x = "mcc_prob",
+    y = "Mean y (proportion TRUE)"
+  ) +
+  coord_cartesian(clip = "off")|> 
+  ggsave(
+    here("output/figs/mcc_reconstruction_proba_first_split.pdf"),
+    width = width * .8,
+    height = height,
+    units = "cm",
+    device = cairo_pdf
+  )
+plot_crop(here("output/figs/mcc_reconstruction_proba_first_split.pdf"))
+
+
+
+

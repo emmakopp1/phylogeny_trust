@@ -286,7 +286,6 @@ cor_matrix <- cor(df_reg_mcc[c("age", "first_split_prob", "root_split_age_prop")
 #corrplot(cor_matrix, method = "circle", type = "full")
 
 # Robinson-Foucault metric
-
 rf <- read.csv(here('output/results/rf_values.csv'))
 
 rf_results <- purrr::map(1:17, ~ {
@@ -316,5 +315,42 @@ rf_ic
 
 write.csv(rf_ic, here("output/results/rf_hdi.csv"))
 
+# mcc - true false reconstruction and marginale probability
+mcc_reconstruction_proba_first_split = mcc_to_true_TF |>
+  inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
+  filter(node == node_mcc ) |>
+  full_join(first_split_age_mcc, by = c("age","simulation")) |>
+  rename(y = N_nodes) |>
+  select(age, simulation, node, y, mcc_prob, first_split) |> 
+  # delete the tree for which the first split is a leaf
+  filter(!is.na(y))
+
+write_csv(mcc_reconstruction_proba_first_split, here("output/results/mcc_reconstruction_proba_first_split.csv"))
+
+
+# consensus - true false reconstruction and marginale probability
+cs_reconstruction_proba_first_split = resume_to_true_TF_cs |>
+  inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
+  filter(node == node_cs ) |>
+  full_join(first_split_age_cs, by = c("age","simulation")) |>
+  rename(y = N_nodes) |>
+  select(age, simulation, node, y, cs_prob, first_split) |> 
+  # delete the tree for which the first split is a leaf
+  filter(!is.na(y))
+
+write_csv(cs_reconstruction_proba_first_split, here("output/results/cs_reconstruction_proba_first_split.csv"))
+
+
+# hipstr - true false reconstruction and marginale probability
+hipstr_reconstruction_proba_first_split = resume_to_true_TF_hipstr |>
+  inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
+  filter(node == node_hipstr ) |>
+  full_join(first_split_age_hipstr, by = c("age","simulation")) |>
+  rename(y = N_nodes) |>
+  select(age, simulation, node, y, hipstr_prob, first_split) |> 
+  # delete the tree for which the first split is a leaf
+  filter(!is.na(y))
+
+write_csv(hipstr_reconstruction_proba_first_split, here("output/results/hipstr_reconstruction_proba_first_split.csv"))
 
 
