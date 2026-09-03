@@ -589,7 +589,7 @@ marginal_probability_first_split_hdi |>
   ylab("Mean probability of correctly\ninferring the first split")
 ggsave(
   here("output/figs/marginal_probability_first_split_hdi.pdf"),
-  width = width * .6,
+  width = width * .8,
   height = height,
   units = "cm",
   device = cairo_pdf
@@ -897,7 +897,7 @@ tree_mcc_plot <- ggtree(tree_mcc, linewidth = .25, ladderize = FALSE) %<+%
     hjust = 1.5,
     vjust = -0.25,
     family = base_font
-  ) +
+  ) + 
   geom_highlight(mapping = aes(subset = node == 72), fill = plt2[1]) +
   geom_nodelab(
     mapping = aes(subset = node == 72, label = "A"),
@@ -905,7 +905,7 @@ tree_mcc_plot <- ggtree(tree_mcc, linewidth = .25, ladderize = FALSE) %<+%
     hjust = 1.5,
     vjust = -0.25,
     family = base_font
-  ) +
+  ) + 
   scale_x_reverse() +
   coord_cartesian(clip = "off")
 
@@ -923,23 +923,15 @@ common <- list(
   scale_fill_manual(values = col_map, na.translate = FALSE),
   labs(color = "", fill = "")
 )
-p_final <- (tree_true_mcc_plot +
-  common +
-  hexpand(.05) +
-  guides(color = "none") +
-  ggtitle("True tree") +
-  tree_mcc_plot +
-  common +
-  guides(fill = guide_legend(override.aes = list(size = 5, alpha = 1))) +
-  ggtitle("MCC tree") +
-  hexpand(.05, direction = 1)) +
+p_final <- (tree_true_mcc_plot + common + hexpand(.05) + guides(color = "none") + ggtitle("True tree") +
+              tree_mcc_plot + common + guides(fill = guide_legend(override.aes = list(size = 5, alpha = 1))) + ggtitle("MCC tree") + hexpand(.05, direction = 1)) +
   plot_layout(guides = "collect")
 
 p_final <- patchwork:::`&.gg`(p_final, theme(legend.position = "bottom"))
 p_final
 ggsave(
   here("output/figs/plausible_node_mcc.pdf"),
-  width = width,
+  width = width*2,
   height = height / 1.5,
   units = "cm",
   device = cairo_pdf
@@ -961,15 +953,11 @@ rf_hdi |>
     stroke = .1
   ) +
   scale_x_continuous(breaks = seq(0, 17, 1)) +
-  scale_y_continuous(
-    breaks = seq(0, round(max(rf_hdi$RF_max), 1), .1),
-    limits = c(0, max(rf_hdi$RF_max))
-  ) +
   xlab("Age (ka BP)") +
   ylab("Robinson-Foulds distance")
 ggsave(
   here("output/figs/rf_hdi.pdf"),
-  width = width * .6,
+  width = width * .8,
   height = height,
   units = "cm",
   device = cairo_pdf
@@ -979,73 +967,38 @@ plot_crop(here("output/figs/rf_hdi.pdf"))
 rf_trait_influence <- bind_rows(
   read_csv(here("output/results/rf_values_1500.csv")) |> mutate(n_trait = 1500),
   read_csv(here("output/results/rf_values_6000.csv")) |> mutate(n_trait = 6000),
-  read_csv(here("output/results/rf_values.csv")) |>
-    filter(tree_age == 8) |>
-    mutate(n_trait = 3000),
-  read_csv(here("output/results/rf_values_12000.csv")) |>
-    mutate(n_trait = 12000)
-) |>
-  mutate(
-    n_trait = fct_relevel(as.factor(n_trait), "1500", "3000", "6000", "12000")
-  )
+  read_csv(here("output/results/rf_values.csv")) |> filter(tree_age==8) |> mutate(n_trait = 3000),
+  read_csv(here("output/results/rf_values_12000.csv")) |> mutate(n_trait = 12000)
+) |> 
+  mutate(n_trait = fct_relevel(as.factor(n_trait), "1500", "3000", "6000", "12000"))
 
-library(ggdist)
 rf_trait_influence |>
-  ggplot(aes(x = n_trait, y = RF_mean)) +
-  stat_slab(
-    fill = plt[2],
-    alpha = .5,
-  ) +
-  geom_line(
-    data = summarise(
-      rf_trait_influence,
-      RF_mean = median(RF_mean),
-      .by = n_trait
-    ),
-    aes(x = n_trait, y = RF_mean, group = 1),
+  ggplot() +
+  geom_hline(
+    yintercept = .5,
     linetype = "dashed",
-    color = "grey30",
-    linewidth = .75
+    color = "grey50",
+    linewidth = .5
   ) +
-  stat_pointinterval(
-    color = "black",
-    point_interval = "median_qi",
-    .width = c(.66, .95)
+  geom_boxplot(
+    aes(x = n_trait, y = RF_mean),
+    fill = plt[2],
+    color = plt[2],
+    alpha = .25,
+    outlier.shape = NA,
+    width = .6
   ) +
-  scale_y_continuous(
-    limits = c(0, round(max(rf_trait_influence$RF_mean), 1)),
-    breaks = seq(0, 1, .1)
+  geom_jitter(
+    aes(x = n_trait, y = RF_mean),
+    color = plt[2],
+    width = .12,
+    alpha = .35,
+    size = 1.6,
+    stroke = .1
   ) +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, .25)) +
   xlab("Number of traits") +
   ylab("Robinson-Foulds distance")
-
-# rf_trait_influence |>
-#   ggplot() +
-#   geom_hline(
-#     yintercept = .5,
-#     linetype = "dashed",
-#     color = "grey50",
-#     linewidth = .5
-#   ) +
-#   geom_boxplot(
-#     aes(x = n_trait, y = RF_mean),
-#     fill = plt[2],
-#     color = plt[2],
-#     alpha = .25,
-#     outlier.shape = NA,
-#     width = .6
-#   ) +
-#   geom_jitter(
-#     aes(x = n_trait, y = RF_mean),
-#     color = plt[2],
-#     width = .12,
-#     alpha = .35,
-#     size = 1.6,
-#     stroke = .1
-#   ) +
-#   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, .25)) +
-#   xlab("Number of traits") +
-#   ylab("Robinson Foucault distance")
 ggsave(
   here("output/figs/rf_trait_influence.pdf"),
   width = width * .8,
@@ -1086,18 +1039,110 @@ read_csv(here("output/results/mcc_reconstruction_proba_first_split.csv")) |>
     breaks = seq(0, 1, 0.25)
   ) +
   labs(
-    x = "mcc_prob",
-    y = "Mean y (proportion TRUE)"
+    x = "Probability of the first split",
+    y = "Proportion of well reconstructed first split"
   ) +
-  coord_cartesian(clip = "off")|> 
-  ggsave(
+  coord_cartesian(clip = "off")
+
+ggsave(
     here("output/figs/mcc_reconstruction_proba_first_split.pdf"),
-    width = width * .8,
-    height = height,
+    width = width,
+    height = height/2,
     units = "cm",
     device = cairo_pdf
   )
 plot_crop(here("output/figs/mcc_reconstruction_proba_first_split.pdf"))
+
+read_csv(here("output/results/cs_reconstruction_proba_first_split.csv")) |> 
+  mutate(
+    cs_prob_bin = cut(cs_prob,
+                       breaks = seq(0, 1, by = 0.05),
+                       include.lowest = TRUE,
+                       labels = seq(0.025, 0.975, by = 0.05))
+  ) %>%
+  mutate(cs_prob_bin = as.numeric(as.character(cs_prob_bin))) |> 
+  group_by(cs_prob_bin) |>
+  summarise(
+    mean_y = mean(y, na.rm = TRUE),
+    count  = n(),
+    .groups = "drop"
+  ) |> 
+  ggplot(aes(x = cs_prob_bin, y = mean_y)) +
+  geom_pointpath(
+    aes(size = count),
+    color = plt[2],
+    linewidth = .85,
+    stroke = .1
+  ) +
+  scale_size_continuous(
+    name   = "Count",
+    range  = c(1, 5),
+    breaks = c(100, 200)
+  ) +
+  scale_y_continuous(
+    limits = c(0, 1),
+    breaks = seq(0, 1, 0.25)
+  ) +
+  labs(
+    x = "Probability of the first split",
+    y = "Proportion of well reconstructed first split"
+  ) +
+  coord_cartesian(clip = "off")
+
+ggsave(
+  here("output/figs/cs_reconstruction_proba_first_split.pdf"),
+  width = width,
+  height = height/2,
+  units = "cm",
+  device = cairo_pdf
+)
+plot_crop(here("output/figs/cs_reconstruction_proba_first_split.pdf"))
+
+
+read_csv(here("output/results/hipstr_reconstruction_proba_first_split.csv")) |> 
+  mutate(
+    hipstr_prob_bin = cut(hipstr_prob,
+                      breaks = seq(0, 1, by = 0.05),
+                      include.lowest = TRUE,
+                      labels = seq(0.025, 0.975, by = 0.05))
+  ) %>%
+  mutate(hipstr_prob_bin = as.numeric(as.character(hipstr_prob_bin))) |> 
+  group_by(hipstr_prob_bin) |>
+  summarise(
+    mean_y = mean(y, na.rm = TRUE),
+    count  = n(),
+    .groups = "drop"
+  ) |> 
+  ggplot(aes(x = hipstr_prob_bin, y = mean_y)) +
+  geom_pointpath(
+    aes(size = count),
+    color = plt[2],
+    linewidth = .85,
+    stroke = .1
+  ) +
+  scale_size_continuous(
+    name   = "Count",
+    range  = c(1, 5),
+    breaks = c(100, 200)
+  ) +
+  scale_y_continuous(
+    limits = c(0, 1),
+    breaks = seq(0, 1, 0.25)
+  ) +
+  labs(
+    x = "Probability of the first split",
+    y = "Proportion of well reconstructed first split"
+  ) +
+  coord_cartesian(clip = "off")
+
+ggsave(
+  here("output/figs/hipstr_reconstruction_proba_first_split.pdf"),
+  width = width,
+  height = height/2,
+  units = "cm",
+  device = cairo_pdf
+)
+plot_crop(here("output/figs/hipstr_reconstruction_proba_first_split.pdf"))
 
 
 
