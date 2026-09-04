@@ -246,75 +246,6 @@ count_true_to_mcc_12000 <- resume_to_true_grouped_12000 |>
 
 saveRDS(count_true_to_mcc_12000, here("output/results/prop_true_to_mcc_12000.csv"))
 
-
-# count the numer of true node from de consensus tree to the true tree
-# for 1500 traits
-count_cs_to_true_1500 <- resume_to_true_grouped_1500 |>
-  filter(type == "consensus") |>
-  group_by(age, exist) |>
-  summarise(proportion = mean(proportion), .groups = "drop") |>
-  tidyr::pivot_wider(names_from = exist, values_from = proportion, names_prefix = "exist_") |>
-  mutate(
-    total = exist_0 + exist_1
-  ) |>
-  pivot_longer(cols = starts_with("exist_"), names_prefix = "exist_", names_to = "exist", values_to = "n_proportion") |>
-  mutate(
-    exist = factor(exist, levels = c("0", "1")),
-    y_label = ifelse(exist == "1", 0, total) 
-  )
-
-write_csv(count_cs_to_true_1500, here("output/results/prop_cs_to_true_1500.csv"))
-
-# for 3000 traits
-count_cs_to_true_3000 <- resume_to_true_grouped_3000 |>
-  filter(type == "consensus") |>
-  group_by(age, exist) |>
-  summarise(proportion = mean(proportion), .groups = "drop") |>
-  tidyr::pivot_wider(names_from = exist, values_from = proportion, names_prefix = "exist_") |>
-  mutate(
-    total = exist_0 + exist_1
-  ) |>
-  pivot_longer(cols = starts_with("exist_"), names_prefix = "exist_", names_to = "exist", values_to = "n_proportion") |>
-  mutate(
-    exist = factor(exist, levels = c("0", "1")),
-    y_label = ifelse(exist == "1", 0, total) 
-  )
-
-write_csv(count_cs_to_true_3000, here("output/results/prop_cs_to_true_3000.csv"))
-
-# for 6000 traits
-count_cs_to_true_6000 <- resume_to_true_grouped_6000 |>
-  filter(type == "consensus") |>
-  group_by(age, exist) |>
-  summarise(proportion = mean(proportion), .groups = "drop") |>
-  tidyr::pivot_wider(names_from = exist, values_from = proportion, names_prefix = "exist_") |>
-  mutate(
-    total = exist_0 + exist_1
-  ) |>
-  pivot_longer(cols = starts_with("exist_"), names_prefix = "exist_", names_to = "exist", values_to = "n_proportion") |>
-  mutate(
-    exist = factor(exist, levels = c("0", "1")),
-    y_label = ifelse(exist == "1", 0, total) 
-  )
-write_csv(count_cs_to_true_6000, here("output/results/prop_cs_to_true_6000.csv"))
-
-# for 12000 traits
-count_cs_to_true_12000 <- resume_to_true_grouped_12000 |>
-  filter(type == "consensus") |>
-  group_by(age, exist) |>
-  summarise(proportion = mean(proportion), .groups = "drop") |>
-  tidyr::pivot_wider(names_from = exist, values_from = proportion, names_prefix = "exist_") |>
-  mutate(
-    total = exist_0 + exist_1
-  ) |>
-  pivot_longer(cols = starts_with("exist_"), names_prefix = "exist_", names_to = "exist", values_to = "n_proportion") |>
-  mutate(
-    exist = factor(exist, levels = c("0", "1")),
-    y_label = ifelse(exist == "1", 0, total) 
-  )
-write_csv(count_cs_to_true_12000, here("output/results/prop_cs_to_true_12000.csv"))
-
-
 # --- Données count_true_to_cs ---
 count_true_to_cs_data <- bind_rows(
   readRDS(here("output/results/prop_true_to_cs_12000.rds")) |> mutate(n_trait = 12000),
@@ -375,34 +306,6 @@ count_true_to_mcc_data <- bind_rows(
     value = as.factor(exist) # Assurez-vous que 'value' est un facteur pour l'esthétique de remplissage
   ) |> 
   select(-exist)
-
-head(count_true_to_mcc_data)
-head(count_true_to_cs_data)
-
-# --- Données count_cs_to_true ---
-count_cs_to_true_data <- bind_rows(
-  read_csv(here("output/results/prop_cs_to_true_12000.csv")) |> mutate(n_trait = 12000),
-  read_csv(here("output/results/prop_cs_to_true_6000.csv")) |> mutate(n_trait = 6000),
-  read_csv(here("output/results/prop_cs_to_true_3000.csv")) |> filter(age==8) |> mutate(n_trait = 3000),
-  read_csv(here("output/results/prop_cs_to_true_1500.csv")) |> mutate(n_trait = 1500)
-) |>
-  pivot_wider(
-    id_cols = c(age, exist),
-    names_from = n_trait,
-    values_from = c(n_proportion, total), # Pivot both n_mean and total
-    names_prefix = ""
-  ) |>
-  select(age, exist, 
-         n_proportion_3000, 
-         n_proportion_1500,
-         n_proportion_6000, 
-         n_proportion_12000, 
-         total_1500,
-         total_3000, 
-         total_6000, 
-         total_12000) |>
-  arrange(age, exist)
-
 
 write_csv(count_true_to_cs_data, here("output/results/prop_true_to_cs_data_long.csv"))
 write_csv(count_true_to_mcc_data, here("output/results/prop_true_to_mcc_data_long.csv"))

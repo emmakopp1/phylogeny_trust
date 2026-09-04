@@ -46,7 +46,6 @@ ntipschars_st <- get_nexus_parameters(here("data/real/st_ctmc-strict-fbd-uni/st.
 
 ntipschars <- bind_rows(ntipschars_ie, ntipschars_st) |>
   relocate(family, 1)
-write_csv(ntipschars, here("output/results/ntipschars.csv"))
 
 # Trace logs  -------------------------------------------------------------------------
 

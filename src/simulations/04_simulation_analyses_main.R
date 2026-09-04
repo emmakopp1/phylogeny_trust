@@ -48,13 +48,6 @@ marginal_probability_first_split_ic
 
 write.csv(marginal_probability_first_split_ic, here("output/results/marginal_prob_first_split_hdi.csv"))
 
-# frequency of good reconstruction of all the nodes in of the mcc
-mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
-  filter(type == 'mcc')
-
-#mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
-#  filter(type == 'consensus')
-
 # for each mcc tree, age between the root and the first split of the true tree
 first_split_age_mcc <- read.csv(here("output/results/first_split_age_mcc.csv"))
 first_split_age_cs <- read.csv(here("output/results/first_split_age_cs.csv"))
@@ -76,50 +69,12 @@ true_false_uncertain <- read.csv(
     )
   )
 
-# number of node in the consensus and mcc tree
-df_number_of_nodes <- read.csv(
-  file = here("output/results/number_nodes_mcc_cs.csv"),
-  sep = ",",
-  header = T
-)
-
 # posterior probability of the first split in the mcc, consensus and hipstr trees
 prob_first_split_summary = read.csv(
   here("output/results/marginal_prob_first_split_mcc_consensus_hipstr.csv")
 )
 
 # process data -----------------------------------------------------------------
-
-# marginal probability of the first split in the mcc 
-prob_first_split_mcc = prob_first_split_summary |> 
-  select(- cs_prob, - node_cs, - node_mcc) |> 
-  group_by(age) |> 
-  summarise(mean_mcc_prob = mean(mcc_prob, na.rm=T), .groups='drop') |> 
-  ungroup() |> 
-  write.csv(file = here("output/results/prob_first_split_mcc.csv"), row.names = FALSE)
-
-# number of node in the summary tree
-df_number_of_nodes_avg <- df_number_of_nodes |>
-  group_by(age) |>
-  summarise(
-    n_mcc = mean(n_mcc, na.rm = TRUE),
-    n_consensus = mean(n_consensus, na.rm = TRUE)
-  ) |>
-  write.csv(file = here("output/results/number_of_nodes_summary.csv"), row.names = FALSE)
-
-
-# for the consensus trees, count the number of true, false and uncertain nodes
-# with special labels for the plot
-count_true_to_cs <- true_false_uncertain |>
-  count(age, simulation, value) |>
-  group_by(age, value) |>
-  summarise(mean_n = sum(n)/N_sim, .groups = "drop") |>
-  mutate(value = factor(value, levels = c("0", "2", "1"))) |>
-  arrange(age, value) 
-
-write.csv(count_true_to_cs, here("output/results/count_true_to_cs.csv"))
-
-# for the mcc tree count the number of true, false
 
 # for each summary tree, age, simulation this dataframe indicates the proprtions 
 # of true and false nodes
@@ -132,43 +87,6 @@ resume_to_true_grouped <- read_csv(here("output/results/resume_to_true_TF.csv"),
   mutate(proportion = n / N_node) |>
   ungroup() |>
   mutate(exist = factor(exist, levels = c("0", "1")))
-
-
-
-# number of well reconstructed node in the mcc tree
-count_true_to_mcc <- resume_to_true_grouped |>
-  filter(type == "mcc") |>
-  group_by(age, exist) |>
-  summarise(n_mean = sum(n)/N_sim, .groups = "drop") |>
-  tidyr::pivot_wider(names_from = exist, values_from = n_mean, names_prefix = "exist_") |>
-  mutate(
-    total = exist_0 + exist_1
-  ) |>
-  pivot_longer(cols = starts_with("exist_"), names_prefix = "exist_", names_to = "exist", values_to = "n_mean") |>
-  mutate(
-    exist = factor(exist, levels = c("0", "1")),
-    y_label = ifelse(exist == "1", 0, total) # alignement manuel
-  ) 
-
-write.csv(count_true_to_mcc,here("output/results/count_true_to_mcc.csv"))
-
-
-# count the numer of true node from de consensus tree to the true tree
-count_cs_to_true <- resume_to_true_grouped |>
-  filter(type == "consensus") |>
-  group_by(age, exist) |>
-  summarise(n_mean = mean(n), .groups = "drop") |>
-  tidyr::pivot_wider(names_from = exist, values_from = n_mean, names_prefix = "exist_") |>
-  mutate(
-    total = exist_0 + exist_1
-  ) |>
-  pivot_longer(cols = starts_with("exist_"), names_prefix = "exist_", names_to = "exist", values_to = "n_mean") |>
-  mutate(
-    exist = factor(exist, levels = c("0", "1")),
-    y_label = ifelse(exist == "1", 0, total) 
-  )
-
-write_csv(count_cs_to_true, here("output/results/count_cs_to_true.csv"))
 
 # proportion of true,false and uncertain nodes in the consensus tree (true -> consensus)
 prop_true_to_cs <- true_false_uncertain |>
@@ -206,83 +124,7 @@ prop_hipstr_to_true <- resume_to_true_grouped |>
 
 write_csv(prop_hipstr_to_true, here("output/results/prop_hipstr_to_true.csv"))
 
-# regression on the first split ------------------------------------------------
-# regression mcc
-df_reg_mcc <- mcc_to_true_TF |>
-  inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
-  filter(node == node_mcc) |>
-  full_join(first_split_age_mcc, by = c("age","simulation")) |>
-  select(-type, -exist, -node_cs,-node_hipstr, -hipstr_prob, -cs_prob, -X)|>
-  rename(y = N_nodes) |> 
-  mutate(root_split_age_prop = as.numeric(root_split_age)/root_age) |>
-  rename(first_split_prob = mcc_prob) |> 
-  mutate(y = as.factor(y))
-
-# regression with age, probability of the first split and age of the first split
-# model mcc regression 
-model_mcc <- glm(y ~ age + first_split_prob + root_split_age_prop, data = df_reg_mcc, family = 'binomial')
-summary(model_mcc)
-
-# regression cs 
-resume_to_true_TF_cs <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
-  filter(type == 'consensus')
-
-df_reg_cs <- resume_to_true_TF_cs |>
-  inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
-  filter(node == node_cs ) |>
-  full_join(first_split_age_cs, by = c("age","simulation")) |>
-  select(-type, -exist, -node_cs,-node_mcc, -mcc_prob, -X)|>
-  rename(y = N_nodes) |>
-  # delete the tree for which the first split is a leaf
-  filter(!is.na(y)) |> 
-  mutate(root_split_age_prop = as.numeric(root_split_age)/root_age) |>
-  rename(first_split_prob = cs_prob) |> 
-  mutate(y = as.factor(y))
-
-# model consensus regression
-model_cs <- glm(y ~ age + first_split_prob + root_split_age_prop, data = df_reg_cs, family = 'binomial')
-summary(model_cs)
-
-# regression hipstr
-resume_to_true_TF_hipstr <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
-  filter(type == 'hipstr')
-
-df_reg_hipstr <- resume_to_true_TF_hipstr |>
-  inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
-  filter(node == node_hipstr ) |>
-  full_join(first_split_age_hipstr, by = c("age","simulation")) |>
-  select(-type, -exist, -node_cs,-node_mcc,-node_hipstr, -mcc_prob,-cs_prob, -X)|>
-  rename(y = N_nodes) |>
-  # delete the tree for which the first split is a leaf
-  filter(!is.na(y)) |> 
-  mutate(root_split_age_prop = as.numeric(root_split_age)/root_age) |>
-  rename(first_split_prob = hipstr_prob) |> 
-  mutate(y = as.factor(y))
-
-# model consensus regression
-model_hipstr <- glm(y ~ age + first_split_prob + root_split_age_prop, data = df_reg_hipstr, family = 'binomial')
-summary(model_hipstr)
-
-# regression with age, probability of the first split
-model_mcc2 <- glm(y ~ age + first_split_prob, data = df_reg_mcc, family = 'binomial')
-model_cs2 <- glm(y ~ age + first_split_prob, data = df_reg_cs, family = 'binomial')
-model_hipstr2 <- glm(y ~ age + first_split_prob, data = df_reg_hipstr, family = 'binomial')
-
-summary(model_mcc2)
-summary(model_cs2)
-summary(model_hipstr2)
-
-
-# Sauvegarde des modèles dans des fichiers .rds
-saveRDS(model_mcc2, here("output/results/model_mcc.rds"))
-saveRDS(model_cs2, here("output/results/model_cs.rds"))
-saveRDS(model_hipstr2, here("output/results/model_hipstr.rds"))
-
-# correlation matrix between covariates
-cor_matrix <- cor(df_reg_mcc[c("age", "first_split_prob", "root_split_age_prop")], use = "complete.obs")
-#corrplot(cor_matrix, method = "circle", type = "full")
-
-# Robinson-Foucault metric
+# Robinson-Foulds metrics ------------------------------------------------------
 rf <- read.csv(here('output/results/rf_values.csv'))
 
 rf_results <- purrr::map(1:17, ~ {
@@ -313,6 +155,9 @@ rf_ic
 write.csv(rf_ic, here("output/results/rf_hdi.csv"))
 
 # mcc - true false reconstruction and marginale probability
+mcc_to_true_TF <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
+  filter(type == 'mcc')
+
 mcc_reconstruction_proba_first_split = mcc_to_true_TF |>
   inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
   filter(node == node_mcc ) |>
@@ -326,6 +171,9 @@ write_csv(mcc_reconstruction_proba_first_split, here("output/results/mcc_reconst
 
 
 # consensus - true false reconstruction and marginale probability
+resume_to_true_TF_cs <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
+  filter(type == 'consensus')
+
 cs_reconstruction_proba_first_split = resume_to_true_TF_cs |>
   inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
   filter(node == node_cs ) |>
@@ -339,6 +187,9 @@ write_csv(cs_reconstruction_proba_first_split, here("output/results/cs_reconstru
 
 
 # hipstr - true false reconstruction and marginale probability
+resume_to_true_TF_hipstr <- read.csv(here("output/results/resume_to_true_TF.csv")) |> 
+  filter(type == 'hipstr')
+
 hipstr_reconstruction_proba_first_split = resume_to_true_TF_hipstr |>
   inner_join(prob_first_split_summary, by = c("age", "simulation")) |>
   filter(node == node_hipstr ) |>
