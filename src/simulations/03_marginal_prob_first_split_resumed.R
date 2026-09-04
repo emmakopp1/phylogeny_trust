@@ -151,13 +151,4 @@ process_file <- function(i){
 # local
 res_list <- lapply(seq_along(path_trees_cs), process_file)
 
-# cluster initialisation
-#ncl <- detectCores() - 1
-#cl <- makeCluster(ncl, type="FORK")
-#clusterSetRNGStream(cl)
-
-
-# treatment by parallelisation
-#res_list <- parLapply(cl, seq_along(path_trees_cs), process_file)
-#stopCluster(cl)
 
