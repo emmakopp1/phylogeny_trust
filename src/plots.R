@@ -206,6 +206,8 @@ bind_rows(prop_cs_to_true, prop_mcc_to_true, prop_hipstr_to_true) |>
   coord_cartesian(clip = "off", expand = FALSE) +
   facet_wrap(~type) +
   theme(
+    axis.ticks = element_line(size = .25, color = "grey40"),
+    axis.ticks.length = unit(0.15, "lines"),
     legend.position = "bottom",
     legend.margin = margin(t = -.5, r = 0, b = 0, l = 0, unit = "lines"),
   )
@@ -277,14 +279,13 @@ bind_rows(summary_data_st, summary_data_ie) |>
     data = concepts,
     aes(x = mean_max_depth, y = mean_outgroup, label = sens),
     seed = 123,
-    min.segment.length = 0,
+    min.segment.length = 1,
     segment.size = .35,
     family = base_font,
     lineheight = .8,
     color = plt[1],
     bg.color = "white",
-    bg.r = 0.05,
-    size = 9 / .pt
+    bg.r = 0.05
   ) +
   facet_wrap(~family, scales = "free") +
   coord_cartesian(clip = "off") +
@@ -411,7 +412,11 @@ bind_rows(count_true_to_cs_data_long, count_true_to_mcc_data_long) |>
     fill = ""
   ) +
   facet_wrap(~summary_type) +
-  theme(legend.position = "bottom", panel.grid.major.x = element_blank())
+  theme(
+    legend.position = "bottom",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  )
 
 ggsave(
   here("output/figs/number_of_traits_influence.pdf"),
