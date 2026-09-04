@@ -70,7 +70,7 @@ write_csv(summary_data_st, here("output/results/ancestral_reconstruction_summary
 
 # indo-european ---------------------------------------------------------------
 # Number of trait per meaning
-trait_per_meaning_ie <- read.csv(here("data/real/meanings_sets_ie.csv")) |>
+trait_per_meaning_ie <- read.csv(here("output/results/meanings_sets_ie.csv")) |>
   mutate(n_traits = end - start + 1) |>
   select(meaning, n_traits) |>
   rename(sens = meaning)

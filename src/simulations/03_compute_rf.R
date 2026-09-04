@@ -41,7 +41,7 @@ colnames(df) <- c('tree_age', 'tree_simulation_number', 'RF_mean', 'RF_median', 
 output_path <- ifelse(
   N_traits == "",
   paste0(here("output/results"), "/rf_values.csv"),
-  here(sprintf("%s/rf_values_%s.csv", cluster_directory, N_traits))
+  paste0(here("output/results"), sprintf("/rf_values_%s.csv", N_traits))
 )
 
 write.table(
