@@ -9,6 +9,7 @@ library(treeio)
 library(TreeTools)
 library(phangorn)
 library(ggtree)
+library(ggdist)
 
 # theme
 # width <- 13.5
@@ -20,7 +21,7 @@ base_font2 <- "Noto Sans ExtraCondensed"
 plt <- color("vibrant")(3)
 plt2 <- color("highcontrast")(3)
 theme_set(
-  theme_minimal(base_family = base_font, base_size = 9) +
+  theme_minimal(base_family = base_font, base_size = 10) +
     theme(
       aspect.ratio = .618,
       strip.text = element_text(size = 9),
@@ -721,7 +722,7 @@ rf_hdi |>
   ylab("Robinson-Foulds distance")
 ggsave(
   here("output/figs/rf_hdi.pdf"),
-  width = width * .8,
+  width = width,
   height = height,
   units = "cm",
   device = cairo_pdf
@@ -744,35 +745,36 @@ rf_trait_influence <- bind_rows(
   )
 
 rf_trait_influence |>
-  ggplot() +
-  geom_hline(
-    yintercept = .5,
-    linetype = "dashed",
-    color = "grey50",
-    linewidth = .5
-  ) +
-  geom_boxplot(
-    aes(x = n_trait, y = RF_mean),
+  ggplot(aes(x = n_trait, y = RF_mean)) +
+  stat_slab(
     fill = plt[2],
-    color = plt[2],
-    alpha = .25,
-    outlier.shape = NA,
-    width = .6
+    alpha = .5,
   ) +
-  geom_jitter(
-    aes(x = n_trait, y = RF_mean),
-    color = plt[2],
-    width = .12,
-    alpha = .35,
-    size = 1.6,
-    stroke = .1
+  geom_line(
+    data = summarise(
+      rf_trait_influence,
+      RF_mean = median(RF_mean),
+      .by = n_trait
+    ),
+    aes(x = n_trait, y = RF_mean, group = 1),
+    linetype = "dashed",
+    color = "grey30",
+    linewidth = .75
   ) +
-  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, .25)) +
+  stat_pointinterval(
+    color = "black",
+    point_interval = "median_qi",
+    .width = c(.66, .95)
+  ) +
+  scale_y_continuous(
+    limits = c(0, round(max(rf_trait_influence$RF_mean), 1)),
+    breaks = seq(0, 1, .1)
+  ) +
   xlab("Number of traits") +
   ylab("Robinson-Foulds distance")
 ggsave(
   here("output/figs/rf_trait_influence.pdf"),
-  width = width * .8,
+  width = width,
   height = height,
   units = "cm",
   device = cairo_pdf
