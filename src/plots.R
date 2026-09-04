@@ -211,7 +211,7 @@ bind_rows(prop_cs_to_true, prop_mcc_to_true, prop_hipstr_to_true) |>
 ggsave(
   here("output/figs/barplot_prop_resume_to_true.pdf"),
   width = width,
-  height = height * 1.25,
+  height = height,
   units = "cm",
   device = cairo_pdf
 )
@@ -349,7 +349,7 @@ marginal_probability_first_split_hdi |>
   ylab("Mean probability of correctly\ninferring the first split")
 ggsave(
   here("output/figs/marginal_probability_first_split_hdi.pdf"),
-  width = width * .8,
+  width = width,
   height = height,
   units = "cm",
   device = cairo_pdf
@@ -414,7 +414,7 @@ bind_rows(count_true_to_cs_data_long, count_true_to_mcc_data_long) |>
 
 ggsave(
   here("output/figs/number_of_traits_influence.pdf"),
-  width = width * .8,
+  width = width,
   height = height,
   units = "cm",
   device = cairo_pdf
@@ -694,7 +694,7 @@ p_final <- patchwork:::`&.gg`(p_final, theme(legend.position = "bottom"))
 p_final
 ggsave(
   here("output/figs/plausible_node_mcc.pdf"),
-  width = width * 2,
+  width = width,
   height = height / 1.5,
   units = "cm",
   device = cairo_pdf
@@ -822,7 +822,7 @@ read_csv(here("output/results/mcc_reconstruction_proba_first_split.csv")) |>
 ggsave(
   here("output/figs/mcc_reconstruction_proba_first_split.pdf"),
   width = width,
-  height = height / 2,
+  height = height,
   units = "cm",
   device = cairo_pdf
 )
@@ -871,7 +871,7 @@ read_csv(here("output/results/cs_reconstruction_proba_first_split.csv")) |>
 ggsave(
   here("output/figs/cs_reconstruction_proba_first_split.pdf"),
   width = width,
-  height = height / 2,
+  height = height,
   units = "cm",
   device = cairo_pdf
 )
@@ -920,7 +920,7 @@ read_csv(here("output/results/hipstr_reconstruction_proba_first_split.csv")) |>
 ggsave(
   here("output/figs/hipstr_reconstruction_proba_first_split.pdf"),
   width = width,
-  height = height / 2,
+  height = height,
   units = "cm",
   device = cairo_pdf
 )
