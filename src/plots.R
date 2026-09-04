@@ -1039,8 +1039,8 @@ read_csv(here("output/results/mcc_reconstruction_proba_first_split.csv")) |>
     breaks = seq(0, 1, 0.25)
   ) +
   labs(
-    x = "Probability of the first split",
-    y = "Proportion of well reconstructed first split"
+    x = "Posterior support for first split",
+    y = "Probability first split is concordant"
   ) +
   coord_cartesian(clip = "off")
 
@@ -1084,8 +1084,8 @@ read_csv(here("output/results/cs_reconstruction_proba_first_split.csv")) |>
     breaks = seq(0, 1, 0.25)
   ) +
   labs(
-    x = "Probability of the first split",
-    y = "Proportion of well reconstructed first split"
+    x = "Posterior support for first split",
+    y = "Probability first split is concordant"
   ) +
   coord_cartesian(clip = "off")
 
@@ -1130,8 +1130,8 @@ read_csv(here("output/results/hipstr_reconstruction_proba_first_split.csv")) |>
     breaks = seq(0, 1, 0.25)
   ) +
   labs(
-    x = "Probability of the first split",
-    y = "Proportion of well reconstructed first split"
+    x = "Posterior support for first split",
+    y = "Probability first split is concordant"
   ) +
   coord_cartesian(clip = "off")
 
