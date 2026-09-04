@@ -11,8 +11,10 @@ library(phangorn)
 library(ggtree)
 
 # theme
-width <- 13.5
-height <- 19
+# width <- 13.5
+# height <- 19
+width <- 18
+height <- 25
 base_font <- "Noto Sans Condensed"
 base_font2 <- "Noto Sans ExtraCondensed"
 plt <- color("vibrant")(3)
@@ -44,8 +46,8 @@ Q <- matrix(
   byrow = TRUE
 )
 
-# Influence of tree depth on the theoretical proportion of shared cognates 
-#between two clades defined by the first diversification event.
+# Influence of tree depth on the theoretical proportion of shared cognates
+# between two clades defined by the first diversification event.
 shared_cognates_thq <- read_csv(here(
   "output/results/shared_cognate_thq_no_homoplasie.csv"
 )) |>
@@ -119,7 +121,7 @@ prop_hipstr_to_true <- read_csv(here(
   rename(value = exist, mean_n = n_mean) |>
   mutate(type = "HIPSTR", value = as.character(value))
 
-#  proportion of true tree nodes that are concordant (present), discordant 
+#  proportion of true tree nodes that are concordant (present), discordant
 # (absent), or reconcilable in the summary
 bind_rows(prop_true_to_cs, prop_mcc_to_true, prop_hipstr_to_true) |>
   mutate(type = fct_inorder(type)) |>
@@ -254,7 +256,7 @@ concepts <- bind_rows(summary_data_st, summary_data_ie) |>
   mutate(sens = str_replace_all(sens, " of weight", "\n(of weight)")) |>
   mutate(sens = str_replace_all(sens, "I first person singular", "1SG"))
 
-# Relationship between ancestral reconstruction depth and presence in the 
+# Relationship between ancestral reconstruction depth and presence in the
 # early-diverging lineage for lexical traits
 bind_rows(summary_data_st, summary_data_ie) |>
   ggplot() +
@@ -379,7 +381,7 @@ count_true_to_mcc_data_long <- read_csv(here(
     )
   )
 
-# Influence of the number of traits on the reliability of phylogenetic inference 
+# Influence of the number of traits on the reliability of phylogenetic inference
 # at a time depth of 8000 years
 bind_rows(count_true_to_cs_data_long, count_true_to_mcc_data_long) |>
   mutate(
@@ -419,7 +421,7 @@ ggsave(
 )
 plot_crop(here("output/figs/number_of_traits_influence.pdf"))
 
-# Illustration of simulation 7 at 15 kaBP , contrasting the true tree (left) and 
+# Illustration of simulation 7 at 15 kaBP , contrasting the true tree (left) and
 # the majority-rule consensus tree (right)
 tree_cs <- read.tree(here(
   'data/simulated-2025-07-28/beast-data-sim-7/beast-data-sim-7-15/consensus-15.tree'
@@ -554,7 +556,7 @@ ggsave(
 plot_crop(here("output/figs/plausible_node.pdf"))
 
 
-# Illustration of simulation 7 at 15 ka bp, contrasting the true tree (left) and 
+# Illustration of simulation 7 at 15 ka bp, contrasting the true tree (left) and
 # the mcc tree (right)
 tree_mcc <- read.tree(here(
   'data/simulated-2025-07-28/beast-data-sim-7/beast-data-sim-7-15/mcc-15.tree'
@@ -650,7 +652,7 @@ tree_mcc_plot <- ggtree(tree_mcc, linewidth = .25, ladderize = FALSE) %<+%
     hjust = 1.5,
     vjust = -0.25,
     family = base_font
-  ) + 
+  ) +
   geom_highlight(mapping = aes(subset = node == 72), fill = plt2[1]) +
   geom_nodelab(
     mapping = aes(subset = node == 72, label = "A"),
@@ -658,7 +660,7 @@ tree_mcc_plot <- ggtree(tree_mcc, linewidth = .25, ladderize = FALSE) %<+%
     hjust = 1.5,
     vjust = -0.25,
     family = base_font
-  ) + 
+  ) +
   scale_x_reverse() +
   coord_cartesian(clip = "off")
 
@@ -676,20 +678,28 @@ common <- list(
   scale_fill_manual(values = col_map, na.translate = FALSE),
   labs(color = "", fill = "")
 )
-p_final <- (tree_true_mcc_plot + common + hexpand(.05) + guides(color = "none") + ggtitle("True tree") +
-              tree_mcc_plot + common + guides(fill = guide_legend(override.aes = list(size = 5, alpha = 1))) + ggtitle("MCC tree") + hexpand(.05, direction = 1)) +
+p_final <- (tree_true_mcc_plot +
+  common +
+  hexpand(.05) +
+  guides(color = "none") +
+  ggtitle("True tree") +
+  tree_mcc_plot +
+  common +
+  guides(fill = guide_legend(override.aes = list(size = 5, alpha = 1))) +
+  ggtitle("MCC tree") +
+  hexpand(.05, direction = 1)) +
   plot_layout(guides = "collect")
 
 p_final <- patchwork:::`&.gg`(p_final, theme(legend.position = "bottom"))
 p_final
 ggsave(
   here("output/figs/plausible_node_mcc.pdf"),
-  width = width*2,
+  width = width * 2,
   height = height / 1.5,
   units = "cm",
   device = cairo_pdf
 )
-plot_crop(here("output/figs/plausible_node_mcc.pdf")) 
+plot_crop(here("output/figs/plausible_node_mcc.pdf"))
 
 # Robinson-Foulds distance between true tree and posterior sample with 90% CI
 rf_hdi <- read_csv(here("output/results/rf_hdi.csv"))
@@ -718,15 +728,20 @@ ggsave(
 )
 plot_crop(here("output/figs/rf_hdi.pdf"))
 
-# Influence of the number of traits on Robinson-Foulds distance between true 
+# Influence of the number of traits on Robinson-Foulds distance between true
 # and inferred trees at 8 ka
 rf_trait_influence <- bind_rows(
   read_csv(here("output/results/rf_values_1500.csv")) |> mutate(n_trait = 1500),
   read_csv(here("output/results/rf_values_6000.csv")) |> mutate(n_trait = 6000),
-  read_csv(here("output/results/rf_values.csv")) |> filter(tree_age==8) |> mutate(n_trait = 3000),
-  read_csv(here("output/results/rf_values_12000.csv")) |> mutate(n_trait = 12000)
-) |> 
-  mutate(n_trait = fct_relevel(as.factor(n_trait), "1500", "3000", "6000", "12000"))
+  read_csv(here("output/results/rf_values.csv")) |>
+    filter(tree_age == 8) |>
+    mutate(n_trait = 3000),
+  read_csv(here("output/results/rf_values_12000.csv")) |>
+    mutate(n_trait = 12000)
+) |>
+  mutate(
+    n_trait = fct_relevel(as.factor(n_trait), "1500", "3000", "6000", "12000")
+  )
 
 rf_trait_influence |>
   ggplot() +
@@ -764,22 +779,24 @@ ggsave(
 )
 plot_crop(here("output/figs/rf_trait_influence.pdf"))
 
-# Proportion of concordant deep splits against marginal posterior support, for 
+# Proportion of concordant deep splits against marginal posterior support, for
 # the mcc tree
-read_csv(here("output/results/mcc_reconstruction_proba_first_split.csv")) |> 
+read_csv(here("output/results/mcc_reconstruction_proba_first_split.csv")) |>
   mutate(
-    mcc_prob_bin = cut(mcc_prob,
-                       breaks = seq(0, 1, by = 0.05),
-                       include.lowest = TRUE,
-                       labels = seq(0.025, 0.975, by = 0.05))
+    mcc_prob_bin = cut(
+      mcc_prob,
+      breaks = seq(0, 1, by = 0.05),
+      include.lowest = TRUE,
+      labels = seq(0.025, 0.975, by = 0.05)
+    )
   ) %>%
-  mutate(mcc_prob_bin = as.numeric(as.character(mcc_prob_bin))) |> 
+  mutate(mcc_prob_bin = as.numeric(as.character(mcc_prob_bin))) |>
   group_by(mcc_prob_bin) |>
   summarise(
     mean_y = mean(y, na.rm = TRUE),
-    count  = n(),
+    count = n(),
     .groups = "drop"
-  ) |> 
+  ) |>
   ggplot(aes(x = mcc_prob_bin, y = mean_y)) +
   geom_pointpath(
     aes(size = count),
@@ -788,8 +805,8 @@ read_csv(here("output/results/mcc_reconstruction_proba_first_split.csv")) |>
     stroke = .1
   ) +
   scale_size_continuous(
-    name   = "Count",
-    range  = c(1, 5),
+    name = "Count",
+    range = c(1, 5),
     breaks = c(100, 200)
   ) +
   scale_y_continuous(
@@ -803,30 +820,32 @@ read_csv(here("output/results/mcc_reconstruction_proba_first_split.csv")) |>
   coord_cartesian(clip = "off")
 
 ggsave(
-    here("output/figs/mcc_reconstruction_proba_first_split.pdf"),
-    width = width,
-    height = height/2,
-    units = "cm",
-    device = cairo_pdf
-  )
+  here("output/figs/mcc_reconstruction_proba_first_split.pdf"),
+  width = width,
+  height = height / 2,
+  units = "cm",
+  device = cairo_pdf
+)
 plot_crop(here("output/figs/mcc_reconstruction_proba_first_split.pdf"))
 
-# Proportion of concordant deep splits against marginal posterior support, for 
+# Proportion of concordant deep splits against marginal posterior support, for
 # the consensus tree
-read_csv(here("output/results/cs_reconstruction_proba_first_split.csv")) |> 
+read_csv(here("output/results/cs_reconstruction_proba_first_split.csv")) |>
   mutate(
-    cs_prob_bin = cut(cs_prob,
-                       breaks = seq(0, 1, by = 0.05),
-                       include.lowest = TRUE,
-                       labels = seq(0.025, 0.975, by = 0.05))
+    cs_prob_bin = cut(
+      cs_prob,
+      breaks = seq(0, 1, by = 0.05),
+      include.lowest = TRUE,
+      labels = seq(0.025, 0.975, by = 0.05)
+    )
   ) %>%
-  mutate(cs_prob_bin = as.numeric(as.character(cs_prob_bin))) |> 
+  mutate(cs_prob_bin = as.numeric(as.character(cs_prob_bin))) |>
   group_by(cs_prob_bin) |>
   summarise(
     mean_y = mean(y, na.rm = TRUE),
-    count  = n(),
+    count = n(),
     .groups = "drop"
-  ) |> 
+  ) |>
   ggplot(aes(x = cs_prob_bin, y = mean_y)) +
   geom_pointpath(
     aes(size = count),
@@ -835,8 +854,8 @@ read_csv(here("output/results/cs_reconstruction_proba_first_split.csv")) |>
     stroke = .1
   ) +
   scale_size_continuous(
-    name   = "Count",
-    range  = c(1, 5),
+    name = "Count",
+    range = c(1, 5),
     breaks = c(100, 200)
   ) +
   scale_y_continuous(
@@ -852,28 +871,30 @@ read_csv(here("output/results/cs_reconstruction_proba_first_split.csv")) |>
 ggsave(
   here("output/figs/cs_reconstruction_proba_first_split.pdf"),
   width = width,
-  height = height/2,
+  height = height / 2,
   units = "cm",
   device = cairo_pdf
 )
 plot_crop(here("output/figs/cs_reconstruction_proba_first_split.pdf"))
 
-# Proportion of concordant deep splits against marginal posterior support, for 
+# Proportion of concordant deep splits against marginal posterior support, for
 # the hipstr tree
-read_csv(here("output/results/hipstr_reconstruction_proba_first_split.csv")) |> 
+read_csv(here("output/results/hipstr_reconstruction_proba_first_split.csv")) |>
   mutate(
-    hipstr_prob_bin = cut(hipstr_prob,
-                      breaks = seq(0, 1, by = 0.05),
-                      include.lowest = TRUE,
-                      labels = seq(0.025, 0.975, by = 0.05))
+    hipstr_prob_bin = cut(
+      hipstr_prob,
+      breaks = seq(0, 1, by = 0.05),
+      include.lowest = TRUE,
+      labels = seq(0.025, 0.975, by = 0.05)
+    )
   ) %>%
-  mutate(hipstr_prob_bin = as.numeric(as.character(hipstr_prob_bin))) |> 
+  mutate(hipstr_prob_bin = as.numeric(as.character(hipstr_prob_bin))) |>
   group_by(hipstr_prob_bin) |>
   summarise(
     mean_y = mean(y, na.rm = TRUE),
-    count  = n(),
+    count = n(),
     .groups = "drop"
-  ) |> 
+  ) |>
   ggplot(aes(x = hipstr_prob_bin, y = mean_y)) +
   geom_pointpath(
     aes(size = count),
@@ -882,8 +903,8 @@ read_csv(here("output/results/hipstr_reconstruction_proba_first_split.csv")) |>
     stroke = .1
   ) +
   scale_size_continuous(
-    name   = "Count",
-    range  = c(1, 5),
+    name = "Count",
+    range = c(1, 5),
     breaks = c(100, 200)
   ) +
   scale_y_continuous(
@@ -899,12 +920,8 @@ read_csv(here("output/results/hipstr_reconstruction_proba_first_split.csv")) |>
 ggsave(
   here("output/figs/hipstr_reconstruction_proba_first_split.pdf"),
   width = width,
-  height = height/2,
+  height = height / 2,
   units = "cm",
   device = cairo_pdf
 )
 plot_crop(here("output/figs/hipstr_reconstruction_proba_first_split.pdf"))
-
-
-
-
