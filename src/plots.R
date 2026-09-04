@@ -10,6 +10,7 @@ library(TreeTools)
 library(phangorn)
 library(ggtree)
 
+# theme
 width <- 13.5
 height <- 19
 base_font <- "Noto Sans Condensed"
@@ -27,6 +28,7 @@ theme_set(
     )
 )
 
+# parameters
 N_traits <- 3000
 pi1 <- 0.94305
 pi0 <- 0.05695
@@ -42,37 +44,10 @@ Q <- matrix(
   byrow = TRUE
 )
 
-shared_cognates <- readRDS(here("output/results/shared_cognates.rds")) |>
-  rename(age = tree_age, prop = value)
-shared_cognates |>
-  ggplot() +
-  geom_pointpath(
-    aes(x = age, y = prop),
-    color = plt[2],
-    linewidth = 1,
-    stroke = .1
-  ) +
-  geom_errorbar(
-    aes(x = age, ymin = inf, ymax = sup),
-    color = plt[2],
-    width = .2
-  ) +
-  ylab("Proportion of shared cognates") +
-  xlab("Age of the most recent common ancestor (ka)") +
-  scale_y_continuous(breaks = seq(0, 1, .1)) +
-  scale_x_continuous(breaks = seq(0, 17, 1)) +
-  coord_cartesian(clip = "off")
-ggsave(
-  here("output/figs/shared_cognate_no_homoplasie.pdf"),
-  width = width,
-  height = height,
-  units = "cm",
-  device = cairo_pdf
-)
-plot_crop(here("output/figs/shared_cognate_no_homoplasie.pdf"))
-
+# Influence of tree depth on the theoretical proportion of shared cognates 
+#between two clades defined by the first diversification event.
 shared_cognates_thq <- read_csv(here(
-  "output/figs/shared_cognate_thq_no_homoplasie.csv"
+  "output/results/shared_cognate_thq_no_homoplasie.csv"
 )) |>
   rename(age = tree_age, prop = S_root)
 
@@ -129,180 +104,6 @@ ggsave(
 )
 plot_crop(here("output/figs/shared_cognate_thq_no_homoplasie.pdf"))
 
-prop_shared_tip_pair <- readRDS(here(
-  "output/results/shared_cognate_tip_pair.rds"
-)) |>
-  rowid_to_column("age")
-
-prop_shared_tip_pair |>
-  ggplot() +
-  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 0, color = "Computed")) +
-  geom_segment(aes(
-    x = 0,
-    xend = 0,
-    y = 0,
-    yend = 0,
-    color = "Glottochronology with\nestimated rate"
-  )) +
-  geom_segment(
-    aes(
-      x = -Inf,
-      xend = min(filter(prop_shared_tip_pair, prop <= .1)$age),
-      y = .1,
-      yend = .1
-    ),
-    linetype = "dashed",
-    linewidth = .35
-  ) +
-  geom_segment(
-    aes(
-      x = min(filter(prop_shared_tip_pair, prop <= .1)$age),
-      xend = min(filter(prop_shared_tip_pair, prop <= .1)$age),
-      y = .1,
-      yend = -Inf
-    ),
-    linetype = "dashed",
-    linewidth = .35
-  ) +
-  geom_line(
-    data = tibble(age = seq(0, 17, .1)),
-    aes(x = age, y = exp(-2 * Q[1, 2] * age)),
-    linewidth = .75,
-    col = plt[2]
-  ) +
-  # geom_line(data = tibble(age = seq(0, 17, .1)), aes(x = age, y = exp(-2 * .14 * age)), col = plt[1]) +
-  geom_pointpath(
-    aes(x = age, y = prop),
-    color = plt[1],
-    linewidth = 1,
-    stroke = .1
-  ) +
-  ylab("Proportion of shared cognates") +
-  xlab("Age of the most recent common ancestor (ka)") +
-  scale_y_continuous(breaks = seq(0, 1, .1)) +
-  scale_x_continuous(breaks = seq(0, 17, 1)) +
-  scale_color_vibrant(
-    name = NULL,
-    guide = guide_legend(
-      override.aes = list(linewidth = 1.5)
-    )
-  ) +
-  coord_cartesian(clip = "off") +
-  theme(
-    legend.position = "inside",
-    legend.justification = c(1, 1)
-  )
-
-ggsave(
-  here("output/figs/shared_cognate_tip_pair.pdf"),
-  width = width,
-  height = height,
-  units = "cm",
-  device = cairo_pdf
-)
-plot_crop(here("output/figs/shared_cognate_tip_pair.pdf"))
-
-shared_cognates |>
-  mutate(type = "any pair") |>
-  bind_rows(
-    prop_shared_tip_pair |> mutate(type = "sample pair")
-  ) |>
-  ggplot() +
-  geom_segment(
-    aes(
-      x = -Inf,
-      xend = min(filter(prop_shared_tip_pair, prop <= .1)$age),
-      y = .1,
-      yend = .1
-    ),
-    linetype = "dashed",
-    color = "grey40",
-    linewidth = .35
-  ) +
-  geom_segment(
-    aes(
-      x = min(filter(prop_shared_tip_pair, prop <= .1)$age),
-      xend = min(filter(prop_shared_tip_pair, prop <= .1)$age),
-      y = .1,
-      yend = -Inf
-    ),
-    linetype = "dashed",
-    color = "grey40",
-    linewidth = .35
-  ) +
-  geom_segment(
-    aes(
-      x = -Inf,
-      xend = min(filter(prop_shared_tip_pair, prop <= .5)$age),
-      y = .5,
-      yend = .5
-    ),
-    linetype = "dotted",
-    color = "grey40",
-    linewidth = .35
-  ) +
-  geom_segment(
-    aes(
-      x = min(filter(prop_shared_tip_pair, prop <= .5)$age),
-      xend = min(filter(prop_shared_tip_pair, prop <= .5)$age),
-      y = .5,
-      yend = -Inf
-    ),
-    linetype = "dotted",
-    color = "grey40",
-    linewidth = .35
-  ) +
-  geom_segment(
-    aes(
-      x = -Inf,
-      xend = min(filter(shared_cognates, prop <= .5)$age),
-      y = .5,
-      yend = .5
-    ),
-    linetype = "twodash",
-    color = "grey40",
-    linewidth = .35
-  ) +
-  geom_segment(
-    aes(
-      x = min(filter(shared_cognates, prop <= .5)$age),
-      xend = min(filter(shared_cognates, prop <= .5)$age),
-      y = .5,
-      yend = -Inf
-    ),
-    linetype = "twodash",
-    color = "grey40",
-    linewidth = .35
-  ) +
-  geom_pointpath(
-    aes(x = age, y = prop, color = type),
-    linewidth = 1,
-    stroke = .1
-  ) +
-  geom_errorbar(
-    aes(x = age, ymin = inf, ymax = sup, color = type),
-    width = .2
-  ) +
-  scale_color_vibrant(name = NULL) +
-  ylab(
-    "Proportion of cognates shared\nbetween languages across the 1st split"
-  ) +
-  xlab("Age of the most recent common ancestor (ka BP)") +
-  scale_y_continuous(breaks = seq(0, 1, .1)) +
-  scale_x_continuous(breaks = seq(0, 17, 1)) +
-  coord_cartesian(clip = "off") +
-  theme(
-    legend.position = "inside",
-    legend.justification = c(1, 1)
-  )
-ggsave(
-  here("output/figs/shared_cognates.pdf"),
-  width = width,
-  height = height,
-  units = "cm",
-  device = cairo_pdf
-)
-plot_crop(here("output/figs/shared_cognates.pdf"))
 
 prop_true_to_cs <- read_csv(here("output/results/prop_true_to_cs.csv")) |>
   mutate(type = "Consensus", value = as.character(value))
@@ -318,6 +119,8 @@ prop_hipstr_to_true <- read_csv(here(
   rename(value = exist, mean_n = n_mean) |>
   mutate(type = "HIPSTR", value = as.character(value))
 
+#  proportion of true tree nodes that are concordant (present), discordant 
+# (absent), or reconcilable in the summary
 bind_rows(prop_true_to_cs, prop_mcc_to_true, prop_hipstr_to_true) |>
   mutate(type = fct_inorder(type)) |>
   mutate(
@@ -348,23 +151,12 @@ bind_rows(prop_true_to_cs, prop_mcc_to_true, prop_hipstr_to_true) |>
   ) +
   scale_fill_highcontrast(reverse = TRUE) +
   scale_color_highcontrast(reverse = TRUE) +
-  # scale_x_continuous(breaks = c(5,10,15)) +
-  # scale_x_discrete(
-  #   guide = guide_axis(check.overlap = TRUE)
-  # ) +
   coord_cartesian(clip = "off", expand = FALSE) +
   facet_wrap(~type) +
   theme(
-    # axis.text = element_text(family = base_font2, size = 8),
-    # axis.text.y.left = element_text(margin = margin(r = 0.175, unit = "lines")),
-    # axis.text.x.bottom = element_text(margin = margin(t = 0.25, unit = "lines")),
     axis.ticks = element_line(size = .25, color = "grey40"),
     axis.ticks.length = unit(0.15, "lines"),
-    # axis.title = element_text(size = 9),
-    # axis.title.y.left = element_text(margin = margin(b = 0.25, unit = "lines")),
-    # legend.text = element_text(size = 10),
     legend.key.size = unit(.75, "line"),
-    # panel.spacing.x = unit(0.15, "lines"),
     legend.position = "bottom",
     legend.margin = margin(t = -.5, r = 0, b = 0, l = 0, unit = "lines"),
   )
@@ -377,6 +169,8 @@ ggsave(
 )
 plot_crop(here("output/figs/barplot_prop_true_to_resume.pdf"))
 
+# proportion of summary (consensus, mcc, and hipstr) tree nodes that are
+# indeed monophyletic in the true tree
 bind_rows(prop_cs_to_true, prop_mcc_to_true, prop_hipstr_to_true) |>
   mutate(type = fct_inorder(type)) |>
   mutate(
@@ -444,9 +238,6 @@ concepts <- bind_rows(summary_data_st, summary_data_ie) |>
     min = mean_max_depth == min(mean_max_depth, na.rm = TRUE)
   ) |>
   ungroup() |>
-  # group_by(family, x, max, min) |>
-  # slice(3) |>
-  # ungroup() |>
   filter(
     sens %in%
       c(
@@ -463,6 +254,8 @@ concepts <- bind_rows(summary_data_st, summary_data_ie) |>
   mutate(sens = str_replace_all(sens, " of weight", "\n(of weight)")) |>
   mutate(sens = str_replace_all(sens, "I first person singular", "1SG"))
 
+# Relationship between ancestral reconstruction depth and presence in the 
+# early-diverging lineage for lexical traits
 bind_rows(summary_data_st, summary_data_ie) |>
   ggplot() +
   geom_point(
@@ -483,7 +276,6 @@ bind_rows(summary_data_st, summary_data_ie) |>
     seed = 123,
     min.segment.length = 0,
     segment.size = .35,
-    # point.padding = .5,
     family = base_font,
     lineheight = .8,
     color = plt[1],
@@ -504,29 +296,6 @@ ggsave(
 )
 plot_crop(here("output/figs/ancestral_reconstruction_by_semantic_meaning.pdf"))
 
-bind_rows(summary_data_st, summary_data_ie) |>
-  ggplot() +
-  geom_histogram(
-    aes(x = mean_max_depth),
-    fill = plt[2],
-    color = "white",
-    binwidth = .5
-  ) +
-  xlab("Mean maximum age (ka BP)") +
-  ylab("Number of concepts with\na reconstructible root") +
-  facet_wrap(~family, scales = "free")
-ggsave(
-  here("output/figs/hist_age_concepts.pdf"),
-  width = width,
-  height = height,
-  units = "cm",
-  device = cairo_pdf
-)
-plot_crop(here("output/figs/hist_age_concepts.pdf"))
-
-# summary_data_st |>
-#   ggplot() +
-#   geom_point(aes(x = mean_max_depth, y = n_traits))
 
 prob_first_split_mcc <- read_csv(here(
   "output/results/prob_first_split_mcc.csv"
@@ -543,6 +312,7 @@ marginal_probability_first_split_hdi <- read_csv(here(
   "output/results/marginal_prob_first_split_hdi.csv"
 ))
 
+# Marginal probability of the first split in the sample with 90% credibility interval
 marginal_probability_first_split_hdi |>
   ggplot() +
   geom_ribbon(
@@ -596,6 +366,7 @@ ggsave(
 )
 plot_crop(here("output/figs/marginal_probability_first_split_hdi.pdf"))
 
+
 count_true_to_cs_data_long <- read_csv(here(
   "output/results/prop_true_to_cs_data_long.csv"
 )) |>
@@ -620,6 +391,8 @@ count_true_to_mcc_data_long <- read_csv(here(
     )
   )
 
+# Influence of the number of traits on the reliability of phylogenetic inference 
+# at a time depth of 8000 years
 bind_rows(count_true_to_cs_data_long, count_true_to_mcc_data_long) |>
   mutate(
     type = factor(type, levels = c("Discordant", "Reconcilable", "Concordant"))
@@ -633,7 +406,6 @@ bind_rows(count_true_to_cs_data_long, count_true_to_mcc_data_long) |>
     stat = "identity",
     position = "fill",
     linewidth = .15
-    # width = .75
   ) +
   geom_hline(
     yintercept = .5,
@@ -659,8 +431,8 @@ ggsave(
 )
 plot_crop(here("output/figs/number_of_traits_influence.pdf"))
 
-# 6. plot of one plausible rake node and one not plausible rake node in the consensus
-# import one consensus and one true tree of age 10 simulation 1
+# Illustration of simulation 7 at 15 kaBP , contrasting the true tree (left) and 
+# the majority-rule consensus tree (right)
 tree_cs <- read.tree(here(
   'data/simulated-2025-07-28/beast-data-sim-7/beast-data-sim-7-15/consensus-15.tree'
 ))
@@ -692,7 +464,6 @@ descendant_rec <- Descendants(tree_true, node_rec)[[1]]
 tip_rec <- tree_true$tip.label[descendant_rec]
 mrca_rec <- getMRCA(tree_cs, tip_rec) # mrca in the cs tree
 
-
 tb <- tibble(tip.label = tree_true$tip.label) |>
   mutate(
     type = case_when(
@@ -705,7 +476,6 @@ tb <- tibble(tip.label = tree_true$tip.label) |>
         levels = c("Discordant", "Reconcilable", "Concordant")
       )
   )
-
 
 tree_true_plot <- ggtree(tree_true, linewidth = .25, ladderize = FALSE) %<+%
   tb +
@@ -796,19 +566,14 @@ ggsave(
 plot_crop(here("output/figs/plausible_node.pdf"))
 
 
-# analyse a concordant rake node in the mcc tree
+# Illustration of simulation 7 at 15 ka bp, contrasting the true tree (left) and 
+# the mcc tree (right)
 tree_mcc <- read.tree(here(
   'data/simulated-2025-07-28/beast-data-sim-7/beast-data-sim-7-15/mcc-15.tree'
 ))
 labs_lex_mcc <- sort(tree_mcc$tip.label)
 map_lex_mcc <- setNames(seq_along(labs_lex_mcc), labs_lex_mcc)
 tree_mcc$tip.label <- paste0("T", map_lex[tree_mcc$tip.label])
-#tree_true <- read.tree(here(
-#  'data/simulated-2025-07-28/beast-data-sim-7/beast-data-sim-7-15/tree-sim-7-15.tree'
-#))
-#labs_lex <- sort(tree_true$tip.label)
-#map_lex <- setNames(seq_along(labs_lex), labs_lex)
-#tree_true$tip.label <- paste0("T", map_lex[tree_true$tip.label])
 
 # analyse a concordant rake node in the mcc tree
 node_plausible <- 53 # in the true tree
@@ -936,8 +701,9 @@ ggsave(
   units = "cm",
   device = cairo_pdf
 )
-plot_crop(here("output/figs/plausible_node_mcc.pdf"))
+plot_crop(here("output/figs/plausible_node_mcc.pdf")) 
 
+# Robinson-Foulds distance between true tree and posterior sample with 90% CI
 rf_hdi <- read_csv(here("output/results/rf_hdi.csv"))
 rf_hdi |>
   ggplot() +
@@ -964,6 +730,8 @@ ggsave(
 )
 plot_crop(here("output/figs/rf_hdi.pdf"))
 
+# Influence of the number of traits on Robinson-Foulds distance between true 
+# and inferred trees at 8 ka
 rf_trait_influence <- bind_rows(
   read_csv(here("output/results/rf_values_1500.csv")) |> mutate(n_trait = 1500),
   read_csv(here("output/results/rf_values_6000.csv")) |> mutate(n_trait = 6000),
@@ -1008,6 +776,8 @@ ggsave(
 )
 plot_crop(here("output/figs/rf_trait_influence.pdf"))
 
+# Proportion of concordant deep splits against marginal posterior support, for 
+# the mcc tree
 read_csv(here("output/results/mcc_reconstruction_proba_first_split.csv")) |> 
   mutate(
     mcc_prob_bin = cut(mcc_prob,
@@ -1053,6 +823,8 @@ ggsave(
   )
 plot_crop(here("output/figs/mcc_reconstruction_proba_first_split.pdf"))
 
+# Proportion of concordant deep splits against marginal posterior support, for 
+# the consensus tree
 read_csv(here("output/results/cs_reconstruction_proba_first_split.csv")) |> 
   mutate(
     cs_prob_bin = cut(cs_prob,
@@ -1098,7 +870,8 @@ ggsave(
 )
 plot_crop(here("output/figs/cs_reconstruction_proba_first_split.pdf"))
 
-
+# Proportion of concordant deep splits against marginal posterior support, for 
+# the hipstr tree
 read_csv(here("output/results/hipstr_reconstruction_proba_first_split.csv")) |> 
   mutate(
     hipstr_prob_bin = cut(hipstr_prob,
