@@ -59,17 +59,17 @@ tree <- phylogeny[index]
 
 # function which transform fossils as tips
 standardize_to_max_depth <- function(tree) {
-  # Calculer profondeurs et max en une fois
+  # Compute depths and max in one pass
   tip_depths <- node.depth.edgelength(tree)[1:Ntip(tree)]
   max_depth <- max(tip_depths)
-  
-  # Calcul vectorisé des différences
+
+  # Vectorized computation of differences
   diff_to_add <- max_depth - tip_depths
-  
-  # Identifier arêtes terminales (tips sont toujours 1:Ntip dans edge[,2])
+
+  # Identify terminal edges (tips are always 1:Ntip in edge[,2])
   terminal_edges <- match(1:Ntip(tree), tree$edge[, 2])
-  
-  # Ajustement vectorisé
+
+  # Vectorized adjustment
   tree$edge.length[terminal_edges] <- tree$edge.length[terminal_edges] + diff_to_add
   
   return(tree)
@@ -257,7 +257,7 @@ replace_value <- function(xml_file, df, path_out) {
       }
     })
   
-  # Sauvegarder le fichier XML modifié
+  # Save the modified XML file
   write_xml(xml_file, path_out)
 }
 
@@ -300,12 +300,12 @@ modify_uniform_attributes <- function(file_path) {
   uniform_node <- xml_file |>
     xml_find_all("//distribution[contains(@id, '.prior')]//Uniform")
   
-  # Modifier lower
+  # Modify lower
   current_lower <- as.numeric(xml_attr(uniform_node, "lower"))
   new_lower <- current_lower * tree_age
   xml_set_attr(uniform_node, "lower", as.character(new_lower))
-  
-  # Modifier upper
+
+  # Modify upper
   current_upper <- as.numeric(xml_attr(uniform_node, "upper"))
   new_upper <- current_upper * tree_age
   xml_set_attr(uniform_node, "upper", as.character(new_upper))

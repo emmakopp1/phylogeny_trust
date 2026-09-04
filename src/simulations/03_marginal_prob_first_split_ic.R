@@ -65,7 +65,7 @@ burnin <- 0.1
 df <- data.frame(matrix(ncol = 6, nrow = 0))
 colnames(df) <- c("node", "tree_age", "tree_simulation_number", "prob_mean", "prob_inf", "prob_sup")
 
-output_path <- paste0(cluster_directory, "/marginal_prob_first_split_ic.csv")
+output_path <- paste0(here("output/results"), "/marginal_prob_first_split_ic.csv")
 
 write.table(
   df,

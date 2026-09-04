@@ -252,7 +252,7 @@ replace_value <- function(xml_file, df, path_out) {
       }
     })
   
-  # Sauvegarder le fichier XML modifié
+  # Save the modified XML file
   write_xml(xml_file, path_out)
 }
 

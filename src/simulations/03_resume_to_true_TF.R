@@ -56,7 +56,7 @@ path_trees_cs <- path_phylo[grepl("consensus-", path_phylo)]
 path_trees_mcc <- path_phylo[grepl("mcc-", path_phylo)]
 path_trees_hipstr <- path_phylo[grepl("hipstr-", path_phylo)]
 
-# passer en mode parLapply(cl, path_trees_true, read.tree)
+# switch to parLapply(cl, path_trees_true, read.tree) mode
 trees_true <- lapply(path_trees_true, read.tree)
 trees_cs <- lapply(path_trees_cs, read.tree)
 trees_mcc <- lapply(path_trees_mcc, read.tree)
@@ -114,14 +114,14 @@ for (t in seq_along(trees_true)){
       result = exist$res
     )
     
-    # Écrire avec ou sans en-têtes selon si c'est la première fois
+    # Write with or without headers depending on whether it's the first time
     write.table(
-      row, 
-      file_path, 
+      row,
+      file_path,
       sep = ",",
       row.names = FALSE,
       col.names = FALSE,
-      append = TRUE       # Ajouter après la première fois
+      append = TRUE       # Append after the first time
     )
   }
 }

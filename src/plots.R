@@ -70,8 +70,8 @@ shared_cognates_thq |>
     aes(
       x = filter(shared_cognates_thq, prop <= .5)$age[1],
       xend = filter(shared_cognates_thq, prop <= .5)$age[1],
-      y = filter(shared_cognates_thq, prop <= .5)$prop[1], # part du point
-      yend = -Inf # descend vers le bas
+      y = filter(shared_cognates_thq, prop <= .5)$prop[1], # starting from the point
+      yend = -Inf # goes down to the bottom
     ),
     linetype = "dashed",
     linewidth = .35,

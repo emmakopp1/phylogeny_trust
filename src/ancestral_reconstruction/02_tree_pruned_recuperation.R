@@ -19,7 +19,7 @@ process_k_save_trees <- function(k, param) {
   path_out <- param$path_out
   df_ancr = param$df_ancr
   
-  # Créer la clé une seule fois
+  # Create the key only once
   ancr_keys <- paste(df_ancr$tree, df_ancr$trait, sep = "_")
   
   meaning_k <- meanings_sets$meaning[k]
@@ -98,7 +98,7 @@ param_st = list(tree = phylo_st,
 
 dir.create(param_st$dir_out, showWarnings = FALSE, recursive = TRUE)
 
-# Indo-Europeen ----------------------------------------------------------------
+# Indo-European ----------------------------------------------------------------
 # Sino-Tibetan  ---------------------------------------------------------------
 
 # Load BEAST posterior trees and thin sample 
@@ -147,12 +147,12 @@ param_ie = list(tree = phylo_ie,
 dir.create(param_ie$dir_out, showWarnings = FALSE, recursive = TRUE)
 
 # Execute code
-# Sino-Tibétain 
+# Sino-Tibetan
 for (k in 1:K_st) {
   process_k_save_trees(k, param_st)
 }
 
-# Indo-Européen
+# Indo-European
 for (k in 1:K_ie) {
   process_k_save_trees(k, param_ie)
 }

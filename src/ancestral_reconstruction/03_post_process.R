@@ -86,13 +86,13 @@ roots_ie = read.csv(here("data/real/iecor_ctmc-strict-M1/iecor_roots.csv")) |>
 
 # Nexus files
 nexus_text_ie <- readLines(here("data/real/iecor_ctmc-strict-M1/iecor.nex"))
-# Extraire les charstatelabels
+# Extract the charstatelabels
 start <- which(str_detect(nexus_text_ie, "charstatelabels"))
 end <- which(str_detect(nexus_text_ie, "^\\s*;"))
 end <- end[end > start][1]
 labels_lines <- nexus_text_ie[(start+1):(end-1)]
 
-# Parser chaque ligne
+# Parse each line
 trait_map <- labels_lines |>
   str_trim() |>
   str_remove(",$") |>

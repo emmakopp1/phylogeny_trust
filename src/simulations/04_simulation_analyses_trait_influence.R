@@ -86,9 +86,9 @@ true_false_uncertain_12000 <- read.csv(
 count_true_to_cs_1500 <- true_false_uncertain_1500 |>
   count(age, simulation, value) |>
   group_by(age, simulation) |>
-  mutate(prop = n / sum(n)) |>          # fréquence par simulation
+  mutate(prop = n / sum(n)) |>          # frequency per simulation
   group_by(age, value) |>
-  summarise(prop = mean(prop), .groups = "drop") |>   # moyenne sur les simulations
+  summarise(prop = mean(prop), .groups = "drop") |>   # mean across simulations
   mutate(value = factor(value, levels = c("0", "2", "1"))) |>
   arrange(age, value)
 
@@ -98,9 +98,9 @@ saveRDS(count_true_to_cs_1500, here("output/results/prop_true_to_cs_1500.rds"))
 count_true_to_cs_3000 <- true_false_uncertain_3000 |>
   count(age, simulation, value) |>
   group_by(age, simulation) |>
-  mutate(prop = n / sum(n)) |>          # fréquence par simulation
+  mutate(prop = n / sum(n)) |>          # frequency per simulation
   group_by(age, value) |>
-  summarise(prop = mean(prop), .groups = "drop") |>   # moyenne sur les simulations
+  summarise(prop = mean(prop), .groups = "drop") |>   # mean across simulations
   mutate(value = factor(value, levels = c("0", "2", "1"))) |>
   arrange(age, value)
 
@@ -110,9 +110,9 @@ saveRDS(count_true_to_cs_3000, here("output/results/prop_true_to_cs_3000.rds"))
 count_true_to_cs_6000 <-true_false_uncertain_6000 |>
   count(age, simulation, value) |>
   group_by(age, simulation) |>
-  mutate(prop = n / sum(n)) |>          # fréquence par simulation
+  mutate(prop = n / sum(n)) |>          # frequency per simulation
   group_by(age, value) |>
-  summarise(prop = mean(prop), .groups = "drop") |>   # moyenne sur les simulations
+  summarise(prop = mean(prop), .groups = "drop") |>   # mean across simulations
   mutate(value = factor(value, levels = c("0", "2", "1"))) |>
   arrange(age, value)
 
@@ -122,9 +122,9 @@ saveRDS(count_true_to_cs_6000, here("output/results/prop_true_to_cs_6000.rds"))
 count_true_to_cs_12000 <- true_false_uncertain_12000 |>
   count(age, simulation, value) |>
   group_by(age, simulation) |>
-  mutate(prop = n / sum(n)) |>          # fréquence par simulation
+  mutate(prop = n / sum(n)) |>          # frequency per simulation
   group_by(age, value) |>
-  summarise(prop = mean(prop), .groups = "drop") |>   # moyenne sur les simulations
+  summarise(prop = mean(prop), .groups = "drop") |>   # mean across simulations
   mutate(value = factor(value, levels = c("0", "2", "1"))) |>
   arrange(age, value)
 
@@ -157,7 +157,7 @@ count_true_to_mcc_1500 <- resume_to_true_grouped_1500 |>
   pivot_longer(cols = starts_with("exist_"), names_prefix = "exist_", names_to = "exist", values_to = "n_proportion") |>
   mutate(
     exist = factor(exist, levels = c("0", "1")),
-    y_label = ifelse(exist == "1", 0, total) # alignement manuel
+    y_label = ifelse(exist == "1", 0, total) # manual alignment
   ) 
 
 saveRDS(count_true_to_mcc_1500,here("output/results/prop_true_to_mcc_1500.csv"))
@@ -185,7 +185,7 @@ count_true_to_mcc_3000 <- resume_to_true_grouped_3000 |>
   pivot_longer(cols = starts_with("exist_"), names_prefix = "exist_", names_to = "exist", values_to = "n_proportion") |>
   mutate(
     exist = factor(exist, levels = c("0", "1")),
-    y_label = ifelse(exist == "1", 0, total) # alignement manuel
+    y_label = ifelse(exist == "1", 0, total) # manual alignment
   ) 
 
 saveRDS(count_true_to_mcc_3000,here("output/results/prop_true_to_mcc_3000.csv"))
@@ -213,7 +213,7 @@ count_true_to_mcc_6000 <- resume_to_true_grouped_6000 |>
   pivot_longer(cols = starts_with("exist_"), names_prefix = "exist_", names_to = "exist", values_to = "n_proportion") |>
   mutate(
     exist = factor(exist, levels = c("0", "1")),
-    y_label = ifelse(exist == "1", 0, total) # alignement manuel
+    y_label = ifelse(exist == "1", 0, total) # manual alignment
   ) 
 
 saveRDS(count_true_to_mcc_6000,here("output/results/prop_true_to_mcc_6000.csv"))
@@ -241,12 +241,12 @@ count_true_to_mcc_12000 <- resume_to_true_grouped_12000 |>
   pivot_longer(cols = starts_with("exist_"), names_prefix = "exist_", names_to = "exist", values_to = "n_proportion") |>
   mutate(
     exist = factor(exist, levels = c("0", "1")),
-    y_label = ifelse(exist == "1", 0, total) # alignement manuel
+    y_label = ifelse(exist == "1", 0, total) # manual alignment
   ) 
 
 saveRDS(count_true_to_mcc_12000, here("output/results/prop_true_to_mcc_12000.csv"))
 
-# --- Données count_true_to_cs ---
+# --- count_true_to_cs data ---
 count_true_to_cs_data <- bind_rows(
   readRDS(here("output/results/prop_true_to_cs_12000.rds")) |> mutate(n_trait = 12000),
   readRDS(here("output/results/prop_true_to_cs_6000.rds")) |> mutate(n_trait = 6000),
@@ -271,13 +271,13 @@ count_true_to_cs_data <- bind_rows(
     values_to = "prop_n"
   ) |>
   mutate(
-    n_trait = as.numeric(gsub("prop_n_", "", n_trait_col)), # Extraire le nombre de traits
-    value = as.factor(value) # Assurez-vous que 'value' est un facteur pour l'esthétique de remplissage
+    n_trait = as.numeric(gsub("prop_n_", "", n_trait_col)), # Extract the number of traits
+    value = as.factor(value) # Make sure 'value' is a factor for the fill aesthetic
   )
 
 
 
-# --- Données count_true_to_mcc ---
+# --- count_true_to_mcc data ---
 count_true_to_mcc_data <- bind_rows(
   readRDS(here("output/results/prop_true_to_mcc_12000.csv")) |> mutate(n_trait = 12000),
   readRDS(here("output/results/prop_true_to_mcc_6000.csv")) |> mutate(n_trait = 6000),
@@ -302,9 +302,9 @@ count_true_to_mcc_data <- bind_rows(
     values_to = "prop_n"
   ) |>
   mutate(
-    n_trait = as.numeric(gsub("prop_n_", "", n_trait_col)), # Extraire le nombre de traits
-    value = as.factor(exist) # Assurez-vous que 'value' est un facteur pour l'esthétique de remplissage
-  ) |> 
+    n_trait = as.numeric(gsub("prop_n_", "", n_trait_col)), # Extract the number of traits
+    value = as.factor(exist) # Make sure 'value' is a factor for the fill aesthetic
+  ) |>
   select(-exist)
 
 write_csv(count_true_to_cs_data, here("output/results/prop_true_to_cs_data_long.csv"))
