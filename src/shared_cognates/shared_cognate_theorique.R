@@ -104,13 +104,10 @@ T_1(first_split[1], tree, mu_st, lambda_st) * (1 - exp(-mu_st * branch_length_ch
   T_1(first_split[1], tree, mu_st, lambda_st) * (1 - exp(-mu_st * branch_length_children[1])) *
   T_1(first_split[2], tree, mu_st, lambda_st) * (1 - exp(-mu_st * branch_length_children[2]))
 
-# pondération de T_1 et T_0 (qui autorise homoplasie)
-# T_1 * pi1 + T_0 * pi0
 
 # Sensitivity of S(root) to tree age -------------------------------------------
 target_ages <- seq(1, 17, by = 0.1)
 
-# Matrice : lignes = arbres, colonnes = ages cibles
 S_matrix <- matrix(NA, nrow = M_st, ncol = length(target_ages))
 
 for (k in seq_len(M_st)) {
@@ -135,7 +132,7 @@ for (k in seq_len(M_st)) {
   }
 }
 
-# Moyenne sur les arbres (sur les lignes) -> vecteur de taille length(target_ages)
+# Mean over all trees, vector of length: length(target_ages)
 S_mean <- colMeans(S_matrix)
 
 results_S <- data.frame(
@@ -143,48 +140,7 @@ results_S <- data.frame(
   S_root   = S_mean
 )
 
+# Write files
 write.csv(results_S, here("output/results/shared_cognate_thq_no_homoplasie.csv"))
-
-
-
-# Sensitivity of T(root) to tree age -------------------------------------------
-target_ages <- seq(1, 17, by = 0.1)
-coefs       <- target_ages / root_age   # multiplicative scaling factors
-
-results_T <- data.frame(
-  tree_age = numeric(),
-  coef     = numeric(),
-  T_root   = numeric()
-)
-
-for (i in seq_along(target_ages)) {
-  
-  tree_scaled             <- tree
-  tree_scaled$edge.length <- tree$edge.length * coefs[i]
-  
-  idx_root <- sapply(first_split, function(j) 
-    which(tree_scaled$edge[,1] == root & tree_scaled$edge[,2] == j))
-  bl_root  <- tree_scaled$edge.length[idx_root]
-  
-  s_val <- T_1(first_split[1], tree_scaled) * (1 - exp(-mu_st * bl_root[1])) + 
-    T_1(first_split[2], tree_scaled) * (1 - exp(-mu_st * bl_root[2])) - 
-    T_1(first_split[1], tree_scaled) * (1 - exp(-mu_st * bl_root[1])) *
-    T_1(first_split[2], tree_scaled) * (1 - exp(-mu_st * bl_root[2]))
-  
-  results_T <- rbind(results_T, data.frame(
-    tree_age = target_ages[i],
-    coef     = coefs[i],
-    T_root   = as.numeric(s_val + pi_st[1])
-  ))
-}
-
-curve(exp(-2*x*mu_st), add=T) # avec 2 langues au bout de 10k ans, 5% des cognats sont gardés
-# mais (ligne bleu + de diversit -> + de chance de survivre -> pente plus douce)
-
-
-# T_1(Root) devrait matcher cette fracion
-plot(results_T$T_root[seq(1,161,by=10)]/shared_cognate_comp$value) 
-# proba qu'un trait a la racine est présent dans au moins une feuille (evenement conditionelle qui nous ennuit)
-lines(results_T$T_root[seq(1,161,by=10)]/shared_cognate_comp$value)
 
 

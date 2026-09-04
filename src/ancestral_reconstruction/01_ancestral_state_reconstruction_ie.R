@@ -143,7 +143,7 @@ mu_ie <- clock_rate_ie / (2 * pi_ie$pi1)
 Q_ie <- cbind(c(-lambda_ie, mu_ie), c(lambda_ie, -mu_ie))
 
 # Initialize output CSV
-path_out_ie <- here("output/results/ancestral_reconstruction_ie_final.csv")
+path_out_ie <- here("output/results/ancestral_reconstruction_ie.csv")
 write.csv(
   x = data.frame(
     value = character(), 

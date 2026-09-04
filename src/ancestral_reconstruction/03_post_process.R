@@ -182,9 +182,9 @@ summary_data_ie$mean_outgroup[is.nan(summary_data_ie$mean_outgroup)] <- 0
 
 write_csv(summary_data_ie, here("output/results/ancestral_reconstruction_summary_ie.csv"))
  
-### compute for each trait : la   ---------------------------------------------------
+### Bonus ---- semantic meaning analysis
 
-# Calcul de l'âge moyen de la racine sur la posterieur
+# Mean root age of the posterior
 length_phylo <- 200
 phylo_ie <- read.nexus(here("data/real/iecor_ctmc-strict-M1/IECoR_M1_CTMC_Gamma_1_Rate_For_All_Mgs_combined.trees"))
 M_ie <- length(phylo_ie)
@@ -193,8 +193,7 @@ M_ie <- length(phylo_ie)  # update M to number of retained trees
 
 mean_root_age <- mean(sapply(1:M_ie, function(i) max(distRoot(phylo_ie[[i]]))))
 
-
-# Final dataframe 
+# Final dataframe - semantic meaning
 data_ie_by_trait_and_sens <- data_ie |>
   select(-node) |>
   mutate(value = as.numeric(value)) |>
@@ -225,13 +224,8 @@ data_ie_by_trait_and_sens <- data_ie |>
   select(-root_language) |> 
   mutate(mean_root_age = mean_root_age)
 
-head(data_ie_by_trait_and_sens)
-
-#data_ie_water = data_ie_by_trait_and_sens |> filter(sens == "water")
-
 write_csv(data_ie_by_trait_and_sens, here("output/results/ancestral_reconstruction_summary_ie_by_sens.csv"))
 
-head(data_ie_by_trait_and_sens)
 
 
 

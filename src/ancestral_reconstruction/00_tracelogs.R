@@ -53,7 +53,8 @@ write_csv(ntipschars, here("output/results/ntipschars.csv"))
 burnin <- .1
 
 tracelog_ie <- tracelog_ie |>
-  mutate(family = "IE")
+  mutate(family = "IE") |> 
+  rename()
 tracelog_st <- tracelog_st |>
   mutate(family = "ST")
 
@@ -62,7 +63,7 @@ tracelog_summary <- list(tracelog_ie, tracelog_st) |>
   purrr::map(~ .x |>
                add_tally(name = "n_trees")|>
                filter(Sample > ceiling(max(Sample) * burnin)) |>
-               select(family, n_trees, starts_with("freqParameter"), clockRate.c.clock, TreeHeight.t.tree, starts_with("mutationRate")) |>
+               select(family, n_trees, starts_with("freqParameter"), clockRate.c.clock , TreeHeight.t.tree, starts_with("mutationRate")) |>
                summarise(family = unique(family), across(-family, ~ median(.x))) |>
                rename(t_R = TreeHeight.t.tree) |>
                rename(clock_rate = clockRate.c.clock) |>
