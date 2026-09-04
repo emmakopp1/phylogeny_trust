@@ -83,10 +83,7 @@ df_number_of_nodes <- read.csv(
   header = T
 )
 
-# marginal probability of the first split in the mcc and consensus tree
-#prob_first_split_summary = read.csv(
-#  here("output/results/marginal_prob_first_split_mcc_consensus.csv")
-#)
+# posterior probability of the first split in the mcc, consensus and hipstr trees
 prob_first_split_summary = read.csv(
   here("output/results/marginal_prob_first_split_mcc_consensus_hipstr.csv")
 )

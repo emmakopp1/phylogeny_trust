@@ -20,7 +20,6 @@ burnin <- 0.1
 df <- data.frame(matrix(ncol = 7, nrow = 0))
 colnames(df) <- c("tree_age", "tree_simulation_number", "RF-mean", "RF-median", "RF-min", "RF-max", "RF-sd")
 
-#output_path <- paste0(cluster_directory, "/rf_values.csv")
 output_path <- here("output/results/rf_values_simu.csv")
 
 write.table(
@@ -76,6 +75,4 @@ process_file <- function(i) {
   return(row)
 }
 
-# test
-tree_true[[1]]
-#lapply(cl, seq_along(path_trees_phylo[1:17]), process_file)
+lapply(cl, seq_along(path_trees_phylo[1:17]), process_file)

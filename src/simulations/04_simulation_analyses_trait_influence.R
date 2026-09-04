@@ -408,29 +408,3 @@ write_csv(count_true_to_cs_data, here("output/results/prop_true_to_cs_data_long.
 write_csv(count_true_to_mcc_data, here("output/results/prop_true_to_mcc_data_long.csv"))
 
 
-# --- Proportions true to cs ---
-# total de noeuds par age/n_trait (somme sur les 3 categories 0,1,2)
-#count_true_to_cs_totals <- count_true_to_cs_data_long |>
-#  group_by(age, n_trait) |>
-#  summarise(total_n = sum(mean_n), .groups = "drop")
-
-#prop_true_to_cs_data_long <- count_true_to_cs_data_long |>
-#  left_join(count_true_to_cs_totals, by = c("age", "n_trait")) |>
-#  mutate(prop_n = mean_n / total_n)
-
-#write_csv(prop_true_to_cs_data_long, here("output/results/prop_true_to_cs_data_long.csv"))
-
-
-# --- Proportions true to mcc ---
-# total de noeuds par age/n_trait (somme sur exist = 0 et 1)
-#count_true_to_mcc_totals <- count_true_to_mcc_data_long |>
-#  group_by(age, n_trait) |>
-#  summarise(total_n = sum(mean_n, na.rm = T), .groups = "drop")
-
-#prop_true_to_mcc_data_long <- count_true_to_mcc_data_long |>
-#  left_join(count_true_to_mcc_totals, by = c("age", "n_trait")) |>
-#  mutate(prop_n = mean_n / total_n)
-
-#write_csv(prop_true_to_mcc_data_long, here("output/results/prop_true_to_mcc_data_long.csv"))
-
-
