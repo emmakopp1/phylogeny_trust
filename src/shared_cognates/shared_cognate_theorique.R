@@ -99,10 +99,10 @@ hist(S_root_all, main = "Distribution de S_root sur les arbres postérieurs",
 mean(S_root_all)
 
 # Apply T(root)
-T_1(first_split[1], tree) * (1 - exp(-mu_st * branch_length_children[1])) + 
-  T_1(first_split[2], tree) * (1 - exp(-mu_st * branch_length_children[2])) - 
-  T_1(first_split[1], tree) * (1 - exp(-mu_st * branch_length_children[1])) *
-  T_1(first_split[2], tree) * (1 - exp(-mu_st * branch_length_children[2]))
+T_1(first_split[1], tree, mu_st, lambda_st) * (1 - exp(-mu_st * branch_length_children[1])) + 
+  T_1(first_split[2], tree, mu_st, lambda_st) * (1 - exp(-mu_st * branch_length_children[2])) - 
+  T_1(first_split[1], tree, mu_st, lambda_st) * (1 - exp(-mu_st * branch_length_children[1])) *
+  T_1(first_split[2], tree, mu_st, lambda_st) * (1 - exp(-mu_st * branch_length_children[2]))
 
 # pondération de T_1 et T_0 (qui autorise homoplasie)
 # T_1 * pi1 + T_0 * pi0
@@ -143,7 +143,7 @@ results_S <- data.frame(
   S_root   = S_mean
 )
 
-write.csv(results_S, here("output/figs/shared_cognate_thq_no_homoplasie.csv"))
+write.csv(results_S, here("output/results/shared_cognate_thq_no_homoplasie.csv"))
 
 
 
