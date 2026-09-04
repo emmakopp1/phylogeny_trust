@@ -16,7 +16,6 @@ library(here)
 library(ape)
 library(stringr)
 library(castor)
-library(parallel)
 library(phangorn)
 
 # functions --------------------------------------------------------------------
@@ -26,6 +25,7 @@ path_repository <-here("data/simulated-2025-07-28")
 # compute the path for the csv output
 output_path_mcc <- here("output/results/first_split_age_mcc.csv")
 output_path_cs <- here("output/results/first_split_age_cs.csv")
+output_path_hipstr <- here("output/results/first_split_age_hipstr.csv")
 
 
 # function to get the outgroup of the tree 
@@ -34,6 +34,30 @@ first_split <- function(path){
   
   tree_age <- as.integer(str_extract(path, "(?<=-)(\\d+)(?=\\.tree)"))
   tree_simulation_number <- as.numeric(str_match(path, "beast-data-sim-(\\d+)-\\d+")[, 2])
+  
+  # root of the tree
+  root = find_root(tree)
+  # children of the root
+  children = tree$edge[which(tree$edge[,1]==root),2]
+  
+  t = max(node.depth.edgelength(tree)) - node.depth.edgelength(tree)[children]
+  
+  return(data.frame(
+    age = tree_age,
+    simulation = tree_simulation_number,
+    root = root,
+    root_age = max(node.depth.edgelength(tree)),
+    first_split = children[which.max(t)],  
+    root_split_age = t[which.max(t)]
+  ))  
+}
+
+first_split_hipstr <- function(path){
+  tree = read.nexus(path)
+  
+  tree_age <- as.integer(str_extract(path, "(?<=-)(\\d+)(?=\\.tree)"))
+  m <- str_match(path, "beast-data-sim-(\\d+)-\\d+")
+  tree_simulation_number <- as.numeric(m[1, 2])
   
   # root of the tree
   root = find_root(tree)
@@ -64,6 +88,7 @@ path_phylo <- list.files(
 # paths to true topologies, posterior and mcc  
 path_mcc <- path_phylo[grepl("mcc-", path_phylo)]
 path_cs <- path_phylo[grepl("consensus-", path_phylo)]
+path_hipstr <- path_phylo[grepl("hipstr-", path_phylo)]
 
 # compute for each age, simulation the root and first split ages
 # for the mcc trees
@@ -74,9 +99,14 @@ deepest_nodes_mcc <- do.call(rbind, deepest_nodes_mcc)
 deepest_nodes_cs <- lapply(path_cs, function(path) first_split(path))
 deepest_nodes_cs <- do.call(rbind, deepest_nodes_cs)
 
+# for the hipstr trees
+deepest_nodes_hipstr <- lapply(path_hipstr, function(path) first_split_hipstr(path))
+deepest_nodes_hipstr <- do.call(rbind, deepest_nodes_hipstr)
+
 # write the file 
 write.csv(deepest_nodes_mcc, output_path_mcc)
 write.csv(deepest_nodes_cs, output_path_cs)
+write.csv(deepest_nodes_hipstr, output_path_hipstr)
 
 
 

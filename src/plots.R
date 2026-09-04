@@ -296,18 +296,6 @@ ggsave(
 )
 plot_crop(here("output/figs/ancestral_reconstruction_by_semantic_meaning.pdf"))
 
-
-prob_first_split_mcc <- read_csv(here(
-  "output/results/prob_first_split_mcc.csv"
-)) |>
-  rename(p = mean_mcc_prob) |>
-  mutate(type = "MCC")
-prob_first_split_hipstr <- read_csv(here(
-  "output/results/prob_first_split_hipstr.csv"
-)) |>
-  rename(p = mean_hipstr_prob) |>
-  mutate(type = "HIPSTR")
-
 marginal_probability_first_split_hdi <- read_csv(here(
   "output/results/marginal_prob_first_split_hdi.csv"
 ))

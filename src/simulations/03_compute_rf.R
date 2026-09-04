@@ -1,9 +1,26 @@
 library(here)
 library(phangorn)
 library(ape)
-library(TreeDist)
+library(here)
+library(ape)
+library(phangorn)
+library(castor)
+library(parallel)
+library(stringr)
+library(stats)
 
+# to be referenced by the user
+# path of the simulation folder you want to analyse
 cluster_directory <- here("data/simulated-2025-07-28") 
+#cluster_directory <- here("data/simulated-2025-07-22-1500")
+#cluster_directory <- here("data/simulated-2025-07-22-6000")
+#cluster_directory <- here("data/simulated-2025-07-22-12000")
+
+# set the number of traits 
+# if N_traits is not 6 or 12 thousands, then it is the main study and N_traits = 3000
+N_traits <- as.numeric(str_extract(cluster_directory, "\\d+$"))
+N_traits <- ifelse(N_traits %in% c(12000, 6000, 1500), N_traits, "")
+
 
 # paths of the true tree and the phylogeny samples
 path_phylo <- list.files(cluster_directory, full.names = TRUE, recursive = TRUE)
@@ -18,9 +35,14 @@ burnin <- 0.1
 
 # data frame of results 
 df <- data.frame(matrix(ncol = 7, nrow = 0))
-colnames(df) <- c("tree_age", "tree_simulation_number", "RF-mean", "RF-median", "RF-min", "RF-max", "RF-sd")
+colnames(df) <- c('tree_age', 'tree_simulation_number', 'RF_mean', 'RF_median', 'RF_min', 'RF_max', 'RF_sd')
 
-output_path <- here("output/results/rf_values_simu.csv")
+
+output_path <- ifelse(
+  N_traits == "",
+  paste0(cluster_directory, "/rf_values.csv"),
+  here(sprintf("%s/rf_values_%s.csv", cluster_directory, N_traits))
+)
 
 write.table(
   df,
@@ -30,7 +52,7 @@ write.table(
 )
 
 
-process_file <- function(i) {
+rf <- function(i) {
   # true tree, its deepest node and posterior
   tree_true <- trees_true[[i]]
   phylo <- phylogenies[[i]]
@@ -55,24 +77,24 @@ process_file <- function(i) {
   row <- data.frame(
     tree_age = tree_age,
     tree_simulation_number = tree_simulation_number,
-    RF-mean = round(mean(res), 3),
-    RF-median = round(median(res), 3),
-    RF-min = round(range(res), 3)[1], 
-    RF-max = round(range(res), 3)[2],
-    RF-sd = round(sd(res), 3)
+    RF_mean = round(mean(res), 3),
+    RF_median = round(median(res), 3),
+    RF_min = round(range(res), 3)[1], 
+    RF_max = round(range(res), 3)[2],
+    RF_sd = round(sd(res), 3)
   )
   
   
   write.table(
     row, 
-    here("output/results/rf_values_simu.csv"),
+    output_path,
     sep = ",",
     row.names = FALSE,
     col.names = FALSE,
     append = TRUE     
   )
   
-  return(row)
+  return()
 }
 
-lapply(cl, seq_along(path_trees_phylo[1:17]), process_file)
+lapply(seq_along(path_trees_phylo), rf)
