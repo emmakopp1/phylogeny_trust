@@ -11,6 +11,8 @@ library(phangorn)
 library(ggtree)
 library(ggdist)
 
+dir.create(here("output/figs"), showWarnings = FALSE, recursive = TRUE)
+
 # theme
 # width <- 13.5
 # height <- 19
