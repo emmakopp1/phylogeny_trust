@@ -14,8 +14,6 @@ library(ggdist)
 dir.create(here("output/figs"), showWarnings = FALSE, recursive = TRUE)
 
 # theme
-# width <- 13.5
-# height <- 19
 width <- 18
 height <- 25
 base_font <- "Noto Sans Condensed"

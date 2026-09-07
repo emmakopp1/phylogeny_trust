@@ -171,14 +171,74 @@ Rscript src/plots.R
 
 ### R packages
 
-| Category | Packages |
-|---|---|
-| Phylogenetics | `ape` · `phangorn` · `phytools` · `TreeSim` · `castor` · `adephylo` · `TreeTools` · `treeio` |
-| BEAST interface | `beastier` · `tracerer` |
-| Data wrangling | `tidyverse` · `dplyr` · `tidyr` · `purrr` · `reshape2` · `stringr` · `readr` · `tibble` · `magrittr` |
-| Modelling | `broom` · `stats` · `Matrix` · `parallel` |
-| Visualisation | `ggplot2` · `patchwork` · `ggeffects` · `dotwhisker` · `pheatmap` · `gridExtra` |
-| Utilities | `here` · `xml2` |
+Versions below are the ones this pipeline was last run and verified with. `ggplot2` in particular is version-sensitive: version 4.x requires `patchwork` ≥ 1.3.2 for the `&` theme-combination operator used in `plots.R` to work — older `patchwork` versions fail with `Can't find method for generic '&'`.
+
+| Category | Package | Version |
+|---|---|---|
+| Phylogenetics | `ape` | 5.8 |
+| Phylogenetics | `phangorn` | 2.12.1 |
+| Phylogenetics | `phytools` | 2.3.0 |
+| Phylogenetics | `TreeSim` | 2.4 |
+| Phylogenetics | `castor` | 1.8.2 |
+| Phylogenetics | `adephylo` | 1.1.16 |
+| Phylogenetics | `TreeTools` | 1.12.0 |
+| Phylogenetics | `treeio` | 1.28.0 |
+| Phylogenetics | `ggtree` | 3.12.0 |
+| BEAST interface | `beastier` | 2.5.2 |
+| BEAST interface | `tracerer` | 2.2.3 |
+| Data wrangling | `tidyverse` | 2.0.0 |
+| Data wrangling | `dplyr` | 1.1.4 |
+| Data wrangling | `tidyr` | 1.3.1 |
+| Data wrangling | `purrr` | 1.0.2 |
+| Data wrangling | `reshape2` | 1.4.4 |
+| Data wrangling | `stringr` | 1.5.1 |
+| Data wrangling | `readr` | 2.1.5 |
+| Data wrangling | `tibble` | 3.2.1 |
+| Data wrangling | `magrittr` | 2.0.3 |
+| Modelling | `broom` | 1.0.7 |
+| Modelling | `stats` | 4.4.1 |
+| Modelling | `Matrix` | 1.7.1 |
+| Modelling | `parallel` | 4.4.1 |
+| Visualisation | `ggplot2` | 4.0.3 |
+| Visualisation | `patchwork` | 1.3.2 (≥ 1.3.2 required for `ggplot2` ≥ 4.0) |
+| Visualisation | `ggeffects` | 2.3.0 |
+| Visualisation | `dotwhisker` | 0.8.4 |
+| Visualisation | `pheatmap` | 1.0.13 |
+| Visualisation | `gridExtra` | 2.3 |
+| Visualisation | `ggh4x` | 0.3.1 |
+| Visualisation | `ggrepel` | 0.9.6 |
+| Visualisation | `khroma` | 1.17.0 |
+| Visualisation | `ggdist` | 3.3.3 |
+| Utilities | `here` | 1.0.1 |
+| Utilities | `xml2` | 1.3.6 |
+| Utilities | `knitr` | 1.48 |
+
+To install these exact versions (base-R packages `stats` and `parallel` ship with R itself and are skipped):
+
+```r
+if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
+
+pkg_versions <- c(
+  ape = "5.8", phangorn = "2.12.1", phytools = "2.3.0", TreeSim = "2.4",
+  castor = "1.8.2", adephylo = "1.1.16", TreeTools = "1.12.0", treeio = "1.28.0",
+  ggtree = "3.12.0",
+  beastier = "2.5.2", tracerer = "2.2.3",
+  tidyverse = "2.0.0", dplyr = "1.1.4", tidyr = "1.3.1", purrr = "1.0.2",
+  reshape2 = "1.4.4", stringr = "1.5.1", readr = "2.1.5", tibble = "3.2.1",
+  magrittr = "2.0.3",
+  broom = "1.0.7", Matrix = "1.7.1",
+  ggplot2 = "4.0.3", patchwork = "1.3.2", ggeffects = "2.3.0",
+  dotwhisker = "0.8.4", pheatmap = "1.0.13", gridExtra = "2.3",
+  ggh4x = "0.3.1", ggrepel = "0.9.6", khroma = "1.17.0", ggdist = "3.3.3",
+  here = "1.0.1", xml2 = "1.3.6", knitr = "1.48"
+)
+
+for (pkg in names(pkg_versions)) {
+  remotes::install_version(pkg, version = pkg_versions[[pkg]], repos = "https://cran.r-project.org")
+}
+```
+
+> `treeio` and `ggtree` are Bioconductor packages — if `install_version()` fails for them, install via `BiocManager::install("treeio")` / `BiocManager::install("ggtree")` instead (Bioconductor pins versions to a release, not per-package).
 
 ### External software
 
