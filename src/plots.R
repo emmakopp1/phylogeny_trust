@@ -362,7 +362,7 @@ plot_crop(here("output/figs/marginal_probability_first_split_hdi.pdf"))
 count_true_to_cs_data_long <- read_csv(here(
   "output/results/prop_true_to_cs_data_long.csv"
 )) |>
-  mutate(summary_type = "CS") |>
+  mutate(summary_type = "Consensus") |>
   rename(type = value) |>
   mutate(
     type = case_when(
