@@ -258,7 +258,7 @@ concepts <- bind_rows(summary_data_st, summary_data_ie) |>
   ) |>
   mutate(sens = str_remove_all(sens, "hide ")) |>
   mutate(sens = str_replace_all(sens, " of weight", "\n(of weight)")) |>
-  mutate(sens = str_replace_all(sens, "I first person singular", "1SG"))
+  mutate(sens = str_replace_all(sens, "I first person singular", "I, me"))
 
 # Relationship between ancestral reconstruction depth and presence in the
 # early-diverging lineage for lexical traits
