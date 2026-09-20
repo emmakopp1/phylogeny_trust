@@ -147,16 +147,19 @@ updated_texts <- files |>
 
 
 # generate sequence with beast -------------------------------------------------
+# EDIT this to the absolute path of your local BEAST 2 installation
+beast_bin <- "/Applications/BEAST2.6.7/bin/beast"
+
 for(n_sim in 1:N_sim){
   for (i in  l) {
     # run beast to generate sequence
-    system(paste0("../../../../Applications/BEAST2.6.7/bin/beast -overwrite ", 
+    system(paste0(beast_bin, " -overwrite ",
                   dir_path, sprintf("/beast-data-sim-%d/beast-data-sim-%d-%d/beast-data-sim-%d-%d.xml", n_sim, n_sim, i, n_sim, i)))
     # change the emplacement of the output
     system(
       paste0(sprintf("mv beast-simulated-seq-%d-%d.xml ",n_sim, i),
-             "/Users/kopp/Documents/phylogeny_trust/", 
-             dir_path, 
+             here(), "/",
+             dir_path,
              sprintf("/beast-data-sim-%d/beast-data-sim-%d-%d/beast-simulated-seq-%d-%d.xml", n_sim, n_sim, i, n_sim, i))
       )
   }

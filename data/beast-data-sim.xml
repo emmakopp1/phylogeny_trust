@@ -56,7 +56,7 @@
   <!-- specify the tree -->
   <tree id="tree" spec="beast.util.TreeParser" newick="xyz" taxa="@alignment"/>
   <!-- configure the Sequence Simulator -->
-  <run spec="beast.app.seqgen.SequenceSimulator" id="seqgen" data="@alignment" tree="@tree" sequencelength="1500" outputFileName="output_name">
+  <run spec="beast.app.seqgen.SequenceSimulator" id="seqgen" data="@alignment" tree="@tree" sequencelength="3000" outputFileName="output_name">
     <!-- set up site model -->
     <siteModel spec="SiteModel" id="siteModel" gammaCategoryCount="4">
       <!-- specify gamma shape parameter -->

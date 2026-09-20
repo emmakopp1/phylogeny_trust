@@ -108,6 +108,8 @@ phylogeny_trust/
 
 ### Reproduce the simulation analyses
 
+> **⚠ Before running step 1** — `src/simulations/01_tree_simulation_main.R` sets `beast_bin` (near the BEAST-calling loop) to an absolute path to the local BEAST 2 installation. Edit it to match your machine — it cannot be expressed relative to the repo via `here()` since BEAST is typically installed outside the project folder. If left pointing at the wrong install, the script completes with no visible error, but `beast-simulated-seq-*.xml` outputs end up stranded in the repository root instead of their target simulation folder, since the `mv` after each BEAST call silently fails.
+
 ```bash
 # 1. Generate trees and BEAST XMLs from scratch (required — pre-computed data is not included in this repository)
 Rscript src/simulations/01_tree_simulation_main.R
