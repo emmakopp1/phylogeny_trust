@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beast version="2.0" namespace="beast.evolution.alignment:beast.core:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood">
+  <!-- specify the taxa -->
+  <data id="alignment" dataType="binary">
+    <sequence taxon="BodicTshangla">?</sequence>
+    <sequence taxon="BurmishAchang">?</sequence>
+    <sequence taxon="BurmishAtsi">?</sequence>
+    <sequence taxon="BurmishBola">?</sequence>
+    <sequence taxon="BurmishLashi">?</sequence>
+    <sequence taxon="BurmishMaru">?</sequence>
+    <sequence taxon="BurmishOldBurmese">?</sequence>
+    <sequence taxon="BurmishRangoon">?</sequence>
+    <sequence taxon="BurmishXiandao">?</sequence>
+    <sequence taxon="ChepangChepang">?</sequence>
+    <sequence taxon="ChinHakha">?</sequence>
+    <sequence taxon="DengDarangTaraon">?</sequence>
+    <sequence taxon="DengYidu">?</sequence>
+    <sequence taxon="GaroGaro">?</sequence>
+    <sequence taxon="JingphoJingpho">?</sequence>
+    <sequence taxon="Karbi">?</sequence>
+    <sequence taxon="KhroskyabsWobzi">?</sequence>
+    <sequence taxon="KirantiBahing">?</sequence>
+    <sequence taxon="KirantiBantawa">?</sequence>
+    <sequence taxon="KirantiHayu">?</sequence>
+    <sequence taxon="KirantiKhaling">?</sequence>
+    <sequence taxon="KirantiKulung">?</sequence>
+    <sequence taxon="KirantiLimbu">?</sequence>
+    <sequence taxon="KirantiThulung">?</sequence>
+    <sequence taxon="LoloishLisu">?</sequence>
+    <sequence taxon="MizoLushai">?</sequence>
+    <sequence taxon="NagaUkhrul">?</sequence>
+    <sequence taxon="NungicDulong">?</sequence>
+    <sequence taxon="QiangicZhaba">?</sequence>
+    <sequence taxon="Rabha">?</sequence>
+    <sequence taxon="SiniticBeijing">?</sequence>
+    <sequence taxon="SiniticChaozhou">?</sequence>
+    <sequence taxon="SiniticGuangzhou">?</sequence>
+    <sequence taxon="SiniticJieyang">?</sequence>
+    <sequence taxon="SiniticLonggang">?</sequence>
+    <sequence taxon="SiniticOldChinese">?</sequence>
+    <sequence taxon="SiniticXingning">?</sequence>
+    <sequence taxon="Tangut">?</sequence>
+    <sequence taxon="TaniBokar">?</sequence>
+    <sequence taxon="TibetanAlike">?</sequence>
+    <sequence taxon="TibetanBatang">?</sequence>
+    <sequence taxon="TibetanLhasa">?</sequence>
+    <sequence taxon="TibetanOldTibetan">?</sequence>
+    <sequence taxon="TibetanXiahe">?</sequence>
+    <sequence taxon="TibetoKinauriBunan">?</sequence>
+    <sequence taxon="TibetoKinauriByangsi">?</sequence>
+    <sequence taxon="TibetoKinauriRongpo">?</sequence>
+    <sequence taxon="rGyalrongDaofu">?</sequence>
+    <sequence taxon="rGyalrongJaphug">?</sequence>
+    <sequence taxon="rGyalrongMaerkang">?</sequence>
+  </data>
+  <!-- specify the tree -->
+  <tree id="tree" spec="beast.util.TreeParser" newick="xyz" taxa="@alignment"/>
+  <!-- configure the Sequence Simulator -->
+  <run spec="beast.app.seqgen.SequenceSimulator" id="seqgen" data="@alignment" tree="@tree" sequencelength="1500" outputFileName="output_name">
+    <!-- set up site model -->
+    <siteModel spec="SiteModel" id="siteModel" gammaCategoryCount="4">
+      <!-- specify gamma shape parameter -->
+      <shape spec="parameter.RealParameter">1.0</shape>
+      <!-- use CTMC substitution model with custom rates -->
+      <substModel id="CTMC" spec="GeneralSubstitutionModel">
+        <!-- rates: pi1 (0->1, naissance) et pi0 (1->0, mort) -->
+        <parameter id="rates" spec="parameter.RealParameter" dimension="2" estimate="false" lower="0.0" name="rates">0.05695 0.94305</parameter>
+        <frequencies id="freqs" spec="Frequencies">
+          <data idref="alignment"/>
+        </frequencies>
+      </substModel>
+    </siteModel>
+    <!-- use a strict clock -->
+    <branchRateModel id="StrictClock" spec="beast.evolution.branchratemodel.StrictClockModel">
+      <parameter dimension="1" estimate="false" id="clockRate" minordimension="1" name="clock.rate" value="1.0"/>
+    </branchRateModel>
+  </run>
+</beast>
