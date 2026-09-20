@@ -21,6 +21,9 @@ library(magrittr)
 library(dplyr)
 library(beastier)
 
+# EDIT this to the absolute path of your local BEAST 2 installation
+beast_bin <- "/Applications/BEAST2.6.7/bin/beast"
+
 # simulation of the initial tree --------------------------------------------
 path <- here(sprintf("data/simulated_temp/beast-data-sim-%s", Sys.Date()))
 dir_path <-sprintf("data/simulated-%s", Sys.Date())
@@ -147,9 +150,6 @@ updated_texts <- files |>
 
 
 # generate sequence with beast -------------------------------------------------
-# EDIT this to the absolute path of your local BEAST 2 installation
-beast_bin <- "/Applications/BEAST2.6.7/bin/beast"
-
 for(n_sim in 1:N_sim){
   for (i in  l) {
     # run beast to generate sequence
