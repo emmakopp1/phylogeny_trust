@@ -15,6 +15,7 @@ dir.create(here("output/figs"), showWarnings = FALSE, recursive = TRUE)
 
 # theme
 width <- 18
+width2 <- 13
 height <- 25
 base_font <- "Noto Sans Condensed"
 base_font2 <- "Noto Sans ExtraCondensed"
@@ -100,7 +101,7 @@ shared_cognates_thq |>
   )
 ggsave(
   here("output/figs/shared_cognate_thq_no_homoplasie.pdf"),
-  width = width * .8,
+  width = width2,
   height = height,
   units = "cm",
   device = cairo_pdf
@@ -257,7 +258,7 @@ concepts <- bind_rows(summary_data_st, summary_data_ie) |>
   ) |>
   mutate(sens = str_remove_all(sens, "hide ")) |>
   mutate(sens = str_replace_all(sens, " of weight", "\n(of weight)")) |>
-  mutate(sens = str_replace_all(sens, "I first person singular", "1SG"))
+  mutate(sens = str_replace_all(sens, "I first person singular", "I, me"))
 
 # Relationship between ancestral reconstruction depth and presence in the
 # early-diverging lineage for lexical traits
@@ -351,18 +352,17 @@ marginal_probability_first_split_hdi |>
   ylab("Mean probability of correctly\ninferring the first split")
 ggsave(
   here("output/figs/marginal_probability_first_split_hdi.pdf"),
-  width = width,
+  width = width2,
   height = height,
   units = "cm",
   device = cairo_pdf
 )
 plot_crop(here("output/figs/marginal_probability_first_split_hdi.pdf"))
 
-
 count_true_to_cs_data_long <- read_csv(here(
   "output/results/prop_true_to_cs_data_long.csv"
 )) |>
-  mutate(summary_type = "CS") |>
+  mutate(summary_type = "Consensus") |>
   rename(type = value) |>
   mutate(
     type = case_when(
@@ -727,7 +727,7 @@ rf_hdi |>
   ylab("Robinson-Foulds distance")
 ggsave(
   here("output/figs/rf_hdi.pdf"),
-  width = width,
+  width = width2,
   height = height,
   units = "cm",
   device = cairo_pdf
@@ -779,7 +779,7 @@ rf_trait_influence |>
   ylab("Robinson-Foulds distance")
 ggsave(
   here("output/figs/rf_trait_influence.pdf"),
-  width = width,
+  width = width2,
   height = height,
   units = "cm",
   device = cairo_pdf
@@ -828,7 +828,7 @@ read_csv(here("output/results/mcc_reconstruction_proba_first_split.csv")) |>
 
 ggsave(
   here("output/figs/mcc_reconstruction_proba_first_split.pdf"),
-  width = width,
+  width = width2,
   height = height,
   units = "cm",
   device = cairo_pdf
@@ -877,7 +877,7 @@ read_csv(here("output/results/cs_reconstruction_proba_first_split.csv")) |>
 
 ggsave(
   here("output/figs/cs_reconstruction_proba_first_split.pdf"),
-  width = width,
+  width = width2,
   height = height,
   units = "cm",
   device = cairo_pdf
@@ -926,7 +926,7 @@ read_csv(here("output/results/hipstr_reconstruction_proba_first_split.csv")) |>
 
 ggsave(
   here("output/figs/hipstr_reconstruction_proba_first_split.pdf"),
-  width = width,
+  width = width2,
   height = height,
   units = "cm",
   device = cairo_pdf
