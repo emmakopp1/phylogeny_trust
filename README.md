@@ -4,6 +4,27 @@
 
 ---
 
+## ⚠️ Note for reviewers — anonymous review repository
+
+This repository is provided for **anonymous peer review**. It contains the **complete analysis code**, but two categories of large data files have been excluded because they could not be hosted anonymously at their full size:
+
+- **Simulated datasets** (`data/simulated-2025-*/`, ~20 GB total) — posterior tree samples and BEAST outputs for all 850 simulations across 17 root ages and 4 trait-count conditions.
+- **Indo-European posterior trees** (`data/real/iecor_ctmc-strict-M1/IECoR_M1_CTMC_Gamma_1_Rate_For_All_Mgs_combined.trees`, ~543 MB) — the combined BEAST posterior for the Indo-European analysis.
+
+Everything else needed to understand, verify, and (where file size allows) re-run the pipeline is included:
+
+- **All code** in `src/` — simulation, summary-tree computation, statistical analysis, ancestral reconstruction, and plotting scripts.
+- **Sino-Tibetan real data**, complete (`data/real/st_ctmc-strict-fbd-uni/`), including posterior trees, log files, and summary trees.
+- **Indo-European supporting files** (`iecor.nex`, `iecor_roots.csv`) — the large `.trees` posterior file is the only Indo-European file excluded.
+- **All processed/intermediate results** (`output/results/`) and **all publication figures** (`output/figs/`), so every figure in the manuscript can be traced back to its inputs without needing to rerun any simulation.
+- **BEAST templates** used to generate the simulated datasets (`data/beast-data-sim.xml`, `data/ctmc-strict-bd-template.xml`), so new simulations can be generated from scratch (see [Quick Start](#quick-start)).
+
+Because of the missing files above, two scripts in `src/ancestral_reconstruction/` (`00_tracelogs.R` and `01_ancestral_state_reconstruction_ie.R`) cannot be run as-is in this repository — they depend on the excluded Indo-European `.trees` file. All other scripts, including `src/plots.R`, run directly against the data included here.
+
+A complete, non-anonymized version of this repository — including all simulated data and the full Indo-European posterior — will be made publicly available (e.g. via Zenodo) upon acceptance.
+
+---
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -34,12 +55,12 @@ The study combines:
 phylogeny_trust/
 ├── data/
 │   ├── real/
-│   │   ├── iecor_ctmc-strict-M1/          # Indo-European BEAST results
-│   │   └── st_ctmc-strict-fbd-uni/        # Sino-Tibetan BEAST results
-│   ├── simulated-2025-07-22-1500/         # Simulation — 1 500 traits
-│   ├── simulated-2025-07-22-6000/         # Simulation — 6 000 traits
-│   ├── simulated-2025-07-22-12000/        # Simulation — 12 000 traits
-│   ├── simulated-2025-07-28/              # Main simulation — 3 000 traits
+│   │   ├── iecor_ctmc-strict-M1/          # Indo-European — .trees file EXCLUDED (~543 MB, see note above)
+│   │   └── st_ctmc-strict-fbd-uni/        # Sino-Tibetan BEAST results — complete
+│   ├── simulated-2025-07-22-1500/         # EXCLUDED — simulation, 1 500 traits (~20 GB total, see note above)
+│   ├── simulated-2025-07-22-6000/         # EXCLUDED — simulation, 6 000 traits
+│   ├── simulated-2025-07-22-12000/        # EXCLUDED — simulation, 12 000 traits
+│   ├── simulated-2025-07-28/              # EXCLUDED — main simulation, 3 000 traits
 │   ├── beast-data-sim.xml                 # BEAST template (sequence simulation)
 │   └── ctmc-strict-bd-template.xml        # BEAUti template (CTMC birth-death)
 │
@@ -47,10 +68,11 @@ phylogeny_trust/
 │   ├── simulations/                       # Steps 01–04 (see Script Reference)
 │   ├── ancestral_reconstruction/          # Steps 00–02 (see Script Reference)
 │   ├── shared_cognate.R                   # Theoretical shared-cognate probability
-│   └── plots.R                            # All publication figures
+│   └── plots.R                            # All publication figures — runs directly on output/results/ included here
 │
 └── output/
-    ├── results/                           # Processed datasets and statistics
+    ├── results/                           # Processed datasets and statistics — included in full
+    └── figs/                              # Publication figures — included in full
 ```
 
 ---
@@ -82,10 +104,12 @@ phylogeny_trust/
 
 > **Prerequisites**: R ≥ 4.0, BEAST 2, and the R packages listed in [Dependencies](#dependencies).
 
+> **Reviewers**: pre-computed simulation data is not included in this repository (see [note above](#️-note-for-reviewers--anonymous-review-repository)). Steps 2–5 below cannot be run without first regenerating data via step 1 and running BEAST 2 yourself. To reproduce the manuscript's figures without rerunning anything, skip to [Generate all figures](#generate-all-figures) — it runs directly on the `output/results/` data included in this repository.
+
 ### Reproduce the simulation analyses
 
 ```bash
-# 1. Generate trees and BEAST XMLs (optional — pre-computed data provided)
+# 1. Generate trees and BEAST XMLs from scratch (required — pre-computed data is not included in this repository)
 Rscript src/simulations/01_tree_simulation_main.R
 
 # 2. Run BEAST 2 on the generated XMLs
@@ -117,11 +141,13 @@ Rscript src/simulations/04_simulation_analyses_trait_influence.R
 
 ```bash
 Rscript src/ancestral_reconstruction/00_compute_meaning_set.R
-Rscript src/ancestral_reconstruction/00_tracelogs.R
-Rscript src/ancestral_reconstruction/01_ancestral_state_reconstruction_ie.R   # ⚠ Costly
+Rscript src/ancestral_reconstruction/00_tracelogs.R                          # ⚠ Requires the excluded IE .trees file — see note above
+Rscript src/ancestral_reconstruction/01_ancestral_state_reconstruction_ie.R   # ⚠ Costly · requires the excluded IE .trees file
 Rscript src/ancestral_reconstruction/01_ancestral_state_reconstruction_st.R   # ⚠ Costly
 Rscript src/ancestral_reconstruction/02_post_process.R
 ```
+
+> **Reviewers**: `00_tracelogs.R` and `01_ancestral_state_reconstruction_ie.R` require `data/real/iecor_ctmc-strict-M1/IECoR_M1_CTMC_Gamma_1_Rate_For_All_Mgs_combined.trees`, which is excluded from this repository (see note above). The other scripts in this pipeline run on the included Indo-European files (`iecor.nex`, `iecor_roots.csv`) and the complete Sino-Tibetan data.
 
 ### Shared cognate analysis
 
@@ -134,6 +160,8 @@ Rscript src/shared_cognate.R
 ```bash
 Rscript src/plots.R
 ```
+
+This script only reads from `output/results/` and writes to `output/figs/` — both included in full in this repository — so it runs directly, without needing any of the excluded data.
 
 ---
 
@@ -250,9 +278,11 @@ for (pkg in names(pkg_versions)) {
 
 ## Data Availability
 
-- **Real data**: phylogenetic analyses of Indo-European and Sino-Tibetan language families (sources in [Citation](#citation))
-- **Processed results**: all intermediate CSVs in `output/results/`
-- **Figures**: publication-ready PDFs in `output/figs/`
+- **Real data**: phylogenetic analyses of Indo-European and Sino-Tibetan language families (sources in [Citation](#citation)). Sino-Tibetan data is included in full; the Indo-European combined posterior `.trees` file (~543 MB) is excluded from this anonymous review repository (see [note for reviewers](#️-note-for-reviewers--anonymous-review-repository)).
+- **Simulated data**: excluded from this repository (~20 GB total). The full pipeline to regenerate it from scratch is included in `src/simulations/`.
+- **Processed results**: all intermediate CSVs in `output/results/`, included in full.
+- **Figures**: publication-ready PDFs in `output/figs/`, included in full.
+- **Full dataset**: a complete, non-anonymized version of this repository — including all simulated data and the full Indo-European posterior — will be made publicly available (e.g. via Zenodo) upon acceptance.
 
 ---
 
